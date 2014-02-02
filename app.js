@@ -38,6 +38,9 @@ mongoose.connect('mongodb://localhost/monkey', function(err) {
 });
 
 // models
+require('./app/models/Activity.js');
+require('./app/models/ActivityLink.js');
+require('./app/models/GraphNode.js');
 require('./app/models/Person.js');
 
 /*

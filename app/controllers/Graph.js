@@ -1,47 +1,102 @@
 'use strict';
 
+var _ = require('lodash');
+var mongoose = require('mongoose');
+var Person = mongoose.model('Person');
+var GraphNode = mongoose.model('GraphNode');
+var ActivityLink = mongoose.model('ActivityLink');
+
 exports.view = function(req, res) {
-    // Node types:
-    // - me: the user looking at the graph
-    // - user: other users (that have a full user account)
-    // - confirmed: people that entered an activity link code at least once
-    // - maybe: the me user created an activity with this as of yet unknown user
-    // - dummy: nodes that only serve as an interaction start point to connect to a new person
-    var nodes = [
-        {'name':'Toby',type:'me',fixed:true,'x':200,'y':200},
-        {'name':'Napoleon',type:'user','x':119.78326114385005,'y':148.22850053702265},
-        {'name':'Mlle.Baptistine',type:'user','x':283.2197661979198,'y':152.48437541679215},
-        {'name':'Mme.Magloire',type:'user','x':197.7630629784904,'y':101.41523185234183},
-        {'name':'CountessdeLo',type:'confirmed','x':191.54113627196566,'y':294.70720539890306},
-        {'name':'Geborand',type:'confirmed','x':221.13070279965143,'y':111.61755372650349},
-        {'name':'Champtercier',type:'maybe','x':245.5830846788855,'y':284.4369294209353},
-        {'name':'Cravatte',type:'maybe','x':139.47134838008878,'y':275.645677639671},
-        {'name':'Count',type:'dummy','x':104.40919498292496,'y':186.4110967275147},
-        {'name':'OldMan',type:'dummy','x':282.14112729654136,'y':249.58047216074291}
-    ];
+    Person.findOne({email: 'foo@bar.baz'}, function(err, me) {
+        // FIXME: get me from session
+        if (err) { return res.send(500, {error: err}); }
+        console.log('Got me: ', me);
 
-    var links = [
-        {'source':1,'target':0,'numActivities':1},
-        {'source':2,'target':0,'numActivities':8},
-        {'source':3,'target':0,'numActivities':10},
-        {'source':3,'target':2,'numActivities':6},
-        {'source':4,'target':0,'numActivities':1},
-        {'source':5,'target':0,'numActivities':1},
-        {'source':6,'target':0,'numActivities':1},
-        {'source':7,'target':0,'numActivities':1},
-        {'source':8,'target':0,'numActivities':2},
-        {'source':9,'target':0,'numActivities':1},
-        {'source':3,'target':1,'numActivities':1},
-        {'source':5,'target':1,'numActivities':1},
-        {'source':9,'target':4,'numActivities':1},
-        {'source':2,'target':3,'numActivities':1},
-        {'source':9,'target':2,'numActivities':1},
-        {'source':7,'target':8,'numActivities':1}
-    ];
+        // Get the entire social graph for me
+        GraphNode
+            .find({owner: me.id})
+            .populate('target', 'fullName password')
+            .exec(function(err, nodes) {
+                if (err) { return res.send(500, {error: err}); }
+                console.log('Got nodes: ', nodes);
 
-    res.send({
-        nodes: nodes,
-        links: links
+                // Massage nodes to be in the right format
+                nodes = _.map(nodes, function(n) {
+                    var result = {};
+                    result.fullName = n.target.fullName;
+                    result.id = n.target.id;
+                    if (n.target.hasOwnProperty('coordX')) {
+                        result.coordX = n.target.coordX;
+                    }
+                    if (n.target.hasOwnProperty('coordY')) {
+                        result.coordY = n.target.coordY;
+                    }
+
+                    // Compute the type of node
+                    result.type = 'maybe';
+                    if (n.target.hasOwnProperty('password')) {
+                        result.type = 'user';
+                    }
+
+                    return result;
+                });
+
+                // add a 'me' node
+                nodes.push({
+                    fullName: me.fullName,
+                    id: me.id,
+                    type: 'me',
+                    coordX: 0.5,
+                    coordY: 0.5
+                });
+
+                // transform this into a map for easier random access
+                nodes = _.indexBy(nodes, 'id');
+
+                // Count the activities between the people in the social graph
+                // FIXME: currently, we only include activities where 'me' is the source or
+                //        target. In principle, we should have activities between all members of
+                //        the social graph.
+                ActivityLink
+                    .find()
+                    .or([{sources: me.id}, {targets: me.id}])
+                    .exec(function(err, links) {
+
+                        // We need to map these activity links, and transform them into a 2d
+                        // structure that maps source/target pairs to counts.
+                        var counts = {};
+                        _.each(links, function(l) {
+                            _.each(l.sources, function(s) {
+                                _.each(l.targets, function(t) {
+                                    counts[s] = counts[s] || {};
+                                    counts[s][t] = (counts[s][t] || 0) + 1;
+                                });
+                            });
+                        });
+
+                        var countsAsList = _.map(counts, function(cc, s) {
+                            return _.map(cc, function(c, t) {
+                                return {source: s, target: t, numActivities: c};
+                            });
+                        });
+                        countsAsList = _.flatten(countsAsList);
+
+                        // Finally, we promote some 'maybe's to 'baby' state if they have activities
+                        _.each(countsAsList, function(c) {
+                            if (nodes[c.source].type === 'maybe') {
+                                nodes[c.source].type = 'baby';
+                            }
+                            if (nodes[c.target].type === 'maybe') {
+                                nodes[c.target].type = 'baby';
+                            }
+                        });
+
+                        res.send({
+                            nodes: nodes,
+                            links: countsAsList
+                        });
+                    });
+            });
     });
 };
 
