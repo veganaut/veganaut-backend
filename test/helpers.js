@@ -11,6 +11,9 @@ exports.afterAll = afterAll;
 var superagentDefaults = require('superagent-defaults');
 exports.request = superagentDefaults();
 
+var fixtures = require('./fixtures');
+exports.setupFixtures = fixtures.setupFixtures;
+
 // Set the port to 3001 for testing, so we can run this while having express
 // running on its default port 3000
 process.env.PORT = 3001;
@@ -31,4 +34,3 @@ exports.runAsync = function(block) {
         return done;
     });
 };
-

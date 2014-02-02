@@ -3,7 +3,8 @@
  * Module dependencies.
  */
 
-var hash = require('../lib/pass').hash;
+var mongoose = require('mongoose');
+var Person = mongoose.model('Person');
 
 /**
  * Temporary storage for sessions (map of session id to user object)
@@ -12,54 +13,33 @@ var hash = require('../lib/pass').hash;
  */
 var sessionStore = {};
 
-// dummy database
-// TODO replace with persons
-var users = {
-    tj: { email: 'tj' }
-};
-
-// when you create a user, generate a salt
-// and hash the password ('foobar' is the pass here)
-
-hash('foobar', function (err, salt, hash) {
-    if (err) {
-        throw err;
-    }
-    // store the salt & hash in the "db"
-    users.tj.salt = salt;
-    users.tj.hash = hash;
-});
-
 /**
  *
  * @param name
  * @param pass
- * @param fn
+ * @param next
  * @returns {*}
  */
-function authenticate(email, pass, fn) {
-    // Authenticate using our plain-object database of doom!
-    if (!module.parent) {
-        console.log('authenticating %s:%s', email, pass);
-    }
-    var user = users[email];
-    // query the db for the given username
-    if (!user) {
-        return fn(new Error('cannot find user'));
-    }
-    // apply the same algorithm to the POSTed password, applying
-    // the hash against the pass / salt, if there is a match we
-    // found the user
-    hash(pass, user.salt, function (err, hash) {
-        if (err) {
-            return fn(err);
+function authenticate(email, pass, next) {
+    console.log('authenticating %s:%s', email, pass);
+
+    Person.findOne({email: email}, function(err, user) {
+        if (err) { return next(err); }
+
+        // query the db for the given username
+        if (!user) {
+            return next(new Error('Cannot find user with email ' + email + '.'));
         }
-        if (hash === user.hash) {
-            var superUniqueId = 'not-really' + Math.random(); // TODO: make actually unique
-            sessionStore[superUniqueId] = user;
-            return fn(null, user, superUniqueId);
-        }
-        fn(new Error('invalid password'));
+        user.verify(pass, function(err, result) {
+            if (err) { return next(err); }
+            if (result) {
+                var superUniqueId = 'not-really' + Math.random(); // TODO: make actually unique
+                sessionStore[superUniqueId] = user;
+                return next(null, user, superUniqueId);
+            } else {
+                return next(new Error('Incorrect password'));
+            }
+        });
     });
 }
 exports.authenticate = authenticate;
@@ -106,13 +86,12 @@ exports.create = function (req, res) {
     else {
         authenticate(req.body.email, req.body.password, function (err, user, sessionId) {
             if (user) {
-                res.send({
+                return res.send({
                     sessionId: sessionId
                 });
             }
             else {
-                //TODO make sure this returns an error http status?
-                res.send(401,{ status: '401 Unauthorized' });
+                return res.send(403, { status: '403 Unauthorized' });
             }
         });
     }

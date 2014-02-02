@@ -10,7 +10,9 @@ describe('Our API', function() {
     h.beforeAll(function () {
         h.runAsync(function(done) {
             server = require('../../app');
-            server.listen(3001, done);
+            server.listen(3001, function() {
+                h.setupFixtures(done);
+            });
         });
     });
 
@@ -58,11 +60,11 @@ describe('Our API', function() {
     it('can let aliens login', function() {
         h.runAsync(function(done) {
             h.request.post(h.baseURL + 'session').send({
-                email: 'tj',
+                email: 'foo@bar.baz',
                 password: 'foobar'
             }).end(function(res) {
                 expect(res.statusCode).toBe(200);
-                expect(res.body.status).toEqual('OK');
+                expect(res.body.sessionId).toBeTruthy();
                 done();
             });
             // TODO then call status and it should get an ok as well
@@ -75,7 +77,7 @@ describe('Our API', function() {
                 email: 'yann',
                 password: 'hasthewrongpassword'
             }).end(function(res) {
-                    expect(res.statusCode).toBe(401);
+                    expect(res.statusCode).toBe(403);
                     done();
                 });
         });
