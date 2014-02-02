@@ -2,12 +2,16 @@
 /* global describe, it, beforeAll, afterAll, runs, waitsFor, expect */
 
 var h = require('../helpers');
+var mongoose = require('mongoose');
 
 var server;
 
 describe('Our API', function() {
     h.beforeAll(function () {
-        server = require('../../app');
+        h.runAsync(function(done) {
+            server = require('../../app');
+            server.listen(3001, done);
+        });
     });
 
     it('cannot access restricted areas when not logged in', function() {
@@ -19,7 +23,6 @@ describe('Our API', function() {
             });
         });
     });
-
 
     it('can let aliens login', function() {
         h.runAsync(function(done) {
@@ -38,10 +41,7 @@ describe('Our API', function() {
     // TODO login
     // TODO login with wrong password
 
-
-
-
-//
+// FIXME: h.request does not have a delete method?
 //    it('can close an old session', function() {
 //        h.runAsync(function(done) {
 //            h.request.delete(h.baseURL + 'session').end(function(res) {
@@ -53,7 +53,9 @@ describe('Our API', function() {
 //        });
 //    });
 
-    h.afterAll(function () {
-        server.close();
+    h.afterAll(function() {
+        h.runAsync(function(done) {
+            server.close(done);
+        });
     });
 });

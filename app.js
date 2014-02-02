@@ -32,7 +32,12 @@ if ('development' === app.get('env')) {
 }
 
 // database
-mongoose.connect('mongodb://localhost/monkey');
+mongoose.connect('mongodb://localhost/monkey', function(err) {
+    if (err) {
+        console.log('Could not connect to Mongo: ', err);
+        process.exit();
+    }
+});
 
 // models
 require('./app/models/Person.js');
@@ -40,7 +45,7 @@ require('./app/models/Person.js');
 /*
  * Controllers
  */
-var PersonController = require('./app/controllers/PersonController');
+var Person = require('./app/controllers/Person');
 
 // Dummy Controllers
 var Graph = require('./app/controllers/Graph');
@@ -78,20 +83,22 @@ app.post('/activityLink/referer',ActivityLink.update);
 app.post('/activityLink',ActivityLink.link);
 
 // Person
-app.get('/person', PersonController.index);
+app.get('/person', Person.index);
 
 // assume 404 since no middleware responded
-app.use(function(req, res, next){
+app.use(function(req, res, next) {
     // TODO
     res.send({ status: '404' });
+    next();
 });
 
 // server
 var server = http.createServer(app);
-server.listen(app.get('port'), function() {
-    console.log('Express server listening on port ' + app.get('port'));
-});
-
+if (require.main === module) {
+    server.listen(app.get('port'), function() {
+        console.log('Express server listening on port ' + app.get('port'));
+    });
+}
 server.on('close', function () {
     mongoose.disconnect();
 });
