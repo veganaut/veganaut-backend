@@ -26,12 +26,7 @@ function runAsync(block) {
 
 describe('API', function() {
     beforeAll(function () {
-        runAsync(function(done) {
-            server = require('../../app');
-            setTimeout(function () {
-                done();
-            }, 10);
-        });
+        server = require('../../app');
     });
 
     it('can connect to server', function() {
