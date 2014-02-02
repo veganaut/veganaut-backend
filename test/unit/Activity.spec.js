@@ -2,28 +2,13 @@
 /* global describe, it, expect */
 
 var h = require('../helpers');
-var server;
-var sessionId;
 
-describe('Our API', function() {
-    h.beforeAll(function () {
-        h.runAsync(function(done) {
-            server = require('../../app');
-            server.listen(3001, function() {
-                h.setupFixtures(function() {
-                    h.createSessionFor('foo@bar.baz', function(err, sid) {
-                        sessionId = sid;
-                        done();
-                    });
-                });
-            });
-        });
-    });
+h.describe('Our API', function() {
 
     it('can get a list of activity types', function() {
         h.runAsync(function(done) {
-            // FIXME: add session id to request.
-            h.request.get(h.baseURL + 'activity').end(function(res) {
+            h.request('GET', h.baseURL + 'activity').end(function(res) {
+                console.log('after request');
                 expect(res.statusCode).toBe(200);
                 expect(res.body.status).toEqual('OK');
                 done();
@@ -31,9 +16,4 @@ describe('Our API', function() {
         });
     });
 
-    h.afterAll(function() {
-        h.runAsync(function(done) {
-            server.close(done);
-        });
-    });
 });
