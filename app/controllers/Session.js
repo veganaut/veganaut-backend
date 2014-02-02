@@ -65,7 +65,7 @@ function restrict(req, res, next) {
     if (req.session.user) {
         return next();
     } else {
-        res.send({ status: 'Error',
+        res.send(401,{ status: 'Error',
             message: 'Access denied!'
         });
     }
@@ -81,11 +81,12 @@ exports.restrict = restrict;
  */
 exports.create = function (req, res) {
     // Email or password missing:
-    if (req.body.email === undefined && req.body.password === undefined) {
+    if (!req.body.email || !req.body.password) {
         // no user or password given
-        res.send({ status: 'Error',
+        res.send(400,{ status: 'Bad Request',
             message: 'Email && Password are required'
         });
+        return;
     }
     // Otherwise try to login
     else {
@@ -108,7 +109,7 @@ exports.create = function (req, res) {
                     ' username and password.' +
                     ' (use "tj" and "foobar")';
                 //TODO make sure this returns an error http status?
-                res.send({ status: 'Error' });
+                res.send(401,{ status: '401 Unauthorized' });
             }
         });
     }

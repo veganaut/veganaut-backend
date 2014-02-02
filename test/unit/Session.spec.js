@@ -17,7 +17,7 @@ describe('Our API', function() {
     it('cannot access restricted areas when not logged in', function() {
         h.runAsync(function(done) {
             h.request.get(h.baseURL + 'session/status').end(function(res) {
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(401);
                 expect(res.body.status).toEqual('Error');
                 done();
             });
@@ -29,8 +29,7 @@ describe('Our API', function() {
             h.request.post(h.baseURL + 'session').send({
                 password: 'but no email'
             }).end(function(res) {
-                    expect(res.statusCode).toBe(200);
-                    expect(res.body.status).toEqual('Error');
+                    expect(res.statusCode).toBe(400);
                     done();
                 });
         });
@@ -41,8 +40,7 @@ describe('Our API', function() {
             h.request.post(h.baseURL + 'session').send({
                 email: 'but no password'
             }).end(function(res) {
-                    expect(res.statusCode).toBe(200);
-                    expect(res.body.status).toEqual('Error');
+                    expect(res.statusCode).toBe(400);
                     done();
                 });
         });
@@ -51,8 +49,7 @@ describe('Our API', function() {
     it('cannot login with nothing', function() {
         h.runAsync(function(done) {
             h.request.post(h.baseURL + 'session').end(function(res) {
-                    expect(res.statusCode).toBe(200);
-                    expect(res.body.status).toEqual('Error');
+                    expect(res.statusCode).toBe(400);
                     done();
                 });
         });
@@ -69,6 +66,18 @@ describe('Our API', function() {
                 done();
             });
             // TODO then call status and it should get an ok as well
+        });
+    });
+
+    it('cannot let aliens login with wrong password', function() {
+        h.runAsync(function(done) {
+            h.request.post(h.baseURL + 'session').send({
+                email: 'yann',
+                password: 'hasthewrongpassword'
+            }).end(function(res) {
+                    expect(res.statusCode).toBe(401);
+                    done();
+                });
         });
     });
 
