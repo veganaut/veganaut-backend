@@ -59,31 +59,34 @@ var ActivityLink = require('./app/controllers/ActivityLink');
  * https://github.com/visionmedia/express/blob/master/examples/route-separation/index.js
  */
 // Home
+app.options('/', cors());
 app.get('/', routes.index);
 
 // Graph
 app.options('/graph', cors());
-app.get('/graph/me', Graph.view);
-app.put('/graph', Graph.update);
+app.get('/graph/me', cors(), Graph.view);
+app.put('/graph', cors(), Graph.update);
 
 
 // Session
 app.options('/session', cors());
 app.post('/session', cors(), Session.create);
-app.delete('/session',Session.delete);
-app.get('/session/status', Session.restrict, Session.status); //TODO remove this test eventually once login works
+app.delete('/session', cors(), Session.delete);
+app.get('/session/status', cors(), Session.restrict, Session.status); //TODO remove this test eventually once login works
 
 // Activity
-app.get('/activity',Activity.list);
+app.options('/activity', cors());
+app.get('/activity', cors(), Activity.list);
 
 // ActivityLink
 app.options('/activityLink/referer', cors());
 app.options('/activityLink', cors());
-app.post('/activityLink/referer',ActivityLink.update);
-app.post('/activityLink',ActivityLink.link);
+app.post('/activityLink/referer', cors(), ActivityLink.update);
+app.post('/activityLink', cors(), ActivityLink.link);
 
 // Person
-app.get('/person', Person.index);
+app.options('/person', cors());
+app.get('/person', cors(), Person.index);
 
 // assume 404 since no middleware responded
 app.use(function(req, res, next) {

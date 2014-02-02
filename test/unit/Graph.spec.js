@@ -19,7 +19,12 @@ describe('Our API', function() {
         h.runAsync(function(done) {
             h.request.get(h.baseURL + 'graph/me').end(function(res) {
                 expect(res.statusCode).toBe(200);
-                expect(res.body.status).toEqual('OK');
+
+                // Make sure there is an array nodes and links
+                expect(typeof res.body.nodes).toEqual('object');
+                expect(typeof res.body.nodes.length).toEqual('number');
+                expect(typeof res.body.links).toEqual('object');
+                expect(typeof res.body.links.length).toEqual('number');
                 done();
             });
         });
