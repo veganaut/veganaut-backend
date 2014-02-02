@@ -1,45 +1,25 @@
 'use strict';
 /* global describe, it, beforeAll, afterAll, runs, waitsFor, expect */
-require('jasmine-before-all');
-var superagentDefaults = require('superagent-defaults');
 
-var request = superagentDefaults();
+var h = require('../helpers');
 
-process.env.PORT = 3001;
-var baseURL = 'http://localhost:' + process.env.PORT + '/';
 var server;
 
-// Shamelessly copied from https://github.com/derickbailey/jasmine.async
-function runAsync(block) {
-    var done = false;
-    var complete = function() {
-        done = true;
-    };
-
-    runs(function(){
-        block(complete);
-    });
-
-    waitsFor(function(){
-        return done;
-    });
-}
-
-describe('API', function() {
-    beforeAll(function () {
+describe('Our API', function() {
+    h.beforeAll(function () {
         server = require('../../app');
     });
 
     it('can connect to server', function() {
-        runAsync(function(done) {
-            request.get(baseURL).end(function(res) {
+        h.runAsync(function(done) {
+            h.request.get(h.baseURL).end(function(res) {
                 expect(res.statusCode).toBe(200);
                 done();
             });
         });
     });
 
-    afterAll(function () {
+    h.afterAll(function () {
         server.close();
     });
 });
