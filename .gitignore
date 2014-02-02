@@ -1,0 +1,37 @@
+########################
+# node.js / npm
+########################
+lib-cov
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+pids
+logs
+results
+
+node_modules
+
+npm-debug.log
+
+
+########################
+# misc / editors
+########################
+*~
+*#
+.*.swp
+.DS_STORE
+.netbeans
+nbproject
+.idea/workspace.xml
+
+
+########################
+# local config
+########################
+config/local.js
