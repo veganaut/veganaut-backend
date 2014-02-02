@@ -5,6 +5,7 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var routes = require('./routes');
+var cors = require('cors');
 
 var http = require('http');
 var path = require('path');
@@ -31,16 +32,7 @@ if ('development' === app.get('env')) {
 }
 
 // database
-var connectToMongoose = function() {
-    mongoose.connect('mongodb://localhost/monkey', { server: { socketOptions: { keepAlive: 1 } } });
-};
-mongoose.connection.on('error', function (err) {
-    console.log(err);
-});
-mongoose.connection.on('disconnected', function () {
-    // Just reconnect on disconnect
-    connectToMongoose();
-});
+mongoose.connect('mongodb://localhost/monkey');
 
 // models
 require('./app/models/Person.js');
@@ -65,12 +57,14 @@ var ActivityLink = require('./app/controllers/ActivityLink');
 app.get('/', routes.index);
 
 // Graph
+app.options('/graph', cors());
 app.get('/graph/me', Graph.view);
 app.put('/graph', Graph.update);
 
 
 // Session
-app.post('/session',Session.create);
+app.options('/session', cors());
+app.post('/session', cors(), Session.create);
 app.delete('/session',Session.delete);
 app.get('/session/status', Session.restrict, Session.status); //TODO remove this test eventually once login works
 
@@ -78,6 +72,8 @@ app.get('/session/status', Session.restrict, Session.status); //TODO remove this
 app.get('/activity',Activity.list);
 
 // ActivityLink
+app.options('/activityLink/referer', cors());
+app.options('/activityLink', cors());
 app.post('/activityLink/referer',ActivityLink.update);
 app.post('/activityLink',ActivityLink.link);
 
@@ -94,6 +90,10 @@ app.use(function(req, res, next){
 var server = http.createServer(app);
 server.listen(app.get('port'), function() {
     console.log('Express server listening on port ' + app.get('port'));
+});
+
+server.on('close', function () {
+    mongoose.disconnect();
 });
 
 module.exports = server;
