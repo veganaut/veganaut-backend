@@ -5,6 +5,7 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var routes = require('./routes');
+var cors = require('cors');
 
 var http = require('http');
 var path = require('path');
@@ -56,18 +57,22 @@ var ActivityLink = require('./app/controllers/ActivityLink');
 app.get('/', routes.index);
 
 // Graph
+app.options('/graph', cors());
 app.get('/graph/me', Graph.view);
 app.put('/graph', Graph.update);
 
 
 // Session
-app.post('/session',Session.create);
+app.options('/session', cors());
+app.post('/session', cors(), Session.create);
 app.delete('/session',Session.delete);
 
 // Activity
 app.get('/activity',Activity.list);
 
 // ActivityLink
+app.options('/activityLink/referer', cors());
+app.options('/activityLink', cors());
 app.post('/activityLink/referer',ActivityLink.update);
 app.post('/activityLink',ActivityLink.link);
 
