@@ -16,9 +16,11 @@ mongoose.connect('mongodb://localhost/monkey', function(err) {
 require('./app/models/Person');
 require('./app/models/Activity');
 require('./app/models/ActivityLink');
+require('./app/models/GraphNode');
 var Person = mongoose.model('Person');
 var Activity = mongoose.model('Activity');
 var ActivityLink = mongoose.model('ActivityLink');
+var GraphNode = mongoose.model('GraphNode');
 
 
 Person.remove({}).exec();
@@ -67,6 +69,14 @@ var aliceBuysSomethingForBob = new ActivityLink({
     startedAt: '2014-01-10'
 });
 aliceBuysSomethingForBob.save();
+
+
+GraphNode.remove({}).exec();
+var aliceKnowsBob = new GraphNode({
+    owner: alice.id,
+    target: bob.id
+});
+aliceKnowsBob.save();
 
 
 mongoose.disconnect();
