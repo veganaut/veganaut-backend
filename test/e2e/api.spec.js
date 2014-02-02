@@ -5,7 +5,8 @@ var superagentDefaults = require('superagent-defaults');
 
 var request = superagentDefaults();
 
-var baseURL = 'http://localhost:3000/';
+process.env.PORT = 3001;
+var baseURL = 'http://localhost:' + process.env.PORT + '/';
 var server;
 
 // Shamelessly copied from https://github.com/derickbailey/jasmine.async
