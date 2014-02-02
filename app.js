@@ -72,6 +72,7 @@ app.put('/graph', Graph.update);
 // Session
 app.post('/session',Session.create);
 app.delete('/session',Session.delete);
+app.get('/session/status', Session.restrict, Session.status); //TODO remove this test eventually once login works
 
 // Activity
 app.get('/activity',Activity.list);
