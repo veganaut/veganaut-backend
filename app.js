@@ -87,10 +87,11 @@ app.use(function(req, res, next){
 
 // server
 var server = http.createServer(app);
-server.listen(app.get('port'), function() {
-    console.log('Express server listening on port ' + app.get('port'));
-});
-
+if (require.main === module) {
+    server.listen(app.get('port'), function() {
+        console.log('Express server listening on port ' + app.get('port'));
+    });
+}
 server.on('close', function () {
     mongoose.disconnect();
 });

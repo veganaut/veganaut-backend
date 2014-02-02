@@ -6,7 +6,10 @@ var server;
 
 describe('Our API', function() {
     h.beforeAll(function () {
-        server = require('../../app');
+        h.runAsync(function(done) {
+            server = require('../../app');
+            server.listen(3001, done);
+        });
     });
 
     it('can connect to server', function() {
