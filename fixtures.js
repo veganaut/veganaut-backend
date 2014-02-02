@@ -14,7 +14,12 @@ mongoose.connect('mongodb://localhost/monkey', function(err) {
 });
 
 require('./app/models/Person');
+require('./app/models/Activity');
+require('./app/models/ActivityLink');
 var Person = mongoose.model('Person');
+var Activity = mongoose.model('Activity');
+var ActivityLink = mongoose.model('ActivityLink');
+
 
 Person.remove({}).exec();
 var alice = new Person({
@@ -43,14 +48,25 @@ var dave = new Person({
 });
 dave.save();
 
-//Activity.remove({}).exec();
-//var buyActivity = new Activity({
-//    name: 'Buy something vegan for ...',
-//    className: 'Shopping',
-//    givesVegBytes: false
-//});
-//buyActivity.save();
 
+Activity.remove({}).exec();
+var buyActivity = new Activity({
+    name: 'Buy something vegan for ...',
+    className: 'Shopping',
+    givesVegBytes: false
+});
+buyActivity.save();
+
+
+ActivityLink.remove({}).exec();
+var aliceBuysSomethingForBob = new ActivityLink({
+    activity: buyActivity.id,
+    sources: [alice.id],
+    targets: [bob.id],
+    location: 'Bern, Switzerland',
+    startedAt: '2014-01-10'
+});
+aliceBuysSomethingForBob.save();
 
 
 mongoose.disconnect();

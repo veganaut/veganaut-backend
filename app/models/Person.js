@@ -14,7 +14,7 @@ function generateAlienName() {
 var PersonSchema = new Schema({
     email: String,
     password: String,
-    alienName: {type: String, default: generateAlienName()},
+    alienName: { type: String, default: generateAlienName },
 
     fullName: String,
     // dateOfBirth can be just a year, year-month, or year-month-day
