@@ -32,7 +32,12 @@ if ('development' === app.get('env')) {
 }
 
 // database
-mongoose.connect('mongodb://localhost/monkey');
+mongoose.connect('mongodb://localhost/monkey', function(err) {
+    if (err) {
+        console.log('Could not connect to Mongo: ', err);
+        process.exit();
+    }
+});
 
 // models
 require('./app/models/Person.js');
