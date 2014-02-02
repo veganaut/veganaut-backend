@@ -1,5 +1,5 @@
 'use strict';
-/* global describe, it, beforeAll, afterAll, runs, waitsFor, expect */
+/* global describe, it, expect */
 
 var h = require('../helpers');
 
