@@ -13,6 +13,13 @@ var Person = mongoose.model('Person');
  */
 var sessionStore = {};
 
+var createSessionFor = function(user) {
+    var superUniqueId = 'not-really' + Math.random(); // TODO: make actually unique
+    sessionStore[superUniqueId] = user;
+    return superUniqueId;
+};
+exports.createSessionFor = createSessionFor;
+
 /**
  *
  * @param name
@@ -20,7 +27,7 @@ var sessionStore = {};
  * @param next
  * @returns {*}
  */
-function authenticate(email, pass, next) {
+var authenticate = function(email, pass, next) {
     console.log('authenticating %s:%s', email, pass);
 
     Person.findOne({email: email}, function(err, user) {
@@ -33,15 +40,14 @@ function authenticate(email, pass, next) {
         user.verify(pass, function(err, result) {
             if (err) { return next(err); }
             if (result) {
-                var superUniqueId = 'not-really' + Math.random(); // TODO: make actually unique
-                sessionStore[superUniqueId] = user;
+                var superUniqueId = createSessionFor(user);
                 return next(null, user, superUniqueId);
             } else {
                 return next(new Error('Incorrect password'));
             }
         });
     });
-}
+};
 exports.authenticate = authenticate;
 
 /**

@@ -4,6 +4,12 @@
 
 'use strict';
 
+require('../app');  // Initialize models
+var mongoose = require('mongoose');
+var Person = mongoose.model('Person');
+
+var SessionController = require('../app/controllers/Session');
+
 require('jasmine-before-all');
 exports.beforeAll = beforeAll;
 exports.afterAll = afterAll;
@@ -32,5 +38,13 @@ exports.runAsync = function(block) {
 
     waitsFor(function(){
         return done;
+    });
+};
+
+exports.createSessionFor = function(email, next) {
+    Person.findOne({email: email}, function(err, p) {
+        if (err) { return next(err); }
+        var sessionId = SessionController.createSessionFor(p);
+        next(null, sessionId);
     });
 };
