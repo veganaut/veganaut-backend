@@ -2,7 +2,6 @@
 /* global describe, it, expect */
 
 var h = require('../helpers');
-
 var server;
 
 describe('Our API', function() {
@@ -20,6 +19,8 @@ describe('Our API', function() {
     });
 
     h.afterAll(function () {
-        server.close();
+        h.runAsync(function(done) {
+            server.close(done);
+        });
     });
 });

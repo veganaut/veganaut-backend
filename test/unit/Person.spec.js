@@ -13,7 +13,9 @@ var Person = mongoose.model('Person');
 
 describe('A person', function() {
     h.beforeAll(function() {
-        mongoose.connect('mongodb://localhost/monkey');
+        h.runAsync(function(done) {
+            mongoose.connect('mongodb://localhost/monkey', done);
+        });
     });
 
     it('can be created', function() {
@@ -39,6 +41,8 @@ describe('A person', function() {
     });
 
     h.afterAll(function() {
-        mongoose.disconnect();
+        h.runAsync(function(done) {
+            mongoose.disconnect(done);
+        });
     });
 });

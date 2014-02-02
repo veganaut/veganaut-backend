@@ -31,16 +31,7 @@ if ('development' === app.get('env')) {
 }
 
 // database
-var connectToMongoose = function() {
-    mongoose.connect('mongodb://localhost/monkey', { server: { socketOptions: { keepAlive: 1 } } });
-};
-mongoose.connection.on('error', function (err) {
-    console.log(err);
-});
-mongoose.connection.on('disconnected', function () {
-    // Just reconnect on disconnect
-    connectToMongoose();
-});
+mongoose.connect('mongodb://localhost/monkey');
 
 // models
 require('./app/models/Person.js');
@@ -93,6 +84,10 @@ app.use(function(req, res, next){
 var server = http.createServer(app);
 server.listen(app.get('port'), function() {
     console.log('Express server listening on port ' + app.get('port'));
+});
+
+server.on('close', function () {
+    mongoose.disconnect();
 });
 
 module.exports = server;
