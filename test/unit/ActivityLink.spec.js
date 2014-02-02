@@ -17,7 +17,7 @@ describe('Our API', function() {
     it('can set a referral', function() {
         h.runAsync(function(done) {
             //TODO update request
-            h.request.post(h.baseURL + 'activityLink/refer').end(function(res) {
+            h.request.post(h.baseURL + 'activityLink/referer').end(function(res) {
                 expect(res.statusCode).toBe(200);
                 expect(res.body.status).toEqual('OK');
                 done();
