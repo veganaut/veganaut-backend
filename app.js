@@ -45,11 +45,49 @@ mongoose.connection.on('disconnected', function () {
 // models
 require('./app/models/Person.js');
 
-// routes
+/*
+ * Controllers
+ */
+var PersonController = require('./app/controllers/PersonController');
+
+// Dummy Controllers
+var Graph = require('./app/controllers/Graph');
+var Session = require('./app/controllers/Session');
+var Activity = require('./app/controllers/Activity');
+var ActivityLink = require('./app/controllers/ActivityLink');
+
+/*
+ * Routes
+ * Following the route-separation express example:
+ * https://github.com/visionmedia/express/blob/master/examples/route-separation/index.js
+ */
+// Home
 app.get('/', routes.index);
 
-var PersonController = require('./app/controllers/PersonController');
+// Graph
+app.get('/graph/me', Graph.view);
+app.put('/graph', Graph.update);
+
+
+// Session
+app.post('/session',Session.create);
+app.delete('/session',Session.delete);
+
+// Activity
+app.get('/activity',Activity.list);
+
+// ActivityLink
+app.post('/activityLink/referer',ActivityLink.update);
+app.post('/activityLink',ActivityLink.link);
+
+// Person
 app.get('/person', PersonController.index);
+
+// assume 404 since no middleware responded
+app.use(function(req, res, next){
+    // TODO
+    res.send({ status: '404' });
+});
 
 // server
 var server = http.createServer(app);
