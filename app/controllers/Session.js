@@ -5,6 +5,13 @@
 
 var hash = require('../lib/pass').hash;
 
+/**
+ * Temporary storage for sessions (map of session id to user object)
+ * TODO: need to find a better way to store session (in mongo e.g.)
+ * @type {{}}
+ */
+var sessionStore = {};
+
 // dummy database
 // TODO replace with persons
 var users = {
@@ -48,7 +55,9 @@ function authenticate(email, pass, fn) {
             return fn(err);
         }
         if (hash === user.hash) {
-            return fn(null, user);
+            var superUniqueId = 'not-really' + Math.random(); // TODO: make actually unique
+            sessionStore[superUniqueId] = user;
+            return fn(null, user, superUniqueId);
         }
         fn(new Error('invalid password'));
     });
@@ -62,13 +71,18 @@ exports.authenticate = authenticate;
  * @param next
  */
 function restrict(req, res, next) {
-    if (req.session.user) {
-        return next();
-    } else {
-        res.send(401,{ status: 'Error',
-            message: 'Access denied!'
-        });
+    var authHeader = req.get('Authorization');
+    if (authHeader) {
+        var parts = authHeader.split(' ');
+        if (parts.length === 2 && parts[0] === 'MonkeyBearer' && sessionStore[parts[1]]) {
+            req.sessionId = parts[1];
+            req.user = sessionStore[req.sessionId];
+            return next();
+        }
     }
+    res.send(401,{ status: 'Error',
+        message: 'Access denied!'
+    });
 }
 exports.restrict = restrict;
 
@@ -90,24 +104,13 @@ exports.create = function (req, res) {
     }
     // Otherwise try to login
     else {
-        authenticate(req.body.email, req.body.password, function (err, user) {
+        authenticate(req.body.email, req.body.password, function (err, user, sessionId) {
             if (user) {
-                // Regenerate session when signing in
-                // to prevent fixation
-                req.session.regenerate(function () {
-                    // Store the user's primary key
-                    // in the session store to be retrieved,
-                    // or in this case the entire user object
-                    req.session.user = user;
-                    req.session.success = 'Authenticated as ' + user.name +
-                        ' click to <a href="/logout">logout</a>. ' +
-                        ' You may now access <a href="/restricted">/restricted</a>.';
-                    res.send({ status: 'OK' });
+                res.send({
+                    sessionId: sessionId
                 });
-            } else {
-                req.session.error = 'Authentication failed, please check your ' +
-                    ' username and password.' +
-                    ' (use "tj" and "foobar")';
+            }
+            else {
                 //TODO make sure this returns an error http status?
                 res.send(401,{ status: '401 Unauthorized' });
             }
@@ -124,9 +127,8 @@ exports.create = function (req, res) {
 exports.delete = function (req, res) {
     // destroy the user's session to log them out
     // will be re-created next request
-    req.session.destroy(function () {
-        res.send({ status: 'OK' });
-    });
+    delete sessionStore[req.sessionId];
+    res.send({ status: 'OK' });
 };
 
 /**

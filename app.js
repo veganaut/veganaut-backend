@@ -21,8 +21,6 @@ app.use(express.logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
-app.use(express.cookieParser('your secret here'));
-app.use(express.session());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -63,30 +61,31 @@ app.options('/', cors());
 app.get('/', routes.index);
 
 // Graph
+app.options('/graph/me', cors());
 app.options('/graph', cors());
-app.get('/graph/me', cors(), Graph.view);
-app.put('/graph', cors(), Graph.update);
+app.get('/graph/me', cors(), Session.restrict, Graph.view);
+app.put('/graph', cors(), Session.restrict, Graph.update);
 
 
 // Session
 app.options('/session', cors());
 app.post('/session', cors(), Session.create);
-app.delete('/session', cors(), Session.delete);
+app.delete('/session', cors(), Session.restrict, Session.delete);
 app.get('/session/status', cors(), Session.restrict, Session.status); //TODO remove this test eventually once login works
 
 // Activity
 app.options('/activity', cors());
-app.get('/activity', cors(), Activity.list);
+app.get('/activity', cors(), Session.restrict, Activity.list);
 
 // ActivityLink
 app.options('/activityLink/referer', cors());
 app.options('/activityLink', cors());
 app.post('/activityLink/referer', cors(), ActivityLink.update);
-app.post('/activityLink', cors(), ActivityLink.link);
+app.post('/activityLink', cors(), Session.restrict, ActivityLink.link);
 
 // Person
 app.options('/person', cors());
-app.get('/person', cors(), Person.index);
+app.get('/person', cors(), Session.restrict, Person.index);
 
 // assume 404 since no middleware responded
 app.use(function(req, res, next) {
