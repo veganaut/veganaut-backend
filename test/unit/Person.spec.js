@@ -4,7 +4,8 @@
 
 'use strict';
 
-var Person = require('../../models/Person');
+var mongoose = require('mongoose');
+var Person = mongoose.model('Person');
 
 describe('A person', function() {
     it('can be created', function() {
