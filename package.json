@@ -1,11 +1,17 @@
 {
-  "name": "application-name",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "start": "node app.js"
-  },
-  "dependencies": {
-    "express": "3.4.8"
-  }
+    "name": "monkey-tail",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "express": "3.4.8"
+    },
+    "devDependencies": {
+        "jasmine-node": "1.13.1",
+        "jasmine-before-all": "0.1.0",
+        "superagent": "0.16.0",
+        "superagent-defaults": "0.1.5"
+    }
 }
