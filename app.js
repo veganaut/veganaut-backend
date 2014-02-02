@@ -45,7 +45,7 @@ require('./app/models/Person.js');
 /*
  * Controllers
  */
-var PersonController = require('./app/controllers/PersonController');
+var Person = require('./app/controllers/Person');
 
 // Dummy Controllers
 var Graph = require('./app/controllers/Graph');
@@ -82,7 +82,7 @@ app.post('/activityLink/referer',ActivityLink.update);
 app.post('/activityLink',ActivityLink.link);
 
 // Person
-app.get('/person', PersonController.index);
+app.get('/person', Person.index);
 
 // assume 404 since no middleware responded
 app.use(function(req, res, next) {
