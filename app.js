@@ -1,8 +1,7 @@
-
 /**
  * Module dependencies.
  */
-
+'use strict';
 var express = require('express');
 var routes = require('./routes');
 var http = require('http');
@@ -25,12 +24,15 @@ app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
-if ('development' == app.get('env')) {
-  app.use(express.errorHandler());
+if ('development' === app.get('env')) {
+    app.use(express.errorHandler());
 }
 
 app.get('/', routes.index);
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+var server = http.createServer(app);
+server.listen(app.get('port'), function() {
+    console.log('Express server listening on port ' + app.get('port'));
 });
+
+module.exports = server;

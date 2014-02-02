@@ -1,11 +1,12 @@
 'use strict';
-/* global describe, it, beforeAll, runs, waitsFor */
+/* global describe, it, beforeAll, afterAll, runs, waitsFor, expect */
 require('jasmine-before-all');
 var superagentDefaults = require('superagent-defaults');
 
 var request = superagentDefaults();
 
 var baseURL = 'http://localhost:3000/';
+var server;
 
 // Shamelessly copied from https://github.com/derickbailey/jasmine.async
 function runAsync(block) {
@@ -24,17 +25,25 @@ function runAsync(block) {
 }
 
 describe('API', function() {
+    beforeAll(function () {
+        runAsync(function(done) {
+            server = require('../../app');
+            setTimeout(function () {
+                done();
+            }, 10);
+        });
+    });
 
-    describe('first test', function() {
-        it('tests something', function() {
-
-            runAsync(function(done) {
-                console.log('started async test');
-                setTimeout(function () {
-                    console.log('ended async test');
-                    done();
-                }, 10);
+    it('can connect to server', function() {
+        runAsync(function(done) {
+            request.get(baseURL).end(function(res) {
+                expect(res.statusCode).toBe(200);
+                done();
             });
         });
+    });
+
+    afterAll(function () {
+        server.close();
     });
 });
