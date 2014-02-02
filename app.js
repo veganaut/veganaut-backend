@@ -80,9 +80,10 @@ app.post('/activityLink',ActivityLink.link);
 app.get('/person', PersonController.index);
 
 // assume 404 since no middleware responded
-app.use(function(req, res, next){
+app.use(function(req, res, next) {
     // TODO
     res.send({ status: '404' });
+    next();
 });
 
 // server
