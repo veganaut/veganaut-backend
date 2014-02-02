@@ -16,8 +16,7 @@ var PersonSchema = new Schema({
     password: String,
     alienName: {type: String, default: generateAlienName()},
 
-    firstName: String,
-    lastName: String,
+    fullName: String,
     // dateOfBirth can be just a year, year-month, or year-month-day
     dateOfBirth: {type: String, matches: /^\d{4}(?:-\d\d){0,2}$/},
 
