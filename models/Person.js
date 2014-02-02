@@ -27,4 +27,4 @@ var PersonSchema = new Schema({
     locale: {type: String, default: 'en'}
 });
 
-exports.Person = mongoose.model('Person', PersonSchema);
+module.exports = mongoose.model('Person', PersonSchema);

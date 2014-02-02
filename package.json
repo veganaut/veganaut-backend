@@ -6,7 +6,8 @@
         "start": "node app.js"
     },
     "dependencies": {
-        "express": "3.4.8"
+        "express": "3.4.8",
+        "mongoose": "3.8.6"
     },
     "devDependencies": {
         "jasmine-node": "1.13.1",
