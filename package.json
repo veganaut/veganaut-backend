@@ -15,6 +15,6 @@
     "devDependencies": {
         "jasmine-node": "1.13.1",
         "jasmine-before-all": "0.1.0",
-        "superagent": "0.16.0",
+        "superagent": "0.16.0"
     }
 }
