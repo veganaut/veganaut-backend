@@ -82,6 +82,7 @@ var SessionController = require('../app/controllers/Session');
 var createSessionFor = function(email, next) {
     Person.findOne({email: email}, function(err, p) {
         if (err) { return next(err); }
+        if (!p) { return next(new Error('Could not find person with email ' + email)); }
         var sessionId = SessionController.createSessionFor(p);
         next(null, sessionId);
     });
@@ -99,11 +100,17 @@ exports.describe = function(what, how) {
         // Start a server and initialize fixtures
         beforeAll(function () {
             runAsync(function(done) {
-                exports.server.listen(exports.port, function() {
-                    setupFixtures(function() {
-                        createSessionFor('foo@bar.baz', function(err, sid) {
-                            exports.sessionId = sid;
-                            done();
+                mongoose.connect('mongodb://localhost/monkey', function(err) {
+                    if (err) { console.log(err); }
+                    exports.server.listen(exports.port, function(err) {
+                        if (err) { console.log(err); }
+                        setupFixtures(function(err) {
+                            if (err) { console.log(err); }
+                            createSessionFor('foo@bar.baz', function(err, sid) {
+                                if (err) { console.log(err); }
+                                exports.sessionId = sid;
+                                done();
+                            });
                         });
                     });
                 });
@@ -116,7 +123,13 @@ exports.describe = function(what, how) {
         // Tear down the server
         afterAll(function() {
             runAsync(function(done) {
-                exports.server.close(done);
+                exports.server.close(function(err) {
+                    if (err) { console.log(err); }
+                    mongoose.disconnect(function(err) {
+                        if (err) { console.log(err); }
+                        done();
+                    });
+                });
             });
         });
     };

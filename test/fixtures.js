@@ -64,17 +64,29 @@ var aliceKnowsBob = new GraphNode({
 // async fun :)
 var setupFixtures = function (done) {
     Person.remove({}, function (err) {
+        if (err) { done(err); }
         Activity.remove({}, function (err) {
+            if (err) { done(err); }
             ActivityLink.remove({}, function (err) {
+                if (err) { done(err); }
                 ActivityLink.remove({}, function (err) {
+                    if (err) { done(err); }
                     GraphNode.remove({}, function (err) {
+                        if (err) { done(err); }
                         alice.save(function (err) {
+                            if (err) { done(err); }
                             bob.save(function (err) {
+                                if (err) { done(err); }
                                 carol.save(function (err) {
+                                    if (err) { done(err); }
                                     dave.save(function (err) {
+                                        if (err) { done(err); }
                                         buyActivity.save(function (err) {
+                                            if (err) { done(err); }
                                             aliceBuysSomethingForBob.save(function (err) {
+                                                if (err) { done(err); }
                                                 aliceKnowsBob.save(function(err) {
+                                                    if (err) { done(err); }
                                                     done();
                                                 });
                                             });

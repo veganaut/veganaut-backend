@@ -29,14 +29,6 @@ if ('development' === app.get('env')) {
     app.use(express.errorHandler());
 }
 
-// database
-mongoose.connect('mongodb://localhost/monkey', function(err) {
-    if (err) {
-        console.log('Could not connect to Mongo: ', err);
-        process.exit();
-    }
-});
-
 // models
 require('./app/models/Activity.js');
 require('./app/models/ActivityLink.js');
@@ -100,12 +92,21 @@ app.use(function(req, res, next) {
 // server
 var server = http.createServer(app);
 if (require.main === module) {
-    server.listen(app.get('port'), function() {
-        console.log('Express server listening on port ' + app.get('port'));
+    mongoose.connect('mongodb://localhost/monkey', function(err) {
+        if (err) {
+            console.log('Could not connect to Mongo: ', err);
+            process.exit();
+        }
+
+        server.listen(app.get('port'), function(err) {
+            if (err) {
+                console.log('Could not listen: ', err);
+                process.exit();
+            }
+
+            console.log('Express server listening on port ' + app.get('port'));
+        });
     });
 }
-server.on('close', function () {
-    mongoose.disconnect();
-});
 
 module.exports = server;
