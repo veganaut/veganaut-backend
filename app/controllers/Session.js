@@ -57,8 +57,6 @@ exports.authenticate = authenticate;
  * @param next
  */
 function restrict(req, res, next) {
-    console.log('in restrict: ', req.url, ' ', req.get('Authorization'));
-    console.log('sessionStore: ', sessionStore);
     var authHeader = req.get('Authorization');
     if (authHeader) {
         var parts = authHeader.split(' ');

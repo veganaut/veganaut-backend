@@ -17,52 +17,51 @@ var ActivityLink = mongoose.model('ActivityLink');
 var GraphNode = mongoose.model('GraphNode');
 
 
-var alice = new Person({
-    email: 'foo@bar.baz',
-    password: 'foobar',
-    fullName: 'Alice Alison'
-});
-var bob = new Person({
-    email: 'im@stoop.id',
-    password: 'bestpasswordever',
-    fullName: 'Bob Burton',
-    gender: 'male'
-});
-var carol = new Person({
-    email: 'son@ainbfl.at',
-    password: 'you\'ll never guess',
-    fullName: 'Carol',
-    gender: 'other',
-    address: 'Cäcilienstr. 5, 3006 Bern'
-});
-var dave = new Person({
-    fullName: 'Dave Donaldsson'
-});
-
-var buyActivity = new Activity({
-    name: 'Buy something vegan for ...',
-    className: 'Shopping',
-    givesVegBytes: false
-});
-
-
-var aliceBuysSomethingForBob = new ActivityLink({
-    activity: buyActivity.id,
-    sources: [alice.id],
-    targets: [bob.id],
-    location: 'Bern, Switzerland',
-    startedAt: '2014-01-10'
-});
-
-
-var aliceKnowsBob = new GraphNode({
-    owner: alice.id,
-    target: bob.id
-});
-
-
-// async fun :)
 var setupFixtures = function (done) {
+    var alice = new Person({
+        email: 'foo@bar.baz',
+        password: 'foobar',
+        fullName: 'Alice Alison'
+    });
+    var bob = new Person({
+        email: 'im@stoop.id',
+        password: 'bestpasswordever',
+        fullName: 'Bob Burton',
+        gender: 'male'
+    });
+    var carol = new Person({
+        email: 'son@ainbfl.at',
+        password: 'you\'ll never guess',
+        fullName: 'Carol',
+        gender: 'other',
+        address: 'Cäcilienstr. 5, 3006 Bern'
+    });
+    var dave = new Person({
+        fullName: 'Dave Donaldsson'
+    });
+
+    var buyActivity = new Activity({
+        name: 'Buy something vegan for ...',
+        className: 'Shopping',
+        givesVegBytes: false
+    });
+
+
+    var aliceBuysSomethingForBob = new ActivityLink({
+        activity: buyActivity.id,
+        sources: [alice.id],
+        targets: [bob.id],
+        location: 'Bern, Switzerland',
+        startedAt: '2014-01-10'
+    });
+
+
+    var aliceKnowsBob = new GraphNode({
+        owner: alice.id,
+        target: bob.id
+    });
+
+    // async fun :)
     Person.remove({}, function (err) {
         if (err) { done(err); }
         Activity.remove({}, function (err) {
