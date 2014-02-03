@@ -28,7 +28,7 @@ exports.createSessionFor = createSessionFor;
  * @returns {*}
  */
 var authenticate = function(email, pass, next) {
-    console.log('authenticating %s:%s', email, pass);
+    console.log('authenticating %s', email);
 
     Person.findOne({email: email}, function(err, user) {
         if (err) { return next(err); }
