@@ -104,6 +104,7 @@ if (require.main === module) {
                 process.exit();
             }
 
+            console.log('Running in ' + app.settings.env + ' environment');
             console.log('Express server listening on port ' + app.get('port'));
         });
     });
