@@ -5,6 +5,7 @@
 'use strict';
 
 var mongoose = require('mongoose');
+var async = require('async');
 
 require('../app/models/Person');
 require('../app/models/Activity');
@@ -66,46 +67,33 @@ var setupFixtures = function (done) {
         target: bob.id
     });
 
-    // async fun :)
-    Person.remove({}, function (err) {
-        if (err) { done(err); }
-        Activity.remove({}, function (err) {
-            if (err) { done(err); }
-            ActivityLink.remove({}, function (err) {
-                if (err) { done(err); }
-                ActivityLink.remove({}, function (err) {
-                    if (err) { done(err); }
-                    GraphNode.remove({}, function (err) {
-                        if (err) { done(err); }
-                        alice.save(function (err) {
-                            if (err) { done(err); }
-                            bob.save(function (err) {
-                                if (err) { done(err); }
-                                carol.save(function (err) {
-                                    if (err) { done(err); }
-                                    dave.save(function (err) {
-                                        if (err) { done(err); }
-                                        buyActivity.save(function (err) {
-                                            if (err) { done(err); }
-                                            cookActivity.save(function (err) {
-                                                if (err) { done(err); }
-                                                aliceBuysSomethingForBob.save(function (err) {
-                                                    if (err) { done(err); }
-                                                    aliceKnowsBob.save(function(err) {
-                                                        if (err) { done(err); }
-                                                        done();
-                                                    });
-                                                });
-                                            });
-                                        });
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
+    var proxy = function(fn, context) {
+        return function() {
+            return fn.apply(context, [].slice.call(arguments));
+        };
+    };
+
+    var remove = Activity.remove;
+    var save = alice.save;
+
+    async.series([
+        proxy(remove, Activity),
+        proxy(remove, ActivityLink),
+        proxy(remove, GraphNode),
+        proxy(remove, Person),
+        proxy(save, alice),
+        proxy(save, bob),
+        proxy(save, carol),
+        proxy(save, dave),
+        proxy(save, buyActivity),
+        proxy(save, cookActivity),
+        proxy(save, aliceBuysSomethingForBob),
+        proxy(save, aliceKnowsBob)
+    ], function(err) {
+        if (err) {
+            done(err);
+        }
+        done();
     });
 };
 exports.setupFixtures = setupFixtures;
