@@ -13,6 +13,10 @@ h.describe('Graph API methods', function() {
                 // Make sure we get nodes and links
                 expect(typeof res.body.nodes).toEqual('object');
                 expect(typeof res.body.links).toEqual('object');
+
+                // Check that there's the right amount of nodes and links
+                expect(Object.keys(res.body.nodes).length).toBe(2);
+                expect(res.body.links.length).toBe(1);
                 done();
             });
         });
