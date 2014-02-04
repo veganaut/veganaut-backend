@@ -20,16 +20,16 @@ exports.view = function(req, res) {
                 var result = {};
                 result.fullName = n.target.fullName;
                 result.id = n.target.id;
-                if (n.target.hasOwnProperty('coordX')) {
+                if (typeof n.target.coordX !== 'undefined') {
                     result.coordX = n.target.coordX;
                 }
-                if (n.target.hasOwnProperty('coordY')) {
+                if (typeof n.target.coordY  !== 'undefined') {
                     result.coordY = n.target.coordY;
                 }
 
                 // Compute the type of node
                 result.type = 'maybe';
-                if (n.target.hasOwnProperty('password')) {
+                if (typeof n.target.password !== 'undefined') {
                     result.type = 'user';
                 }
 
