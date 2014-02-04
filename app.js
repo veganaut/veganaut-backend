@@ -4,7 +4,6 @@
 'use strict';
 var express = require('express');
 var mongoose = require('mongoose');
-var routes = require('./routes');
 var cors = require('cors');
 
 var http = require('http');
@@ -53,7 +52,9 @@ var ActivityLink = require('./app/controllers/ActivityLink');
  */
 // Home
 app.options('/', cors());
-app.get('/', routes.index);
+app.get('/', function(req, res) {
+    res.send({ status: 'OK' });
+});
 
 // Graph
 app.options('/graph/me', cors());
