@@ -2,7 +2,6 @@
 
 var _ = require('lodash');
 var mongoose = require('mongoose');
-var Person = mongoose.model('Person');
 var GraphNode = mongoose.model('GraphNode');
 var ActivityLink = mongoose.model('ActivityLink');
 
@@ -91,8 +90,10 @@ exports.view = function(req, res) {
                         nodes: nodes,
                         links: countsAsList
                     });
-                });
-        });
+                })
+            ;
+        })
+    ;
 };
 
 exports.update = function(req, res){

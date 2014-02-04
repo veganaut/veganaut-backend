@@ -3,7 +3,7 @@
 
 var h = require('../helpers');
 
-h.describe('Our API', function() {
+h.describe('ActivityLink API methods', function() {
 
     it('can set a referral', function() {
         h.runAsync(function(done) {

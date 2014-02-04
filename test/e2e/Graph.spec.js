@@ -1,9 +1,9 @@
 'use strict';
-/* global describe, it, beforeAll, afterAll, runs, waitsFor, expect */
+/* global it, expect */
 
 var h = require('../helpers');
 
-h.describe('Our API', function() {
+h.describe('Graph API methods', function() {
 
     it('can get me', function() {
         h.runAsync(function(done) {

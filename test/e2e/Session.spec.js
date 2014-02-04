@@ -3,7 +3,7 @@
 
 var h = require('../helpers');
 
-h.describe('Our API', function() {
+h.describe('Session API methods', function() {
 
     it('cannot access restricted areas when not logged in', function() {
         h.runAsync(function(done) {

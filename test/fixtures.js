@@ -3,7 +3,6 @@
  */
 
 'use strict';
-/* global describe, it, expect */
 
 var mongoose = require('mongoose');
 
@@ -46,6 +45,12 @@ var setupFixtures = function (done) {
         givesVegBytes: false
     });
 
+    var cookActivity = new Activity({
+        name: 'Cook something vegan for ...',
+        className: 'Cooking',
+        givesVegBytes: true
+    });
+
 
     var aliceBuysSomethingForBob = new ActivityLink({
         activity: buyActivity.id,
@@ -82,11 +87,14 @@ var setupFixtures = function (done) {
                                         if (err) { done(err); }
                                         buyActivity.save(function (err) {
                                             if (err) { done(err); }
-                                            aliceBuysSomethingForBob.save(function (err) {
+                                            cookActivity.save(function (err) {
                                                 if (err) { done(err); }
-                                                aliceKnowsBob.save(function(err) {
+                                                aliceBuysSomethingForBob.save(function (err) {
                                                     if (err) { done(err); }
-                                                    done();
+                                                    aliceKnowsBob.save(function(err) {
+                                                        if (err) { done(err); }
+                                                        done();
+                                                    });
                                                 });
                                             });
                                         });
