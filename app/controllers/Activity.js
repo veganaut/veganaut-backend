@@ -15,7 +15,7 @@ exports.list = function(req, res) {
             // Set all the properties we want to return
             activities = _.map(activities, function(a) {
                 var result = {};
-                result.id = a._id;
+                result.id = a.id;
                 result.name = a.name;
                 result.className = a.className;
                 result.timeLimit = a.timeLimit;
