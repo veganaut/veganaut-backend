@@ -22,7 +22,7 @@ var ActivityLinkSchema = new Schema({
     sources: [ { type: Schema.Types.ObjectId, ref: 'Person' } ],
     targets: [ { type: Schema.Types.ObjectId, ref: 'Person' } ],
     location: String,
-    startedAt: Date,
+    startDate: Date,
     success: Boolean,
     referenceCode: { type: String, default: generateReferenceCode }
 });
