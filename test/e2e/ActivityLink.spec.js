@@ -18,12 +18,23 @@ h.describe('ActivityLink API methods', function() {
 
     it('can create a new activity task', function() {
         h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'activityLink/').end(function(res) {
-                //TODO update request
-                expect(res.statusCode).toBe(200);
-                expect(res.body.status).toEqual('OK');
-                done();
-            });
+            h.request('POST', h.baseURL + 'activityLink/')
+                .send({
+                    targets: [{
+                        fullName: 'Tester'
+                    }],
+                    location: 'Bern',
+                    startDate: '01.02.2014',
+                    activity: {
+                        id: '52f7f8c01f56ed931aa694bd'
+                    }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    // TODO: write checks for the returned activtyLink
+                    done();
+                }
+            );
         });
     });
 });
