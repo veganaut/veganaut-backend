@@ -163,21 +163,21 @@ var setupFixtures = function (done) {
         sources: [alice.id],
         targets: [bob.id],
         location: 'Bern, Switzerland',
-        startedAt: '2014-01-10'
+        startDate: '2014-01-10'
     });
     var aliceBuysSomethingForCarol = new ActivityLink({
         activity: buyActivity.id,
         sources: [alice.id],
         targets: [carol.id],
         location: 'Bern, Switzerland',
-        startedAt: '2014-01-17'
+        startDate: '2014-01-17'
     });
     var aliceCooksSomethingForCarol = new ActivityLink({
         activity: cookActivity.id,
         sources: [alice.id],
         targets: [carol.id],
         location: 'Bern, Switzerland',
-        startedAt: '2014-01-17'
+        startDate: '2014-01-17'
     });
     var aliceCooksSomethingForDave = new ActivityLink({
         activity: cookActivity.id,
@@ -190,21 +190,21 @@ var setupFixtures = function (done) {
         sources: [alice.id],
         targets: [elisa.id],
         location: 'Zürich, Switzerland',
-        startedAt: '2014-08-17'
+        startDate: '2014-08-17'
     });
     var aliceBuysSomethingForFred = new ActivityLink({
         activity: buyActivity.id,
         sources: [alice.id],
         targets: [fred.id],
         location: 'Bern, Switzerland',
-        startedAt: '2014-05-09'
+        startDate: '2014-05-09'
     });
     var aliceBuysSomethingForGerda = new ActivityLink({
         activity: buyActivity.id,
         sources: [alice.id],
         targets: [gerda.id],
         location: 'Bern, Switzerland',
-        startedAt: '2014-01-24'
+        startDate: '2014-01-24'
     });
 	
 	
@@ -213,84 +213,84 @@ var setupFixtures = function (done) {
         sources: [bob.id],
         targets: [fred.id],
         location: 'Bern, Switzerland',
-        startedAt: '2014-02-03'
+        startDate: '2014-02-03'
     });
     var bobBuysSomethingForLarry = new ActivityLink({
         activity: buyActivity.id,
         sources: [bob.id],
         targets: [larry.id],
         location: 'Basel, Switzerland',
-        startedAt: '2014-02-05'
+        startDate: '2014-02-05'
     });
     var bobBuysSomethingForGerda = new ActivityLink({
         activity: buyActivity.id,
         sources: [bob.id],
         targets: [gerda.id],
         location: 'Thun, Switzerland',
-        startedAt: '2014-02-09'
+        startDate: '2014-02-09'
     });
     var bobBuysSomethingForAlice = new ActivityLink({
         activity: buyActivity.id,
         sources: [bob.id],
         targets: [alice.id],
         location: 'Bern, Switzerland',
-        startedAt: '2014-02-02'
+        startDate: '2014-02-02'
     });
     var carolCooksSomethingForAliceAgain = new ActivityLink({
         activity: cookActivity.id,
         sources: [carol.id],
         targets: [alice.id],
         location: 'Biel, Switzerland',
-        startedAt: '2014-07-03'
+        startDate: '2014-07-03'
     });
     var carolCooksSomethingForAlice = new ActivityLink({
         activity: cookActivity.id,
         sources: [carol.id],
         targets: [alice.id],
         location: 'Biel, Switzerland',
-        startedAt: '2014-04-06'
+        startDate: '2014-04-06'
     });
     var carolCooksSomethingForKatherine = new ActivityLink({
         activity: cookActivity.id,
         sources: [carol.id],
         targets: [katherine.id],
         location: 'Biel, Switzerland',
-        startedAt: '2014-02-09'
+        startDate: '2014-02-09'
     });
     var carolBuysSomethingForFred = new ActivityLink({
         activity: buyActivity.id,
         sources: [carol.id],
         targets: [fred.id],
         location: 'Täufelen, Switzerland',
-        startedAt: '2014-03-01'
+        startDate: '2014-03-01'
     });
     var elisaBuysSomethingForJohn = new ActivityLink({
         activity: buyActivity.id,
         sources: [elisa.id],
         targets: [john.id],
         location: 'Geneve, Switzerland',
-        startedAt: '2014-03-01'
+        startDate: '2014-03-01'
     });
     var elisaBuysSomethingForBob = new ActivityLink({
         activity: buyActivity.id,
         sources: [elisa.id],
         targets: [bob.id],
         location: 'Lausanne, Switzerland',
-        startedAt: '2014-02-01'
+        startDate: '2014-02-01'
     });
     var elisaCooksSomethingForGerda = new ActivityLink({
         activity: cookActivity.id,
         sources: [elisa.id],
         targets: [gerda.id],
         location: 'Payerne, Switzerland',
-        startedAt: '2014-02-16'
+        startDate: '2014-02-16'
     });
     var larryBuysSomethingForHenry = new ActivityLink({
         activity: buyActivity.id,
         sources: [larry.id],
         targets: [henry.id],
         location: 'London, England',
-        startedAt: '2014-08-08'
+        startDate: '2014-08-08'
     });
 	
 

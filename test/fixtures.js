@@ -58,7 +58,7 @@ var setupFixtures = function (done) {
         sources: [alice.id],
         targets: [bob.id],
         location: 'Bern, Switzerland',
-        startedAt: '2014-01-10'
+        startDate: '2014-01-10'
     });
 
 
@@ -67,6 +67,7 @@ var setupFixtures = function (done) {
         target: bob.id
     });
 
+    // TODO: use alice.save.bind(alice) instead of this proxy
     var proxy = function(fn, context) {
         return function() {
             return fn.apply(context, [].slice.call(arguments));
