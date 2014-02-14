@@ -20,15 +20,20 @@ exports.link = function(req, res) {
     var activityLink;
 
     var findActivity = function(cb) {
-        Activity.findOne({_id: req.body.activity.id}, function(err, a) {
-            // TODO: for some reason, the _id keeps changing when running jasmine tests, so this never works
-            if (!err && !a) {
-                // TODO: what type is err usually?
-                err = 'Could not find activity with id: ' + req.body.activity.id;
-            }
-            activity = a;
-            cb(err);
-        });
+        if (req.body.activity) {
+            Activity.findOne({_id: req.body.activity.id}, function(err, a) {
+                // TODO: for some reason, the _id keeps changing when running jasmine tests, so this never works
+                if (!err && !a) {
+                    // TODO: what type is err usually?
+                    err = 'Could not find activity with id: ' + req.body.activity.id;
+                }
+                activity = a;
+                cb(err);
+            });
+        }
+        else {
+            cb();
+        }
     };
 
     var createPersonIfNeeded = function(cb) {
@@ -68,7 +73,7 @@ exports.link = function(req, res) {
 
     var createLink = function(cb) {
         var link = new ActivityLink({
-            activity: activity.id,
+            activity: activity ? activity.id : undefined,
             sources: [user.id],
             targets: [targetPerson.id],
             location: req.body.location,
