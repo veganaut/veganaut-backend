@@ -1,5 +1,7 @@
 /**
- * This script prepares a database with test fixtures.
+ * This script prepares a database with some dummy data.
+ * TODO: the created entities are not up to date and
+ * this file should not be used
  */
 
 'use strict';
