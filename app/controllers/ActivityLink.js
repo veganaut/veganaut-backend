@@ -135,6 +135,7 @@ exports.link = function(req, res) {
     };
 
     // TODO: better error and input checking along the way
+    // TODO: should roll back changes if any later step fails (e.g. startDate is not valid -> person and node is created, but link not)
     async.series([
         findActivity,
         createPersonIfNeeded,
