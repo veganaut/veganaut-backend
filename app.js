@@ -74,9 +74,9 @@ app.options('/activity', cors());
 app.get('/activity', cors(), Session.restrict, Activity.list);
 
 // ActivityLink
-app.options('/activityLink/referer', cors());
+app.options('/activityLink/reference', cors());
 app.options('/activityLink', cors());
-app.post('/activityLink/referer', cors(), ActivityLink.update);
+app.post('/activityLink/reference', cors(), ActivityLink.referenceCode);
 app.post('/activityLink', cors(), Session.restrict, ActivityLink.link);
 
 // Person

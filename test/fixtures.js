@@ -59,13 +59,27 @@ var setupFixtures = function (done) {
         targets: [bob.id],
         location: 'Bern, Switzerland',
         startDate: '2014-01-10',
-        success: true
+        success: true,
+        referenceCode: 'Ff8tEQ'
+    });
+
+    var aliceWantsToBuySomethingForDave = new ActivityLink({
+        activity: buyActivity.id,
+        sources: [alice.id],
+        targets: [dave.id],
+        success: false,
+        referenceCode: 'OiWCrB'
     });
 
 
     var aliceKnowsBob = new GraphNode({
         owner: alice.id,
         target: bob.id
+    });
+
+    var aliceKnowsDave = new GraphNode({
+        owner: alice.id,
+        target: dave.id
     });
 
     // TODO: use alice.save.bind(alice) instead of this proxy
@@ -90,7 +104,9 @@ var setupFixtures = function (done) {
         proxy(save, buyActivity),
         proxy(save, cookActivity),
         proxy(save, aliceBuysSomethingForBob),
-        proxy(save, aliceKnowsBob)
+        proxy(save, aliceWantsToBuySomethingForDave),
+        proxy(save, aliceKnowsBob),
+        proxy(save, aliceKnowsDave)
     ], function(err) {
         if (err) {
             done(err);

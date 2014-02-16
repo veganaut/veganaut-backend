@@ -4,19 +4,39 @@
 var h = require('../helpers');
 
 h.describe('ActivityLink API methods', function() {
-
-    it('can set a referral', function() {
+    it('can use a reference code', function() {
         h.runAsync(function(done) {
-            //TODO update request
-            h.request('POST', h.baseURL + 'activityLink/referer').end(function(res) {
-                expect(res.statusCode).toBe(200);
-                expect(res.body.status).toEqual('OK');
-                done();
-            });
+            h.request('POST', h.baseURL + 'activityLink/reference')
+                .send({
+                    referenceCode: 'OiWCrB'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    expect(res.body.referenceCode).toEqual('OiWCrB');
+                    expect(res.body.targets.length).toEqual(1);
+                    done();
+                })
+            ;
         });
     });
 
-    it('can create a new activity task', function() {
+    it('cannot use already used reference code', function() {
+        h.runAsync(function(done) {
+            //TODO update request
+            h.request('POST', h.baseURL + 'activityLink/reference')
+                .send({
+                    referenceCode: 'Ff8tEQ'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(500);
+                    expect(typeof res.body.error).toBe('string');
+                    done();
+                })
+            ;
+        });
+    });
+
+    xit('can create a new activity link', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'activityLink/')
                 .send({
