@@ -97,7 +97,8 @@ exports.create = function (req, res) {
                 });
             }
             else {
-                return res.send(403, { status: '403 Unauthorized' });
+                // TODO: should probably not always send the error message to the user
+                return res.send(403, { error: err.message });
             }
         });
     }
