@@ -2,18 +2,20 @@
 
 var _ = require('lodash');
 var mongoose = require('mongoose');
+var Person = mongoose.model('Person');
 var GraphNode = mongoose.model('GraphNode');
 var ActivityLink = mongoose.model('ActivityLink');
 
-exports.view = function(req, res) {
-    var me = req.user;
 
-    // Get the entire social graph for me
+var getGraph = function(person, cb) {
     GraphNode
-        .find({owner: me.id})
+        .find({owner: person.id})
         .populate('target', 'fullName password')
         .exec(function(err, nodes) {
-            if (err) { return res.send(500, {error: err}); }
+            if (err) {
+                cb(err);
+                return;
+            }
 
             // Massage nodes to be in the right format
             nodes = _.map(nodes, function(n) {
@@ -38,8 +40,8 @@ exports.view = function(req, res) {
 
             // add a 'me' node
             nodes.push({
-                fullName: me.fullName,
-                id: me.id,
+                fullName: person.fullName,
+                id: person.id,
                 type: 'me',
                 coordX: 0.5,
                 coordY: 0.5
@@ -54,9 +56,8 @@ exports.view = function(req, res) {
             //        the social graph.
             ActivityLink
                 .find()
-                .or([{sources: me.id}, {targets: me.id}])
+                .or([{sources: person.id}, {targets: person.id}])
                 .exec(function(err, links) {
-
                     // We need to map these activity links, and transform them into a 2d
                     // structure that maps source/target pairs to counts.
                     var counts = {};
@@ -78,15 +79,16 @@ exports.view = function(req, res) {
 
                     // Finally, we promote some 'maybe's to 'baby' state if they have activities
                     _.each(countsAsList, function(c) {
-                        if (nodes[c.source].type === 'maybe') {
+                        if (nodes[c.source] && nodes[c.source].type === 'maybe') {
                             nodes[c.source].type = 'baby';
                         }
-                        if (nodes[c.target].type === 'maybe') {
+                        if (nodes[c.target] && nodes[c.target].type === 'maybe') {
                             nodes[c.target].type = 'baby';
                         }
                     });
 
-                    res.send({
+
+                    cb(null, {
                         nodes: nodes,
                         links: countsAsList
                     });
@@ -96,6 +98,44 @@ exports.view = function(req, res) {
     ;
 };
 
-exports.update = function(req, res){
+exports.view = function(req, res, next) {
+    // Get the entire social graph for me
+    getGraph(req.user, function(err, graph) {
+        if (err) {
+            return next(err);
+        }
+        res.send(graph);
+    });
+};
+
+exports.viewById = function(req, res, next) {
+    var personId = req.params.personId;
+    Person.findOne({_id: personId}, function(err, person) {
+        if (err) {
+            return next(err);
+        }
+
+        if (!person) {
+            res.status(404);
+            return next(new Error('Cannot find person with id ' + personId + '.'));
+        }
+
+        // Only allowed to query graphs by personId if that person is not a full user
+        if (typeof person.password !== 'undefined') {
+            res.status(403);
+            return next(new Error('Access denied'));
+        }
+
+        // Get the graph
+        getGraph(person, function(err, graph) {
+            if (err) {
+                return next(err);
+            }
+            res.send(graph);
+        });
+    });
+};
+
+exports.update = function(req, res) {
     res.send({ status: 'OK' });
 };

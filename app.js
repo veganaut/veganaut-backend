@@ -56,10 +56,13 @@ app.get('/', function(req, res) {
     res.send({ status: 'OK' });
 });
 
+
 // Graph
 app.options('/graph/me', cors());
+app.options('/graph/:personId', cors());
 app.options('/graph', cors());
 app.get('/graph/me', cors(), Session.restrict, Graph.view);
+app.get('/graph/:personId', cors(), Graph.viewById);
 app.put('/graph', cors(), Session.restrict, Graph.update);
 
 
@@ -86,7 +89,7 @@ app.get('/person', cors(), Session.restrict, Person.index);
 // assume 404 since no middleware responded
 app.use(function(req, res, next) {
     // TODO
-    res.send({ status: '404' });
+    res.send(404, { error: 'method not found' });
     next();
 });
 

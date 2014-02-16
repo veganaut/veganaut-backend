@@ -4,7 +4,6 @@
 var h = require('../helpers');
 
 h.describe('Graph API methods', function() {
-
     it('can get me', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'graph/me').end(function(res) {
@@ -15,6 +14,29 @@ h.describe('Graph API methods', function() {
                 expect(typeof res.body.links).toEqual('object');
 
                 // Check that there's the right amount of nodes and links
+                expect(Object.keys(res.body.nodes).length).toBe(4);
+                expect(res.body.links.length).toBe(3);
+                done();
+            });
+        });
+    });
+
+    it('cannot get graph of a full user if not logged in as that user', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'graph/000000000000000000000001').end(function(res) {
+                expect(res.statusCode).toBe(403);
+                done();
+            });
+        }) ;
+    });
+
+    it('can get graph of a maybe user', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'graph/000000000000000000000003').end(function(res) {
+                expect(res.statusCode).toBe(200);
+
+                expect(typeof res.body.nodes).toEqual('object');
+                expect(typeof res.body.links).toEqual('object');
                 expect(Object.keys(res.body.nodes).length).toBe(2);
                 expect(res.body.links.length).toBe(1);
                 done();
@@ -32,5 +54,4 @@ h.describe('Graph API methods', function() {
             });
         });
     });
-
 });
