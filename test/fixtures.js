@@ -19,34 +19,36 @@ var GraphNode = mongoose.model('GraphNode');
 
 var setupFixtures = function (done) {
     var alice = new Person({
+        _id: '000000000000000000000001',
         email: 'foo@bar.baz',
         password: 'foobar',
         fullName: 'Alice Alison'
     });
     var bob = new Person({
+        _id: '000000000000000000000002',
         email: 'im@stoop.id',
         password: 'bestpasswordever',
         fullName: 'Bob Burton',
         gender: 'male'
     });
     var carol = new Person({
-        email: 'son@ainbfl.at',
-        password: 'you\'ll never guess',
-        fullName: 'Carol',
-        gender: 'other',
-        address: 'Cäcilienstr. 5, 3006 Bern'
+        _id: '000000000000000000000003',
+        fullName: 'Carol'
     });
     var dave = new Person({
+        _id: '000000000000000000000004',
         fullName: 'Dave Donaldsson'
     });
 
     var buyActivity = new Activity({
+        _id: 'a00000000000000000000001',
         name: 'Buy something vegan for ...',
         className: 'Shopping',
         givesVegBytes: false
     });
 
     var cookActivity = new Activity({
+        _id: 'a00000000000000000000002',
         name: 'Cook something vegan for ...',
         className: 'Cooking',
         givesVegBytes: true
@@ -63,6 +65,16 @@ var setupFixtures = function (done) {
         referenceCode: 'Ff8tEQ'
     });
 
+    var aliceCooksSomethingForCarol = new ActivityLink({
+        activity: cookActivity.id,
+        sources: [alice.id],
+        targets: [carol.id],
+        location: 'Bern',
+        startDate: '2014-02-20',
+        success: true,
+        referenceCode: '30Ajak'
+    });
+
     var aliceWantsToBuySomethingForDave = new ActivityLink({
         activity: buyActivity.id,
         sources: [alice.id],
@@ -77,9 +89,19 @@ var setupFixtures = function (done) {
         target: bob.id
     });
 
+    var aliceKnowsCarol = new GraphNode({
+        owner: alice.id,
+        target: carol.id
+    });
+
     var aliceKnowsDave = new GraphNode({
         owner: alice.id,
         target: dave.id
+    });
+
+    var carolKnowsAlice = new GraphNode({
+        owner: carol.id,
+        target: alice.id
     });
 
     // TODO: use alice.save.bind(alice) instead of this proxy
@@ -104,11 +126,15 @@ var setupFixtures = function (done) {
         proxy(save, buyActivity),
         proxy(save, cookActivity),
         proxy(save, aliceBuysSomethingForBob),
+        proxy(save, aliceCooksSomethingForCarol),
         proxy(save, aliceWantsToBuySomethingForDave),
         proxy(save, aliceKnowsBob),
-        proxy(save, aliceKnowsDave)
+        proxy(save, aliceKnowsCarol),
+        proxy(save, aliceKnowsDave),
+        proxy(save, carolKnowsAlice)
     ], function(err) {
         if (err) {
+            console.log('Error while loading fixtures: ', err);
             done(err);
         }
         done();
