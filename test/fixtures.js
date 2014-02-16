@@ -58,7 +58,8 @@ var setupFixtures = function (done) {
         sources: [alice.id],
         targets: [bob.id],
         location: 'Bern, Switzerland',
-        startDate: '2014-01-10'
+        startDate: '2014-01-10',
+        success: true
     });
 
 
