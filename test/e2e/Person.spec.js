@@ -51,6 +51,22 @@ h.describe('Person API methods', function() {
         });
     });
 
+    it('cannot register with an already used e-mail address', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'person')
+                .send({
+                    email: 'foo@bar.baz',
+                    fullName: 'Dudette That',
+                    password: 'already has an account but forgot 2 months ago'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(400);
+                    done();
+                })
+            ;
+        });
+    });
+
     it('cannot re-register already register person', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'person')
