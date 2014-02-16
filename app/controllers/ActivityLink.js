@@ -15,7 +15,7 @@ exports.referenceCode = function(req, res) {
         var referenceCode = req.body.referenceCode;
         ActivityLink.findOne({referenceCode: referenceCode}, function(err, link) {
             if (!err && !link) {
-                // TODO: what type is err usually?
+                // TODO: what type is err usually? -> use new Error('...')
                 // TODO: error code, this is not a 500, but a 400
                 err = 'Could not find activityLink with referenceCode: ' + referenceCode;
             }
@@ -142,6 +142,7 @@ exports.link = function(req, res) {
         createLink
     ], function(err) {
         if (err) {
+            // TODO: don't render error here, middleware should do that
             res.send(500, {error: err});
         }
         else {
