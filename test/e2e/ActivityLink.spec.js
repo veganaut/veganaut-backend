@@ -36,7 +36,7 @@ h.describe('ActivityLink API methods', function() {
         });
     });
 
-    xit('can create a new activity link', function() {
+    it('can create a new activity link', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'activityLink/')
                 .send({
