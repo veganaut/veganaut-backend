@@ -84,7 +84,7 @@ app.post('/activityLink', cors(), Session.restrict, ActivityLink.link);
 
 // Person
 app.options('/person', cors());
-app.get('/person', cors(), Session.restrict, Person.index);
+app.post('/person', cors(), Person.register);
 
 // assume 404 since no middleware responded
 app.use(function(req, res, next) {
