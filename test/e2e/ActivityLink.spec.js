@@ -57,4 +57,24 @@ h.describe('ActivityLink API methods', function() {
             );
         });
     });
+
+    it('can query the open activity links', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'activityLink/mine/open')
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    expect(typeof res.body).toBe('object');
+                    expect(res.body.length).toBe(1);
+
+                    var openLink = res.body[0];
+                    expect(openLink.targets.length).toBe(1);
+                    expect(openLink.targets[0]).toBe('Dave Donaldsson');
+                    expect(typeof openLink.activity).toBe('string');
+                    expect(openLink.referenceCode).toBe('OiWCrB');
+                    done();
+                }
+            );
+        });
+    });
 });
