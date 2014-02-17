@@ -151,3 +151,30 @@ exports.link = function(req, res) {
         }
     });
 };
+
+exports.openList = function(req, res, next) {
+    var me = req.user;
+
+    // Query all the activityLinks from the logged in user that
+    // aren't successful yet
+    ActivityLink.find({sources: me.id, success: false})
+        .populate('targets', 'fullName')
+        .populate('activity', 'name')
+        .exec(function(err, links) {
+            if (err) {
+                return next(err);
+            }
+
+            // Massage to the desired format
+            links = _.map(links, function(link) {
+                return {
+                    activity: link.activity.name,
+                    targets: _.pluck(link.targets, 'fullName'),
+                    referenceCode: link.referenceCode
+                };
+            });
+
+            return res.send(links);
+        })
+    ;
+};

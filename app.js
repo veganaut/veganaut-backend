@@ -79,8 +79,10 @@ app.get('/activity', cors(), Session.restrict, Activity.list);
 // ActivityLink
 app.options('/activityLink/reference', cors());
 app.options('/activityLink', cors());
+app.options('/activityLink/mine/open', cors());
 app.post('/activityLink/reference', cors(), ActivityLink.referenceCode);
 app.post('/activityLink', cors(), Session.restrict, ActivityLink.link);
+app.get('/activityLink/mine/open', cors(), Session.restrict, ActivityLink.openList);
 
 // Person
 app.options('/person', cors());
