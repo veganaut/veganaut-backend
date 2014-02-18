@@ -6,7 +6,7 @@ var Person = mongoose.model('Person');
 var GraphNode = mongoose.model('GraphNode');
 var ActivityLink = mongoose.model('ActivityLink');
 
-
+// TODO: this needs unit testing
 var getGraph = function(person, cb) {
     GraphNode
         .find({owner: person.id})
@@ -65,25 +65,38 @@ var getGraph = function(person, cb) {
                         _.each(l.sources, function(s) {
                             _.each(l.targets, function(t) {
                                 counts[s] = counts[s] || {};
-                                counts[s][t] = (counts[s][t] || 0) + 1;
+                                if (typeof counts[s][t] === 'undefined') {
+                                    counts[s][t] = {
+                                        open: 0,
+                                        completed: 0
+                                    };
+                                }
+                                counts[s][t][l.success ? 'completed' : 'open'] += 1;
                             });
                         });
                     });
 
                     var countsAsList = _.map(counts, function(cc, s) {
                         return _.map(cc, function(c, t) {
-                            return {source: s, target: t, numActivities: c};
+                            return {
+                                source: s,
+                                target: t,
+                                openActivities: c.open,
+                                completedActivities: c.completed
+                            };
                         });
                     });
                     countsAsList = _.flatten(countsAsList);
 
                     // Finally, we promote some 'maybe's to 'baby' state if they have activities
                     _.each(countsAsList, function(c) {
-                        if (nodes[c.source] && nodes[c.source].type === 'maybe') {
-                            nodes[c.source].type = 'baby';
-                        }
-                        if (nodes[c.target] && nodes[c.target].type === 'maybe') {
-                            nodes[c.target].type = 'baby';
+                        if (c.completedActivities > 0) {
+                            if (nodes[c.source] && nodes[c.source].type === 'maybe') {
+                                nodes[c.source].type = 'baby';
+                            }
+                            if (nodes[c.target] && nodes[c.target].type === 'maybe') {
+                                nodes[c.target].type = 'baby';
+                            }
                         }
                     });
 
