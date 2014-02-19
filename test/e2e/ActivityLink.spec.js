@@ -22,13 +22,12 @@ h.describe('ActivityLink API methods', function() {
 
     it('cannot use already used reference code', function() {
         h.runAsync(function(done) {
-            //TODO update request
             h.request('POST', h.baseURL + 'activityLink/reference')
                 .send({
                     referenceCode: 'Ff8tEQ'
                 })
                 .end(function(res) {
-                    expect(res.statusCode).toBe(500);
+                    expect(res.statusCode).toBe(409);
                     expect(typeof res.body.error).toBe('string');
                     done();
                 })
@@ -36,7 +35,7 @@ h.describe('ActivityLink API methods', function() {
         });
     });
 
-    it('can create a new activity link', function() {
+    it('can create a activity link with dummy', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'activityLink')
                 .send({
@@ -51,7 +50,49 @@ h.describe('ActivityLink API methods', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    // TODO: write checks for the returned activityLink
+
+                    // Make sure we get a referenceCode back and only that
+                    expect(typeof res.body.referenceCode).toEqual('string');
+                    expect(Object.keys(res.body)).toEqual(['referenceCode']);
+                    done();
+                }
+            );
+        });
+    });
+
+    it('can create a activity link with existing related person', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink')
+                .send({
+                    targets: [{
+                        id: '000000000000000000000002'
+                    }],
+                    activity: {
+                        id: 'a00000000000000000000001'
+                    }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    done();
+                }
+            );
+        });
+    });
+
+    it('cannot create activity link with person that one doesn\'t already have a link with', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink')
+                .send({
+                    targets: [{
+                        id: '000000000000000000000005'
+                    }],
+                    activity: {
+                        id: 'a00000000000000000000001'
+                    }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(403);
+                    expect(typeof res.body.error).toBe('string');
                     done();
                 }
             );

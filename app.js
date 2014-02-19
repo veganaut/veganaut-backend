@@ -88,10 +88,23 @@ app.get('/activityLink/mine/open', cors(), Session.restrict, ActivityLink.openLi
 app.options('/person', cors());
 app.post('/person', cors(), Person.register);
 
-// assume 404 since no middleware responded
-app.use(function(req, res, next) {
-    // TODO
-    res.send(404, { error: 'method not found' });
+// Handle errors and if no one responded to the request
+app.use(function(err, req, res, next) {
+    // Check if we got an error
+    if (err) {
+        // TODO: should have the status code on the Error object
+        if (res.statusCode < 400) {
+            // If no error status code has been set, use 500 by default
+            res.status(500);
+        }
+
+        // Send the error details
+        res.send({ error: err.message });
+    }
+    else {
+        // No error given, still ended up here, must be 404
+        res.send(404, { error: 'method not found' });
+    }
     next();
 });
 

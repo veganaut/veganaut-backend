@@ -7,6 +7,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+// TODO: make reference codes that can be remembered and typed easily (on phones)
 var generateReferenceCode = function() {
     var ALPHABET = '23456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ';
     var REFERENCE_CODE_LENGTH = 6;

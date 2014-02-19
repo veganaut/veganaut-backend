@@ -8,19 +8,19 @@ var ActivityLink = mongoose.model('ActivityLink');
 var Person = mongoose.model('Person');
 var GraphNode = mongoose.model('GraphNode');
 
-exports.referenceCode = function(req, res) {
+exports.referenceCode = function(req, res, next) {
     // TODO: handle submissions of already existing users
     var activityLink;
     var findActivityLink = function(cb) {
         var referenceCode = req.body.referenceCode;
         ActivityLink.findOne({referenceCode: referenceCode}, function(err, link) {
             if (!err && !link) {
-                // TODO: what type is err usually? -> use new Error('...')
-                // TODO: error code, this is not a 500, but a 400
-                err = 'Could not find activityLink with referenceCode: ' + referenceCode;
+                res.status(404);
+                err = new Error('Could not find activityLink with referenceCode: ' + referenceCode);
             }
             else if (link.success === true) {
-                err = 'This referenceCode has already been used: ' + referenceCode;
+                res.status(409);
+                err = new Error('This referenceCode has already been used: ' + referenceCode);
             }
             activityLink = link;
             cb(err);
@@ -51,15 +51,15 @@ exports.referenceCode = function(req, res) {
         createGraphForPerson
     ], function(err) {
         if (err) {
-            res.send(500, {error: err});
+            return next(err);
         }
         else {
-            res.send(_.pick(activityLink, 'referenceCode', 'targets'));
+            return res.send(_.pick(activityLink, 'referenceCode', 'targets'));
         }
     });
 };
 
-exports.link = function(req, res) {
+exports.link = function(req, res, next) {
     // TODO: document and find a better solution for this async call
     var user = req.user;
     var activity;
@@ -88,14 +88,31 @@ exports.link = function(req, res) {
         // Check if the person has an id
         var person = req.body.targets[0];
         if (typeof person.id !== 'undefined') {
-            // This person is already existing, return
+            // This person already exists TODO: verify it really exists
             targetPerson = person;
             targetWasCreated = false;
-            cb(null);
+
+            // Check if there are links to the user already
+            ActivityLink
+                .findOne('', '_id')
+                .or([
+                    { sources: [user.id], targets: [person.id] },
+                    { sources: [person.id], targets: [user.id] }
+                ])
+                .exec(function(err, link) {
+                    if (!err && !link) {
+                        // If there isn't an existing link between the user and the target
+                        // don't allow the creation of this new link
+                        res.status(403);
+                        err = new Error('Can not create activity link with a person that you have no link with yet.');
+                    }
+                    cb(err);
+                })
+            ;
         }
         else {
-            // TODO: sanitize data
-            var newPerson = new Person(person);
+            // Create a new person with the given data
+            var newPerson = new Person(_.pick(person, 'fullName'));
             newPerson.save(function(err) {
                 targetPerson = newPerson;
                 targetWasCreated = true;
@@ -143,11 +160,10 @@ exports.link = function(req, res) {
         createLink
     ], function(err) {
         if (err) {
-            // TODO: don't render error here, middleware should do that
-            res.send(500, {error: err});
+            return next(err);
         }
         else {
-            res.send(201, activityLink); // TODO: don't send whole object
+            return res.send(201, _.pick(activityLink, 'referenceCode'));
         }
     });
 };
