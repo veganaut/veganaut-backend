@@ -23,10 +23,11 @@ app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
+// TODO: what does this guy do exactly?
 // development only
-if ('development' === app.get('env')) {
-    app.use(express.errorHandler());
-}
+//if ('development' === app.get('env')) {
+//    app.use(express.errorHandler());
+//}
 
 // models
 require('./app/models/Activity.js');
