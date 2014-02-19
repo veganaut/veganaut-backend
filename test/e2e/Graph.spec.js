@@ -14,8 +14,10 @@ h.describe('Graph API methods', function() {
                 expect(typeof res.body.links).toEqual('object');
 
                 // Check that there's the right amount of nodes and links
-                expect(Object.keys(res.body.nodes).length).toBe(4);
-                expect(res.body.links.length).toBe(3);
+                expect(Object.keys(res.body.nodes).length).toBe(5);
+                expect(res.body.links.length).toBe(4);
+
+                // TODO: check that not too much information is exposed (no names or num activity infos for friends of friends)
                 done();
             });
         });
@@ -37,8 +39,8 @@ h.describe('Graph API methods', function() {
 
                 expect(typeof res.body.nodes).toEqual('object');
                 expect(typeof res.body.links).toEqual('object');
-                expect(Object.keys(res.body.nodes).length).toBe(2);
-                expect(res.body.links.length).toBe(1);
+                expect(Object.keys(res.body.nodes).length).toBe(4); // 1 me, 1 the other use, 2 friends of that friend
+                expect(res.body.links.length).toBe(3);
                 done();
             });
         });

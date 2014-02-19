@@ -7,6 +7,7 @@ var GraphNode = mongoose.model('GraphNode');
 var ActivityLink = mongoose.model('ActivityLink');
 
 // TODO: this needs unit testing
+// TODO: this function is ridiculously long
 var getGraph = function(person, cb) {
     GraphNode
         .find({owner: person.id})
@@ -25,7 +26,7 @@ var getGraph = function(person, cb) {
                 if (typeof n.target.coordX !== 'undefined') {
                     result.coordX = n.target.coordX;
                 }
-                if (typeof n.target.coordY  !== 'undefined') {
+                if (typeof n.target.coordY !== 'undefined') {
                     result.coordY = n.target.coordY;
                 }
 
@@ -38,7 +39,7 @@ var getGraph = function(person, cb) {
                 return result;
             });
 
-            // add a 'me' node
+            // Add a 'me' node
             nodes.push({
                 fullName: person.fullName,
                 id: person.id,
@@ -47,16 +48,21 @@ var getGraph = function(person, cb) {
                 coordY: 0.5
             });
 
+            // Get the list of all the people we want to fine the links for
+            var personIdList = _.pluck(nodes, 'id');
+
             // transform this into a map for easier random access
             nodes = _.indexBy(nodes, 'id');
 
             // Count the activities between the people in the social graph
-            // FIXME: currently, we only include activities where 'me' is the source or
-            //        target. In principle, we should have activities between all members of
-            //        the social graph.
+            // Get all the activities of the user and the friends
+            // (including activities to friends of friends)
             ActivityLink
                 .find()
-                .or([{sources: person.id}, {targets: person.id}])
+                .or([
+                    {sources: { $in: personIdList } },
+                    {targets: { $in: personIdList } }
+                ])
                 .exec(function(err, links) {
                     // We need to map these activity links, and transform them into a 2d
                     // structure that maps source/target pairs to counts.
@@ -76,34 +82,45 @@ var getGraph = function(person, cb) {
                         });
                     });
 
-                    var countsAsList = _.map(counts, function(cc, s) {
+                    // Convert to the format needed by the frontend
+                    var graphLinks = _.map(counts, function(cc, s) {
                         return _.map(cc, function(c, t) {
-                            return {
+                            var link = {
                                 source: s,
-                                target: t,
-                                openActivities: c.open,
-                                completedActivities: c.completed
+                                target: t
                             };
+
+                            // Add the number of activities if the given person is part of the link
+                            if (s === person.id || t === person.id) {
+                                link.openActivities = c.open;
+                                link.completedActivities = c.completed;
+                            }
+                            return link;
                         });
                     });
-                    countsAsList = _.flatten(countsAsList);
+                    graphLinks = _.flatten(graphLinks);
 
-                    // Finally, we promote some 'maybe's to 'baby' state if they have activities
-                    _.each(countsAsList, function(c) {
-                        if (c.completedActivities > 0) {
-                            if (nodes[c.source] && nodes[c.source].type === 'maybe') {
-                                nodes[c.source].type = 'baby';
+                    _.each(graphLinks, function(c) {
+                        _.each([c.source, c.target], function(personId) {
+                            // Go through the links and make sure we have nodes for all of them
+                            if (typeof nodes[personId] === 'undefined') {
+                                // No node, ad a friendOfFriend node
+                                nodes[personId] = {
+                                    id: personId,
+                                    type: 'friendOfFriend'
+                                };
                             }
-                            if (nodes[c.target] && nodes[c.target].type === 'maybe') {
-                                nodes[c.target].type = 'baby';
+
+                            // Promote some nodes from 'maybe' to 'baby' state if they have activities
+                            else if (c.completedActivities > 0 && nodes[personId].type === 'maybe') {
+                                nodes[personId].type = 'baby';
                             }
-                        }
+                        });
                     });
-
 
                     cb(null, {
                         nodes: nodes,
-                        links: countsAsList
+                        links: graphLinks
                     });
                 })
             ;
