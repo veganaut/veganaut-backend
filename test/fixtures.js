@@ -17,6 +17,7 @@ var ActivityLink = mongoose.model('ActivityLink');
 var GraphNode = mongoose.model('GraphNode');
 
 
+// TODO: expose these fixtures so that they can be directly access in the e2e tests
 var setupFixtures = function (done) {
     var alice = new Person({
         _id: '000000000000000000000001',
@@ -38,6 +39,10 @@ var setupFixtures = function (done) {
     var dave = new Person({
         _id: '000000000000000000000004',
         fullName: 'Dave Donaldsson'
+    });
+    var eve = new Person({
+        _id: '000000000000000000000005',
+        fullName: 'Eve'
     });
 
     var buyActivity = new Activity({
@@ -83,10 +88,23 @@ var setupFixtures = function (done) {
         referenceCode: 'OiWCrB'
     });
 
+    var bobWantsToBuySomethingForEve = new ActivityLink({
+        activity: buyActivity.id,
+        sources: [bob.id],
+        targets: [eve.id],
+        success: false,
+        referenceCode: 'AK92oj'
+    });
+
 
     var aliceKnowsBob = new GraphNode({
         owner: alice.id,
         target: bob.id
+    });
+
+    var bobKnowsAlice = new GraphNode({
+        owner: bob.id,
+        target: alice.id
     });
 
     var aliceKnowsCarol = new GraphNode({
@@ -102,6 +120,11 @@ var setupFixtures = function (done) {
     var carolKnowsAlice = new GraphNode({
         owner: carol.id,
         target: alice.id
+    });
+
+    var bobKnowsEve = new GraphNode({
+        owner: bob.id,
+        target: eve.id
     });
 
     // TODO: use alice.save.bind(alice) instead of this proxy
@@ -123,15 +146,19 @@ var setupFixtures = function (done) {
         proxy(save, bob),
         proxy(save, carol),
         proxy(save, dave),
+        proxy(save, eve),
         proxy(save, buyActivity),
         proxy(save, cookActivity),
         proxy(save, aliceBuysSomethingForBob),
         proxy(save, aliceCooksSomethingForCarol),
         proxy(save, aliceWantsToBuySomethingForDave),
+        proxy(save, bobWantsToBuySomethingForEve),
         proxy(save, aliceKnowsBob),
+        proxy(save, bobKnowsAlice),
         proxy(save, aliceKnowsCarol),
         proxy(save, aliceKnowsDave),
-        proxy(save, carolKnowsAlice)
+        proxy(save, carolKnowsAlice),
+        proxy(save, bobKnowsEve)
     ], function(err) {
         if (err) {
             console.log('Error while loading fixtures: ', err);
