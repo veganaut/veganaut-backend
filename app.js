@@ -7,44 +7,40 @@ var mongoose = require('mongoose');
 var cors = require('cors');
 
 var http = require('http');
-var path = require('path');
+
+// Models
+require('./app/models/Activity.js');
+require('./app/models/ActivityLink.js');
+require('./app/models/GraphNode.js');
+require('./app/models/Person.js');
+
+// Controllers
+var Person = require('./app/controllers/Person');
+var Graph = require('./app/controllers/Graph');
+var Session = require('./app/controllers/Session');
+var Activity = require('./app/controllers/Activity');
+var ActivityLink = require('./app/controllers/ActivityLink');
 
 var app = express();
 
 // all environments
 app.set('port', process.env.PORT || 3000);
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
+
+// Try to add the logged in user
+app.use(Session.addUserToRequest);
+
 app.use(app.router);
-app.use(express.static(path.join(__dirname, 'public')));
 
 // TODO: what does this guy do exactly?
 // development only
 //if ('development' === app.get('env')) {
 //    app.use(express.errorHandler());
 //}
-
-// models
-require('./app/models/Activity.js');
-require('./app/models/ActivityLink.js');
-require('./app/models/GraphNode.js');
-require('./app/models/Person.js');
-
-/*
- * Controllers
- */
-var Person = require('./app/controllers/Person');
-
-// Dummy Controllers
-var Graph = require('./app/controllers/Graph');
-var Session = require('./app/controllers/Session');
-var Activity = require('./app/controllers/Activity');
-var ActivityLink = require('./app/controllers/ActivityLink');
 
 /*
  * Routes
