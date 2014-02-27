@@ -18,7 +18,6 @@ var createSessionFor = function(user) {
     sessionStore[superUniqueId] = user;
     return superUniqueId;
 };
-exports.createSessionFor = createSessionFor;
 
 /**
  *
@@ -48,30 +47,40 @@ var authenticate = function(email, pass, next) {
         });
     });
 };
-exports.authenticate = authenticate;
 
 /**
- * This we export to use on other calls
+ * Middleware for adding the user object to the request on req.user.
+ * User auth is read from the auth header.
  * @param req
  * @param res
  * @param next
  */
-function restrict(req, res, next) {
+exports.addUserToRequest = function(req, res, next) {
     var authHeader = req.get('Authorization');
     if (authHeader) {
         var parts = authHeader.split(' ');
         if (parts.length === 2 && parts[0] === 'MonkeyBearer' && sessionStore[parts[1]]) {
             req.sessionId = parts[1];
             req.user = sessionStore[req.sessionId];
-            return next();
         }
     }
-    res.send(401,{ status: 'Error',
-        message: 'Access denied!'
-    });
-}
-exports.restrict = restrict;
+    next();
+};
 
+/**
+ * Middleware that only allows logged in users through.
+ * @param req
+ * @param res
+ * @param next
+ */
+exports.restrict = function(req, res, next) {
+    if (typeof req.user === 'undefined') {
+        return res.send(401,{ status: 'Error',
+            message: 'Access denied!'
+        });
+    }
+    next();
+};
 
 /**
  * POST /session
