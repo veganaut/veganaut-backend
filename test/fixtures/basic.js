@@ -17,7 +17,6 @@ var ActivityLink = mongoose.model('ActivityLink');
 var GraphNode = mongoose.model('GraphNode');
 
 
-// TODO: expose these fixtures so that they can be directly access in the e2e tests
 var setupFixtures = function (done) {
     var alice = new Person({
         _id: '000000000000000000000001',
