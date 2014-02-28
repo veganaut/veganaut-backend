@@ -7,10 +7,10 @@
 var mongoose = require('mongoose');
 var async = require('async');
 
-require('../app/models/Person');
-require('../app/models/Activity');
-require('../app/models/ActivityLink');
-require('../app/models/GraphNode');
+require('../../app/models/Person');
+require('../../app/models/Activity');
+require('../../app/models/ActivityLink');
+require('../../app/models/GraphNode');
 var Person = mongoose.model('Person');
 var Activity = mongoose.model('Activity');
 var ActivityLink = mongoose.model('ActivityLink');

@@ -6,7 +6,6 @@ var express = require('express');
 var mongoose = require('mongoose');
 var cors = require('cors');
 var http = require('http');
-var fixtures = require('./test/fixtures');
 
 var app = express();
 
@@ -25,11 +24,20 @@ app.get('/', function(req, res) {
 });
 
 // Graph
-app.options('/fixtures', cors());
-app.post('/fixtures', cors(), function(req, res) {
+app.options('/fixtures/:fixtureName', cors());
+app.post('/fixtures/:fixtureName', cors(), function(req, res) {
+    var fixtureName = req.params.fixtureName;
+    var fixtures;
+    try {
+        fixtures = require('./test/fixtures/' + fixtureName);
+    }
+    catch (e) {
+        return res.send(404, { status: 'error', error: 'fixture "' + fixtureName + '" does not exist'});
+    }
+
     fixtures.setupFixtures(function(err) {
         if (err) {
-            return res.send({ status: 'error', error: err });
+            return res.send(500, { status: 'error', error: err });
         }
         return res.send({ status: 'ok' });
     });
