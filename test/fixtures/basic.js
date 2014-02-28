@@ -1,11 +1,10 @@
 /**
- * This script prepares a database with test fixtures.
+ * Basic test fixtures
  */
-
 'use strict';
 
 var mongoose = require('mongoose');
-var async = require('async');
+var FixtureLoader = require('./FixtureLoader');
 
 require('../../app/models/Person');
 require('../../app/models/Activity');
@@ -16,42 +15,47 @@ var Activity = mongoose.model('Activity');
 var ActivityLink = mongoose.model('ActivityLink');
 var GraphNode = mongoose.model('GraphNode');
 
-
-var setupFixtures = function (done) {
-    var alice = new Person({
+var getFixtures = function() {
+    var fix = {};
+    fix.alice = new Person({
         _id: '000000000000000000000001',
         email: 'foo@bar.baz',
         password: 'foobar',
         fullName: 'Alice Alison'
     });
-    var bob = new Person({
+
+    fix.bob = new Person({
         _id: '000000000000000000000002',
         email: 'im@stoop.id',
         password: 'bestpasswordever',
         fullName: 'Bob Burton',
         gender: 'male'
     });
-    var carol = new Person({
+
+    fix.carol = new Person({
         _id: '000000000000000000000003',
         fullName: 'Carol'
     });
-    var dave = new Person({
+
+    fix.dave = new Person({
         _id: '000000000000000000000004',
         fullName: 'Dave Donaldsson'
     });
-    var eve = new Person({
+
+    fix.eve = new Person({
         _id: '000000000000000000000005',
         fullName: 'Eve'
     });
 
-    var buyActivity = new Activity({
+
+    fix.buyActivity = new Activity({
         _id: 'a00000000000000000000001',
         name: 'Buy something vegan for ...',
         className: 'Shopping',
         givesVegBytes: false
     });
 
-    var cookActivity = new Activity({
+    fix.cookActivity = new Activity({
         _id: 'a00000000000000000000002',
         name: 'Cook something vegan for ...',
         className: 'Cooking',
@@ -59,112 +63,79 @@ var setupFixtures = function (done) {
     });
 
 
-    var aliceBuysSomethingForBob = new ActivityLink({
-        activity: buyActivity.id,
-        sources: [alice.id],
-        targets: [bob.id],
+    fix.aliceBuysSomethingForBob = new ActivityLink({
+        activity: fix.buyActivity.id,
+        sources: [fix.alice.id],
+        targets: [fix.bob.id],
         location: 'Bern, Switzerland',
         startDate: '2014-01-10',
         success: true,
         referenceCode: 'Ff8tEQ'
     });
 
-    var aliceCooksSomethingForCarol = new ActivityLink({
-        activity: cookActivity.id,
-        sources: [alice.id],
-        targets: [carol.id],
+    fix.aliceCooksSomethingForCarol = new ActivityLink({
+        activity: fix.cookActivity.id,
+        sources: [fix.alice.id],
+        targets: [fix.carol.id],
         location: 'Bern',
         startDate: '2014-02-20',
         success: true,
         referenceCode: '30Ajak'
     });
 
-    var aliceWantsToBuySomethingForDave = new ActivityLink({
-        activity: buyActivity.id,
-        sources: [alice.id],
-        targets: [dave.id],
+    fix.aliceWantsToBuySomethingForDave = new ActivityLink({
+        activity: fix.buyActivity.id,
+        sources: [fix.alice.id],
+        targets: [fix.dave.id],
         success: false,
         referenceCode: 'OiWCrB'
     });
 
-    var bobWantsToBuySomethingForEve = new ActivityLink({
-        activity: buyActivity.id,
-        sources: [bob.id],
-        targets: [eve.id],
+    fix.bobWantsToBuySomethingForEve = new ActivityLink({
+        activity: fix.buyActivity.id,
+        sources: [fix.bob.id],
+        targets: [fix.eve.id],
         success: false,
         referenceCode: 'AK92oj'
     });
 
 
-    var aliceKnowsBob = new GraphNode({
-        owner: alice.id,
-        target: bob.id
+    fix.aliceKnowsBob = new GraphNode({
+        owner: fix.alice.id,
+        target: fix.bob.id
     });
 
-    var bobKnowsAlice = new GraphNode({
-        owner: bob.id,
-        target: alice.id
+    fix.bobKnowsAlice = new GraphNode({
+        owner: fix.bob.id,
+        target: fix.alice.id
     });
 
-    var aliceKnowsCarol = new GraphNode({
-        owner: alice.id,
-        target: carol.id
+    fix.aliceKnowsCarol = new GraphNode({
+        owner: fix.alice.id,
+        target: fix.carol.id
     });
 
-    var aliceKnowsDave = new GraphNode({
-        owner: alice.id,
-        target: dave.id
+    fix.aliceKnowsDave = new GraphNode({
+        owner: fix.alice.id,
+        target: fix.dave.id
     });
 
-    var carolKnowsAlice = new GraphNode({
-        owner: carol.id,
-        target: alice.id
+    fix.carolKnowsAlice = new GraphNode({
+        owner: fix.carol.id,
+        target: fix.alice.id
     });
 
-    var bobKnowsEve = new GraphNode({
-        owner: bob.id,
-        target: eve.id
+    fix.bobKnowsEve = new GraphNode({
+        owner: fix.bob.id,
+        target: fix.eve.id
     });
 
-    // TODO: use alice.save.bind(alice) instead of this proxy
-    var proxy = function(fn, context) {
-        return function() {
-            return fn.apply(context, [].slice.call(arguments));
-        };
-    };
+    return fix;
+};
+exports.getFixtures = getFixtures;
 
-    var remove = Activity.remove;
-    var save = alice.save;
-
-    async.series([
-        proxy(remove, Activity),
-        proxy(remove, ActivityLink),
-        proxy(remove, GraphNode),
-        proxy(remove, Person),
-        proxy(save, alice),
-        proxy(save, bob),
-        proxy(save, carol),
-        proxy(save, dave),
-        proxy(save, eve),
-        proxy(save, buyActivity),
-        proxy(save, cookActivity),
-        proxy(save, aliceBuysSomethingForBob),
-        proxy(save, aliceCooksSomethingForCarol),
-        proxy(save, aliceWantsToBuySomethingForDave),
-        proxy(save, bobWantsToBuySomethingForEve),
-        proxy(save, aliceKnowsBob),
-        proxy(save, bobKnowsAlice),
-        proxy(save, aliceKnowsCarol),
-        proxy(save, aliceKnowsDave),
-        proxy(save, carolKnowsAlice),
-        proxy(save, bobKnowsEve)
-    ], function(err) {
-        if (err) {
-            console.log('Error while loading fixtures: ', err);
-            done(err);
-        }
-        done();
-    });
+var setupFixtures = function (done) {
+    FixtureLoader.load(getFixtures(), done);
 };
 exports.setupFixtures = setupFixtures;
 
