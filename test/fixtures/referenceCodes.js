@@ -31,3 +31,16 @@ var setupFixtures = function (done) {
     FixtureLoader.load(getFixtures(), done);
 };
 exports.setupFixtures = setupFixtures;
+
+
+if (require.main === module) {
+    mongoose.connect('mongodb://localhost/monkey', function(err) {
+        if (err) {
+            console.log('Could not connect to Mongo: ', err);
+            process.exit();
+        }
+        setupFixtures(function() {
+            mongoose.disconnect();
+        });
+    });
+}
