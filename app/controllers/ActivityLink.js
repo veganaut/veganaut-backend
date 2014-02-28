@@ -8,9 +8,12 @@ var ActivityLink = mongoose.model('ActivityLink');
 var Person = mongoose.model('Person');
 var GraphNode = mongoose.model('GraphNode');
 
+// TODO: test this thoroughly
 exports.referenceCode = function(req, res, next) {
-    // TODO: handle submissions of already existing users
+    // TODO: submission from already existing users doesn't always work because not all the necessary GraphNodes are created
+    var user = req.user;
     var activityLink;
+
     var findActivityLink = function(cb) {
         var referenceCode = req.body.referenceCode;
         ActivityLink.findOne({referenceCode: referenceCode}, function(err, link) {
@@ -34,6 +37,44 @@ exports.referenceCode = function(req, res, next) {
         });
     };
 
+    /**
+     * If there is a logged in user, sets that Person as the target of the activityLink and
+     * removes the "maybe" target Person that turned out to be an already existing user.
+     * @param cb
+     */
+    var mergePerson = function(cb) {
+        if (typeof user === 'undefined') {
+            // No logged in user, nothing to do
+            return cb();
+        }
+        else {
+            // Store reference to the old target.
+            var oldTarget = activityLink.targets[0];
+
+            // Set the activityLink target to the current user
+            activityLink.targets = [user.id];
+            // TODO: don't save twice, already saved in updateActivityLink
+            activityLink.save(function(err) {
+                if (err) {
+                    return cb(err);
+                }
+
+                // TODO: handle halfway successful merges
+                // Delete the now obsolete person
+                Person.findByIdAndRemove(oldTarget, function(err) {
+                    if (err) {
+                        return cb(err);
+                    }
+
+                    GraphNode.remove({ target: oldTarget }, function(err) {
+                        cb(err);
+                    });
+                });
+            });
+
+        }
+    };
+
     var createGraphForPerson = function(cb) {
         var node = new GraphNode({
             owner: activityLink.targets[0],
@@ -48,6 +89,7 @@ exports.referenceCode = function(req, res, next) {
     async.series([
         findActivityLink,
         updateActivityLink,
+        mergePerson,
         createGraphForPerson
     ], function(err) {
         if (err) {
