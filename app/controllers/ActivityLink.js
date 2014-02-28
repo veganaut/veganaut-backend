@@ -10,9 +10,11 @@ var GraphNode = mongoose.model('GraphNode');
 
 // TODO: test this thoroughly
 exports.referenceCode = function(req, res, next) {
-    // TODO: submission from already existing users doesn't always work because not all the necessary GraphNodes are created
+    // TODO: make sure the given user is allowed to use the reference code:
+    // if the activityLink was created already with an existing user, only that user can enter the code
     var user = req.user;
     var activityLink;
+    var personMerged = false;
 
     var findActivityLink = function(cb) {
         var referenceCode = req.body.referenceCode;
@@ -48,6 +50,9 @@ exports.referenceCode = function(req, res, next) {
             return cb();
         }
         else {
+            // Need to merge
+            personMerged = true;
+
             // Store reference to the old target.
             var oldTarget = activityLink.targets[0];
 
@@ -75,14 +80,50 @@ exports.referenceCode = function(req, res, next) {
         }
     };
 
-    var createGraphForPerson = function(cb) {
-        var node = new GraphNode({
-            owner: activityLink.targets[0],
-            target: activityLink.sources[0]
+    /**
+     * Creates the given GraphNode if it doesn't already exist
+     * @param owner
+     * @param target
+     * @param cb
+     */
+    var createGraphNodeFor = function(owner, target, cb) {
+        GraphNode.findOne({owner: owner, target: target}, function(err, node) {
+            // If there is an error return it, if the node already exists, there is nothing to do
+            if (err || node) {
+                return cb(err);
+            }
+
+            // Create new node
+            var newNode = new GraphNode({
+                owner: owner,
+                target: target
+            });
+            newNode.save(function(err) {
+                cb(err);
+            });
         });
-        node.save(function(err) {
-            cb(err);
-        });
+    };
+
+    var createGraphForTarget = function(cb) {
+        createGraphNodeFor(
+            activityLink.targets[0],
+            activityLink.sources[0],
+            cb
+        );
+    };
+
+    var createGraphForSource = function(cb) {
+        if (!personMerged) {
+            // No person merged, no need to add GraphNode for target
+            return cb();
+        }
+        else {
+            createGraphNodeFor(
+                activityLink.sources[0],
+                activityLink.targets[0],
+                cb
+            );
+        }
     };
 
     // TODO: better error and input checking along the way
@@ -90,7 +131,8 @@ exports.referenceCode = function(req, res, next) {
         findActivityLink,
         updateActivityLink,
         mergePerson,
-        createGraphForPerson
+        createGraphForTarget,
+        createGraphForSource
     ], function(err) {
         if (err) {
             return next(err);
