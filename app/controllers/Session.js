@@ -15,9 +15,9 @@ var Person = mongoose.model('Person');
 var sessionStore = {};
 
 exports.createSessionFor = function(user) {
-    var superUniqueId = uuid.v4();
-    sessionStore[superUniqueId] = user;
-    return superUniqueId;
+    var sessionId = uuid.v4();
+    sessionStore[sessionId] = user;
+    return sessionId;
 };
 
 /**
