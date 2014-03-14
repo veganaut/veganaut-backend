@@ -13,7 +13,7 @@ var Person = mongoose.model('Person');
  */
 var sessionStore = {};
 
-var createSessionFor = function(user) {
+exports.createSessionFor = function(user) {
     var superUniqueId = 'not-really' + Math.random(); // TODO: make actually unique
     sessionStore[superUniqueId] = user;
     return superUniqueId;
@@ -39,7 +39,7 @@ var authenticate = function(email, pass, next) {
         user.verify(pass, function(err, result) {
             if (err) { return next(err); }
             if (result) {
-                var superUniqueId = createSessionFor(user);
+                var superUniqueId = exports.createSessionFor(user);
                 return next(null, user, superUniqueId);
             } else {
                 return next(new Error('Incorrect password'));

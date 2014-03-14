@@ -1,16 +1,17 @@
 /**
  * Test helpers
  */
-
 'use strict';
+/* global runs, waitsFor, describe */
 
 /** An express server */
 exports.server = require('../app');
 exports.port = 3001;
 exports.baseURL = 'http://localhost:' + exports.port + '/';
 
-// BeforeAll
+// Export beforeAll and afterAll
 require('jasmine-before-all');
+/* global beforeAll, afterAll */
 exports.beforeAll = beforeAll;
 exports.afterAll = afterAll;
 
@@ -50,7 +51,7 @@ exports.request = function(method, url) {
 };
 
 // Fixtures
-var fixtures = require('./fixtures');
+var fixtures = require('./fixtures/basic');
 var setupFixtures = fixtures.setupFixtures;
 exports.setupFixtures = fixtures.setupFixtures;
 
@@ -96,7 +97,6 @@ exports.createSessionFor = createSessionFor;
  */
 exports.describe = function(what, how) {
     var wrapper = function() {
-
         // Start a server and initialize fixtures
         beforeAll(function () {
             runAsync(function(done) {
