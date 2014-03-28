@@ -67,7 +67,7 @@ h.describe('Person API methods', function() {
         });
     });
 
-    it('cannot re-register already register person', function() {
+    it('cannot re-register already registered person', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'person')
                 .send({

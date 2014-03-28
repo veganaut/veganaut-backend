@@ -14,8 +14,35 @@ h.describe('Graph API methods', function() {
                 expect(typeof res.body.links).toEqual('object');
 
                 // Check that there's the right amount of nodes and links
-                expect(Object.keys(res.body.nodes).length).toBe(5);
+                var nodeKeys = Object.keys(res.body.nodes);
+                expect(nodeKeys.length).toBe(5);
                 expect(res.body.links.length).toBe(4);
+
+                // Validate all the nodes
+                nodeKeys.forEach(function(id) {
+                    var node = res.body.nodes[id];
+
+                    expect(typeof node.id).toBe('string');
+                    expect(typeof node.type).toBe('string');
+                    expect(typeof node.team).toBe('string');
+                    switch (node.type) {
+                    case 'me':
+                        expect(typeof node.fullName).toBe('string');
+                        expect(typeof node.coordX).toBe('number');
+                        expect(typeof node.coordY).toBe('number');
+                        expect(Object.keys(node).length).toBe(6);
+                        break;
+                    case 'user':
+                        expect(typeof node.fullName).toBe('string');
+                        expect(Object.keys(node).length).toBe(4);
+                        break;
+                    case 'friendOfFriend':
+                        expect(Object.keys(node).length).toBe(3);
+                        break;
+                    case 'default':
+                        expect('unkown node type').toBe('never happening');
+                    }
+                });
 
                 // TODO: check that not too much information is exposed (no names or num activity infos for friends of friends)
                 done();
@@ -41,17 +68,6 @@ h.describe('Graph API methods', function() {
                 expect(typeof res.body.links).toEqual('object');
                 expect(Object.keys(res.body.nodes).length).toBe(4); // 1 me, 1 the other use, 2 friends of that friend
                 expect(res.body.links.length).toBe(3);
-                done();
-            });
-        });
-    });
-
-    it('can update the graph', function() {
-        h.runAsync(function(done) {
-            h.request('PUT', h.baseURL + 'graph').end(function(res) {
-                //TODO define behavior here
-                expect(res.statusCode).toBe(200);
-                expect(res.body.status).toEqual('OK');
                 done();
             });
         });

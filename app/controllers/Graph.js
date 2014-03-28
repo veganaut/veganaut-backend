@@ -11,7 +11,7 @@ var ActivityLink = mongoose.model('ActivityLink');
 var getGraph = function(person, cb) {
     GraphNode
         .find({owner: person.id})
-        .populate('target', 'fullName password')
+        .populate('target', 'fullName password team')
         .exec(function(err, nodes) {
             if (err) {
                 cb(err);
@@ -23,6 +23,7 @@ var getGraph = function(person, cb) {
                 var result = {};
                 result.fullName = n.target.fullName;
                 result.id = n.target.id;
+                result.team = n.target.team;
                 if (typeof n.target.coordX !== 'undefined') {
                     result.coordX = n.target.coordX;
                 }
@@ -44,6 +45,7 @@ var getGraph = function(person, cb) {
                 fullName: person.fullName,
                 id: person.id,
                 type: 'me',
+                team: person.team,
                 coordX: 0.5,
                 coordY: 0.5
             });
@@ -107,7 +109,8 @@ var getGraph = function(person, cb) {
                                 // No node, ad a friendOfFriend node
                                 nodes[personId] = {
                                     id: personId,
-                                    type: 'friendOfFriend'
+                                    type: 'friendOfFriend',
+                                    team: 'neutral' // TODO: get the correct team
                                 };
                             }
 
