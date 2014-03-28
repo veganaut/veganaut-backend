@@ -28,7 +28,9 @@ var PersonSchema = new Schema({
     phone: String,
     address: String,
     gender: {type: String, enum: ['male', 'female', 'other']},
-    locale: {type: String, default: 'en'}
+    locale: {type: String, default: 'en'},
+
+    team: {type: String, enum: ['blue', 'green', 'neutral'], default: 'neutral'}
 });
 
 PersonSchema.pre('save', function(next) {

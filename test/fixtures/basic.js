@@ -21,6 +21,7 @@ var getFixtures = function() {
         _id: '000000000000000000000001',
         email: 'foo@bar.baz',
         password: 'foobar',
+        team: 'blue',
         fullName: 'Alice Alison'
     });
 
@@ -28,22 +29,26 @@ var getFixtures = function() {
         _id: '000000000000000000000002',
         email: 'im@stoop.id',
         password: 'bestpasswordever',
+        team: 'green',
         fullName: 'Bob Burton',
         gender: 'male'
     });
 
     fix.carol = new Person({
         _id: '000000000000000000000003',
+        team: 'blue',
         fullName: 'Carol'
     });
 
     fix.dave = new Person({
         _id: '000000000000000000000004',
+        team: 'blue',
         fullName: 'Dave Donaldsson'
     });
 
     fix.eve = new Person({
         _id: '000000000000000000000005',
+        team: 'green',
         fullName: 'Eve'
     });
 
