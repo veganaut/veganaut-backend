@@ -19,21 +19,17 @@ var GraphNode = mongoose.model('GraphNode');
 
 
 var load = function(fixtures, done) {
-    // Get the save and remove method
-    var remove = Activity.remove;
-    var save = fixtures[Object.keys(fixtures)[0]].save;
-
     // Clear the db
     var tasks = [
-        remove.bind(Activity),
-        remove.bind(ActivityLink),
-        remove.bind(GraphNode),
-        remove.bind(Person)
+        Activity.remove.bind(Activity),
+        ActivityLink.remove.bind(ActivityLink),
+        GraphNode.remove.bind(GraphNode),
+        Person.remove.bind(Person)
     ];
 
     // Add all the fixtures
     _.each(fixtures, function(f) {
-        tasks.push(save.bind(f));
+        tasks.push(f.save.bind(f));
     });
 
     // Execute all queries
