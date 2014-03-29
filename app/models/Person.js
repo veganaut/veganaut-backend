@@ -8,6 +8,8 @@
 
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+
+require('./ActivityLink');
 var ActivityLink = mongoose.model('ActivityLink');
 
 var bcrypt = require('bcrypt');
