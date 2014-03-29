@@ -120,7 +120,7 @@ var getGraph = function(person, cb) {
                                     return result;
                                 });
                                 cb(null, {
-                                    nodes: resultnodes,
+                                    nodes: _.indexBy(resultnodes, 'id'),
                                     links: graphLinks
                                 });
                             }
