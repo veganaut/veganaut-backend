@@ -12,7 +12,7 @@ var getNode = function(person, graphnode) {
 		id:       person.id,
 		fullName: person.fullName,
 		team:     person.team,
-		type:     'maybe'
+		type:     person.getType()
 	};
 
 	if (typeof graphnode !== 'undefined') {
@@ -22,10 +22,6 @@ var getNode = function(person, graphnode) {
         if (typeof graphnode.coordY !== 'undefined') {
             result.coordY = graphnode.coordY;
         }
-	}
-
-	if (typeof person.password !== 'undefined') {
-		result.type = 'user';
 	}
 
 	return result;

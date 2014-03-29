@@ -6,6 +6,7 @@
 
 'use strict';
 
+var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
@@ -65,6 +66,16 @@ PersonSchema.methods.populateActivityLinks = function(next) {
             that._activityLinks = activityLinks;
             return next(null);
         });
+};
+
+PersonSchema.methods.getType = function() {
+	if (typeof this.password !== 'undefined') {
+		return 'user';
+	} else if (_.some(this._activityLinks, function (a) {return a.success;})) {
+		return 'baby';
+	} else {
+		return 'maybe';
+	}
 };
 
 mongoose.model('Person', PersonSchema);
