@@ -24,22 +24,22 @@ h.describe('Graph API methods', function() {
 
                     expect(typeof node.id).toBe('string');
                     expect(typeof node.type).toBe('string');
+					expect(node.type).toMatch(/^(user|baby|maybe)$/);
                     expect(typeof node.team).toBe('string');
 					expect(typeof node.relation).toBe('string');
-					expect(node.relation).toMatch(/^(me|friend|friendOfFriend)$/);
-                    switch (node.type) {
+                    switch (node.relation) {
                     case 'me':
                         expect(typeof node.fullName).toBe('string');
                         expect(typeof node.coordX).toBe('number');
                         expect(typeof node.coordY).toBe('number');
                         break;
-                    case 'user':
+                    case 'friend':
                         expect(typeof node.fullName).toBe('string');
                         break;
                     case 'friendOfFriend':
 						expect(node.fullName).toBeUndefined();
                         break;
-                    case 'default':
+                    default:
                         expect('unkown node type').toBe('never happening');
                     }
                 });
