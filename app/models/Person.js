@@ -16,6 +16,10 @@ var ActivityLink = mongoose.model('ActivityLink');
 var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
 
+// Constants used in strength and hits computation
+var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10};
+var MULTIPLE_LINKS_FACTOR = 0.5;
+
 function generateAlienName() {
     return 'Zorg-' + ((1000000 * Math.random()).toFixed(0));
 }
@@ -61,6 +65,7 @@ PersonSchema.methods.populateActivityLinks = function(next) {
     var that = this;
     ActivityLink.find()
         .or([{source: that.id}, {target: that.id}])
+        .populate('source target')
         .exec(function(err, activityLinks) {
             if (err) { return next(err); }
             that._activityLinks = activityLinks;
@@ -69,13 +74,42 @@ PersonSchema.methods.populateActivityLinks = function(next) {
 };
 
 PersonSchema.methods.getType = function() {
+    if (typeof(this._activityLinks) === 'undefined') {
+        throw 'Must call populateActivityLinks before calling getType';
+    }
+
     if (typeof this.password !== 'undefined') {
         return 'user';
-    } else if (_.some(this._activityLinks, function (a) {return a.success;})) {
+    } else if (_.some(this._activityLinks, 'success')) {
         return 'baby';
     } else {
         return 'maybe';
     }
+};
+
+PersonSchema.methods.getStrength = function() {
+    if (typeof(this._activityLinks) === 'undefined') {
+        throw 'Must call populateActivityLinks before calling getStrength';
+    }
+    if (typeof(this.role) === 'undefined') {
+        throw 'Cannot call getStrength if role is not set';
+    }
+
+    var that = this;
+
+    var strength = INNATE_STRENGTH[that.role];
+    var successfulActivityLinks = _.filter(that._activityLinks, 'success');
+    _.forEach(successfulActivityLinks, function(al) {
+        if (al.source.id === that.id) {
+            strength += 1;
+        } else {
+            if (al.source.team === that.team) {
+                strength += 1;
+            }
+        }
+    });
+
+    return strength;
 };
 
 mongoose.model('Person', PersonSchema);

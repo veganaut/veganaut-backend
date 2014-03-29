@@ -11,6 +11,8 @@ var mongoose = require('mongoose');
 require('../../app/models/Person');
 var Person = mongoose.model('Person');
 
+var async = require('async');
+
 describe('A person', function() {
     h.beforeAll(function() {
         h.runAsync(function(done) {
@@ -53,6 +55,38 @@ describe('A person', function() {
                         done();
                     });
                 });
+            });
+        });
+    });
+
+    it('can compute its strength', function() {
+        h.runAsync(function(done) {
+            h.setupFixtures(function(err) {
+                expect(err).toBeUndefined();
+
+                async.series([
+                    function(next) {
+                        Person.findOne({email: 'foo@bar.baz'}).exec(function(err, alice) {
+                            expect(err).toBeNull();
+                            alice.populateActivityLinks(function(err) {
+                                expect(err).toBeNull();
+                                expect(alice.getStrength()).toBe(12);
+                                next();
+                            });
+                        });
+                    },
+
+                    function(next) {
+                        Person.findOne({email: 'im@stoop.id'}).exec(function(err, bob) {
+                            expect(err).toBeNull();
+                            bob.populateActivityLinks(function(err) {
+                                expect(err).toBeNull();
+                                expect(bob.getStrength()).toBe(3);
+                                next();
+                            });
+                        });
+                    },
+                ], done());
             });
         });
     });
