@@ -12,7 +12,7 @@ var getNode = function(person, graphnode) {
 		fullName: person.fullName,
 		team:     person.team,
 		type:     'maybe',
-	}
+	};
 
 	if (typeof graphnode !== 'undefined') {
         if (typeof graphnode.coordX !== 'undefined') {
@@ -28,7 +28,7 @@ var getNode = function(person, graphnode) {
 	}
 
 	return result;
-}
+};
 
 // TODO: this needs unit testing
 // TODO: this function is ridiculously long
@@ -48,16 +48,14 @@ var getGraph = function(person, cb) {
             });
 
             // Add a 'me' node
-            nodes.push(
-				_.assign(
-					getNode(person),
-					{
-						relation: 'me',
-						coordX: 0.5,
-						coordY: 0.5
-					}
-				)
-            );
+            nodes.push(_.assign(
+				getNode(person),
+				{
+					relation: 'me',
+					coordX: 0.5,
+					coordY: 0.5
+				}
+			));
 
             // Get the list of all the people we want to fine the links for
             var personIdList = _.pluck(nodes, 'id');
@@ -92,10 +90,12 @@ var getGraph = function(person, cb) {
                                 }
                                 counts[s.id][t.id][l.success ? 'completed' : 'open'] += 1;
 								_.each([s, t], function(p) {
-									if (!nodes[p.id])
-										nodes[p.id] = _.assign(getNode(p, undefined), {relation: 'friendOfFriend', fullName: undefined})
-									if (l.success && nodes[p.id].type === 'maybe')
+									if (!nodes[p.id]) {
+										nodes[p.id] = _.assign(getNode(p, undefined), {relation: 'friendOfFriend', fullName: undefined});
+									}
+									if (l.success && nodes[p.id].type === 'maybe') {
 										nodes[p.id].type = 'baby';
+									}
 								});
                             });
                         });
