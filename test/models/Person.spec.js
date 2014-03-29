@@ -91,6 +91,38 @@ describe('A person', function() {
         });
     });
 
+    it('can compute its hits', function() {
+        h.runAsync(function(done) {
+            h.setupFixtures(function(err) {
+                expect(err).toBeUndefined();
+
+                async.series([
+                    function(next) {
+                        Person.findOne({email: 'foo@bar.baz'}).exec(function(err, alice) {
+                            expect(err).toBeNull();
+                            alice.populateActivityLinks(function(err) {
+                                expect(err).toBeNull();
+                                expect(alice.getHits()).toBe(0);
+                                next();
+                            });
+                        });
+                    },
+
+                    function(next) {
+                        Person.findOne({email: 'im@stoop.id'}).exec(function(err, bob) {
+                            expect(err).toBeNull();
+                            bob.populateActivityLinks(function(err) {
+                                expect(err).toBeNull();
+                                expect(bob.getHits()).toBe(1);
+                                next();
+                            });
+                        });
+                    },
+                ], done());
+            });
+        });
+    });
+
     h.afterAll(function() {
         h.runAsync(function(done) {
             mongoose.disconnect(done);

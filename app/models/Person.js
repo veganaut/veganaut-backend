@@ -126,4 +126,34 @@ PersonSchema.methods.getStrength = function() {
     return strength;
 };
 
+// Computes the hits of a person.
+//
+// A person incurs hits when a member of the opponent team creates an activity
+// link.
+//
+// Multiple activity links between the same pair of people give decreasing
+// amounts of hit points, just like for strength.
+PersonSchema.methods.getHits = function() {
+    if (typeof(this._activityLinks) === 'undefined') {
+        throw 'Must call populateActivityLinks before calling getHits';
+    }
+
+    var that = this;
+
+    var hits = 0;
+    var successfulActivityLinks = _.filter(that._activityLinks, 'success');
+    var nLinksByOther = {};
+    _.forEach(successfulActivityLinks, function(al) {
+        var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
+        nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
+        var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);
+
+        if (al.source.id !== that.id && al.source.team !== that.team) {
+            hits += activityLinkValue;
+        }
+    });
+
+    return hits;
+};
+
 mongoose.model('Person', PersonSchema);
