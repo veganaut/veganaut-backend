@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
+var async = require('async');
 var mongoose = require('mongoose');
 var Person = mongoose.model('Person');
 var GraphNode = mongoose.model('GraphNode');
@@ -33,14 +34,25 @@ var getNode = function(person, graphnode) {
 // TODO: this needs unit testing
 // TODO: this function is ridiculously long
 var getGraph = function(person, cb) {
-    GraphNode
-        .find({owner: person.id})
-        .populate('target', 'fullName password team')
-        .exec(function(err, nodes) {
+	async.parallel(
+		[
+			function (cb) {
+				GraphNode
+					.find({owner: person.id})
+					.populate('target', 'fullName password team')
+					.exec(cb);
+			},
+			function (cb) {
+				person.populateActivityLinks(cb);
+			}
+		],
+		function (err, results) {
             if (err) {
                 cb(err);
                 return;
             }
+
+			var nodes = results[0];
 
             // Massage nodes to be in the right format
             nodes = _.map(nodes, function(n) {
@@ -77,6 +89,7 @@ var getGraph = function(person, cb) {
                 .exec(function(err, links) {
                     // We need to map these activity links, and transform them into a 2d
                     // structure that maps source/target pairs to counts.
+					var newnodes = {};
                     var counts = {};
                     _.each(links, function(l) {
                         _.each(l.sources, function(s) {
@@ -89,12 +102,9 @@ var getGraph = function(person, cb) {
                                     };
                                 }
                                 counts[s.id][t.id][l.success ? 'completed' : 'open'] += 1;
-								_.each([s, t], function(p) {
+								_.each([s,t], function(p) {
 									if (!nodes[p.id]) {
-										nodes[p.id] = _.assign(getNode(p, undefined), {relation: 'friendOfFriend', fullName: undefined});
-									}
-									if (l.success && nodes[p.id].type === 'maybe') {
-										nodes[p.id].type = 'baby';
+										newnodes[p.id] = p;
 									}
 								});
                             });
@@ -119,10 +129,25 @@ var getGraph = function(person, cb) {
                     });
                     graphLinks = _.flatten(graphLinks);
 
-                    cb(null, {
-                        nodes: nodes,
-                        links: graphLinks
-                    });
+					async.each(
+						_.toArray(newnodes),
+						function(n, cb) {
+							n.populateActivityLinks(cb);
+						},
+						function (err) {
+							if (err) {
+								cb(err);
+							} else {
+								_.each(_.toArray(newnodes), function (n) {
+									nodes[n.id] = _.assign(getNode(n), {relation: 'friendOfFriend', fullName: undefined});
+								});
+								cb(null, {
+									nodes: nodes,
+									links: graphLinks
+								});
+							}
+						}
+					);
                 })
             ;
         })
