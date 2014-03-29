@@ -30,44 +30,21 @@ var getNode = function(person, graphnode) {
 // TODO: this needs unit testing
 // TODO: this function is ridiculously long
 var getGraph = function(person, cb) {
-    async.parallel(
-        [
-            function (cb) {
-                GraphNode
-                    .find({owner: person.id})
-                    .populate('target', 'fullName password team')
-                    .exec(cb);
-            },
-            function (cb) {
-                person.populateActivityLinks(cb);
-            }
-        ],
-        function (err, results) {
+    GraphNode
+        .find({owner: person.id})
+        .populate('target', 'fullName password team')
+        .exec(function (err, nodes) {
             if (err) {
                 cb(err);
                 return;
             }
 
-            var nodes = results[0];
-
-            // Massage nodes to be in the right format
-            nodes = _.map(nodes, function(n) {
-                return _.assign(getNode(n.target, n), {relation: 'friend'});
-            });
-
-            // Add a 'me' node
-            nodes.push(_.assign(getNode(person), {
-                    relation: 'me',
-                    coordX: 0.5,
-                    coordY: 0.5
-                })
-            );
-
-            // Get the list of all the people we want to fine the links for
-            var personIdList = _.pluck(nodes, 'id');
+            var persons = _.pluck(nodes, 'target');
+            var friendIds = _.pluck(persons, 'id');
 
             // transform this into a map for easier random access
-            nodes = _.indexBy(nodes, 'id');
+            persons = _.indexBy(persons, 'id');
+            nodes   = _.indexBy(nodes, function(n) { return n.target.id; });
 
             // Count the activities between the people in the social graph
             // Get all the activities of the user and the friends
@@ -75,15 +52,14 @@ var getGraph = function(person, cb) {
             ActivityLink
                 .find()
                 .or([
-                    {source: { $in: personIdList } },
-                    {target: { $in: personIdList } }
+                    {source: { $in: friendIds } },
+                    {target: { $in: friendIds } }
                 ])
                 .populate('source')
                 .populate('target')
                 .exec(function(err, links) {
                     // We need to map these activity links, and transform them into a 2d
                     // structure that maps source/target pairs to counts.
-                    var newnodes = {};
                     var counts = {};
                     _.each(links, function(l) {
                         counts[l.source.id] = counts[l.source.id] || {};
@@ -95,8 +71,8 @@ var getGraph = function(person, cb) {
                         }
                         counts[l.source.id][l.target.id][l.success ? 'completed' : 'open'] += 1;
                         _.each([l.source, l.target], function(p) {
-                            if (!nodes[p.id]) {
-                                newnodes[p.id] = p;
+                            if (typeof persons[p.id] === 'undefined') {
+                                persons[p.id] = p;
                             }
                         });
                     });
@@ -120,19 +96,31 @@ var getGraph = function(person, cb) {
                     graphLinks = _.flatten(graphLinks);
 
                     async.each(
-                        _.toArray(newnodes),
-                        function(n, cb) {
-                            n.populateActivityLinks(cb);
+                        _.toArray(persons),
+                        function(p, cb) {
+                            p.populateActivityLinks(cb);
                         },
                         function (err) {
                             if (err) {
                                 cb(err);
                             } else {
-                                _.each(_.toArray(newnodes), function (n) {
-                                    nodes[n.id] = _.assign(getNode(n), {relation: 'friendOfFriend', fullName: undefined});
+                                var friendIndex = _.indexBy(friendIds, 'id');
+                                var resultnodes = _.map(persons, function (n) {
+                                    var result = getNode(n, nodes[n.id]);
+                                    if (result.id === person.id) {
+                                        result.relation = 'me';
+                                        result.coordX = 0.5;
+                                        result.coordY = 0.5;
+                                    } else if (friendIndex[result.id]) {
+                                        result.relation = 'friend';
+                                    } else {
+                                        result.relation = 'friendOfFriend';
+                                        result.fullName = undefined;
+                                    }
+                                    return result;
                                 });
                                 cb(null, {
-                                    nodes: nodes,
+                                    nodes: resultnodes,
                                     links: graphLinks
                                 });
                             }
