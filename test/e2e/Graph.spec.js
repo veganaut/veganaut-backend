@@ -37,6 +37,7 @@ h.describe('Graph API methods', function() {
                         expect(Object.keys(node).length).toBe(4);
                         break;
                     case 'friendOfFriend':
+						expect(typeof node.fullName).toBe('undefined');
                         expect(Object.keys(node).length).toBe(3);
                         break;
                     case 'default':
