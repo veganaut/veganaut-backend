@@ -1,6 +1,7 @@
 'use strict';
 /* global it, expect */
 
+var _ = require('lodash');
 var h = require('../helpers');
 
 h.describe('Graph API methods', function() {
@@ -10,8 +11,8 @@ h.describe('Graph API methods', function() {
                 expect(res.statusCode).toBe(200);
 
                 // Make sure we get nodes and links
-                expect(typeof res.body.nodes).toEqual('object');
-                expect(typeof res.body.links).toEqual('object');
+                expect(_.isPlainObject(res.body.nodes)).toBe(true);
+                expect(_.isArray(res.body.links)).toBe(true);
 
                 // Check that there's the right amount of nodes and links
                 var nodeKeys = Object.keys(res.body.nodes);
