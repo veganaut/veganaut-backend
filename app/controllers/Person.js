@@ -10,6 +10,14 @@ var async = require('async');
 var Person = mongoose.model('Person');
 
 exports.register = function(req, res, next) {
+    // TODO: This needs to work as follows:
+    // - If the user already entered a reference code, (s)he has a session. In
+    //   this case, we take the user from the session, and update it.
+    // - If the user is new, we create a new user. The person model should
+    //   automatically complain about duplicate emails and other invalidities
+    //   in this case.
+
+
     // Pick the posted data
     var personData = _.pick(req.body, 'email', 'fullName', 'password', '_id');
     var person;

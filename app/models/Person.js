@@ -17,7 +17,7 @@ function generateAlienName() {
 }
 
 var PersonSchema = new Schema({
-    email: String,
+    email: {type: String, unique: true},
     password: String,
     alienName: { type: String, default: generateAlienName },
 
