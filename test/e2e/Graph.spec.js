@@ -25,6 +25,8 @@ h.describe('Graph API methods', function() {
                     expect(typeof node.id).toBe('string');
                     expect(typeof node.type).toBe('string');
                     expect(typeof node.team).toBe('string');
+					expect(typeof node.relation).toBe('string');
+					expect(node.relation).toMatch(/^(me|friend|friendOfFriend)$/);
                     switch (node.type) {
                     case 'me':
                         expect(typeof node.fullName).toBe('string');

@@ -44,7 +44,7 @@ var getGraph = function(person, cb) {
 
             // Massage nodes to be in the right format
             nodes = _.map(nodes, function(n) {
-				return getNode(n.target, n);
+				return _.assign(getNode(n.target, n), {relation: 'friend'});
             });
 
             // Add a 'me' node
@@ -52,7 +52,7 @@ var getGraph = function(person, cb) {
 				_.assign(
 					getNode(person),
 					{
-						type: 'me',
+						relation: 'me',
 						coordX: 0.5,
 						coordY: 0.5
 					}
@@ -93,7 +93,7 @@ var getGraph = function(person, cb) {
                                 counts[s.id][t.id][l.success ? 'completed' : 'open'] += 1;
 								_.each([s, t], function(p) {
 									if (!nodes[p.id])
-										nodes[p.id] = _.assign(getNode(p, undefined), {type: 'friendOfFriend', fullName: undefined})
+										nodes[p.id] = _.assign(getNode(p, undefined), {relation: 'friendOfFriend', fullName: undefined})
 									if (l.success && nodes[p.id].type === 'maybe')
 										nodes[p.id].type = 'baby';
 								});
