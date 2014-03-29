@@ -20,7 +20,7 @@ function generateAlienName() {
 }
 
 var PersonSchema = new Schema({
-    email: {type: String, unique: true},
+    email: {type: String},
     password: String,
     alienName: { type: String, default: generateAlienName },
 
@@ -33,7 +33,8 @@ var PersonSchema = new Schema({
     gender: {type: String, enum: ['male', 'female', 'other']},
     locale: {type: String, default: 'en'},
 
-    team: {type: String, enum: ['blue', 'green', 'neutral'], default: 'neutral'}
+    team: {type: String, enum: ['blue', 'green']},
+    role: {type: String, enum: ['rookie', 'scout', 'veteran']}
 });
 
 PersonSchema.pre('save', function(next) {
