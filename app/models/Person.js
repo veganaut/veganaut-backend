@@ -69,13 +69,13 @@ PersonSchema.methods.populateActivityLinks = function(next) {
 };
 
 PersonSchema.methods.getType = function() {
-	if (typeof this.password !== 'undefined') {
-		return 'user';
-	} else if (_.some(this._activityLinks, function (a) {return a.success;})) {
-		return 'baby';
-	} else {
-		return 'maybe';
-	}
+    if (typeof this.password !== 'undefined') {
+        return 'user';
+    } else if (_.some(this._activityLinks, function (a) {return a.success;})) {
+        return 'baby';
+    } else {
+        return 'maybe';
+    }
 };
 
 mongoose.model('Person', PersonSchema);

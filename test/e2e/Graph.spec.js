@@ -24,9 +24,9 @@ h.describe('Graph API methods', function() {
 
                     expect(typeof node.id).toBe('string');
                     expect(typeof node.type).toBe('string');
-					expect(node.type).toMatch(/^(user|baby|maybe)$/);
+                    expect(node.type).toMatch(/^(user|baby|maybe)$/);
                     expect(typeof node.team).toBe('string');
-					expect(typeof node.relation).toBe('string');
+                    expect(typeof node.relation).toBe('string');
                     switch (node.relation) {
                     case 'me':
                         expect(typeof node.fullName).toBe('string');
@@ -37,7 +37,7 @@ h.describe('Graph API methods', function() {
                         expect(typeof node.fullName).toBe('string');
                         break;
                     case 'friendOfFriend':
-						expect(node.fullName).toBeUndefined();
+                        expect(node.fullName).toBeUndefined();
                         break;
                     default:
                         expect('unkown node type').toBe('never happening');

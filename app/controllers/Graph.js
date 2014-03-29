@@ -8,51 +8,51 @@ var GraphNode = mongoose.model('GraphNode');
 var ActivityLink = mongoose.model('ActivityLink');
 
 var getNode = function(person, graphnode) {
-	var result = {
-		id:       person.id,
-		fullName: person.fullName,
-		team:     person.team,
-		type:     person.getType()
-	};
+    var result = {
+        id:       person.id,
+        fullName: person.fullName,
+        team:     person.team,
+        type:     person.getType()
+    };
 
-	if (typeof graphnode !== 'undefined') {
+    if (typeof graphnode !== 'undefined') {
         if (typeof graphnode.coordX !== 'undefined') {
             result.coordX = graphnode.coordX;
         }
         if (typeof graphnode.coordY !== 'undefined') {
             result.coordY = graphnode.coordY;
         }
-	}
+    }
 
-	return result;
+    return result;
 };
 
 // TODO: this needs unit testing
 // TODO: this function is ridiculously long
 var getGraph = function(person, cb) {
-	async.parallel(
-		[
-			function (cb) {
-				GraphNode
-					.find({owner: person.id})
-					.populate('target', 'fullName password team')
-					.exec(cb);
-			},
-			function (cb) {
-				person.populateActivityLinks(cb);
-			}
-		],
-		function (err, results) {
+    async.parallel(
+        [
+            function (cb) {
+                GraphNode
+                    .find({owner: person.id})
+                    .populate('target', 'fullName password team')
+                    .exec(cb);
+            },
+            function (cb) {
+                person.populateActivityLinks(cb);
+            }
+        ],
+        function (err, results) {
             if (err) {
                 cb(err);
                 return;
             }
 
-			var nodes = results[0];
+            var nodes = results[0];
 
             // Massage nodes to be in the right format
             nodes = _.map(nodes, function(n) {
-				return _.assign(getNode(n.target, n), {relation: 'friend'});
+                return _.assign(getNode(n.target, n), {relation: 'friend'});
             });
 
             // Add a 'me' node
@@ -78,12 +78,12 @@ var getGraph = function(person, cb) {
                     {source: { $in: personIdList } },
                     {target: { $in: personIdList } }
                 ])
-				.populate('source')
-				.populate('target')
+                .populate('source')
+                .populate('target')
                 .exec(function(err, links) {
                     // We need to map these activity links, and transform them into a 2d
                     // structure that maps source/target pairs to counts.
-					var newnodes = {};
+                    var newnodes = {};
                     var counts = {};
                     _.each(links, function(l) {
                         counts[l.source.id] = counts[l.source.id] || {};
@@ -119,25 +119,25 @@ var getGraph = function(person, cb) {
                     });
                     graphLinks = _.flatten(graphLinks);
 
-					async.each(
-						_.toArray(newnodes),
-						function(n, cb) {
-							n.populateActivityLinks(cb);
-						},
-						function (err) {
-							if (err) {
-								cb(err);
-							} else {
-								_.each(_.toArray(newnodes), function (n) {
-									nodes[n.id] = _.assign(getNode(n), {relation: 'friendOfFriend', fullName: undefined});
-								});
-								cb(null, {
-									nodes: nodes,
-									links: graphLinks
-								});
-							}
-						}
-					);
+                    async.each(
+                        _.toArray(newnodes),
+                        function(n, cb) {
+                            n.populateActivityLinks(cb);
+                        },
+                        function (err) {
+                            if (err) {
+                                cb(err);
+                            } else {
+                                _.each(_.toArray(newnodes), function (n) {
+                                    nodes[n.id] = _.assign(getNode(n), {relation: 'friendOfFriend', fullName: undefined});
+                                });
+                                cb(null, {
+                                    nodes: nodes,
+                                    links: graphLinks
+                                });
+                            }
+                        }
+                    );
                 })
             ;
         })
