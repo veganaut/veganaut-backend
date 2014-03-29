@@ -74,11 +74,9 @@ PersonSchema.methods.populateActivityLinks = function(next) {
 };
 
 PersonSchema.methods.getType = function() {
-
-    // FIXME: Please Please, breaks the Backends Back
-//    if (typeof(this._activityLinks) === 'undefined') {
-//        throw 'Must call populateActivityLinks before calling getType';
-//    }
+    if (typeof(this._activityLinks) === 'undefined') {
+        throw 'Must call populateActivityLinks before calling getType';
+    }
 
     if (typeof this.password !== 'undefined') {
         return 'user';
