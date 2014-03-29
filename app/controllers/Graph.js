@@ -11,7 +11,7 @@ var getNode = function(person, graphnode) {
 		id:       person.id,
 		fullName: person.fullName,
 		team:     person.team,
-		type:     'maybe',
+		type:     'maybe'
 	};
 
 	if (typeof graphnode !== 'undefined') {
