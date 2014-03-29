@@ -87,6 +87,15 @@ PersonSchema.methods.getType = function() {
     }
 };
 
+// Computes the strength of a person.
+//
+// A person has an innate strength depending on their role. It also gets
+// strength from every activity link for which it is a source, and from every
+// incoming activity link of a teammate.
+//
+// Multiple activity links between the same pair of people give decreasing
+// amounts of strength. The first link has a value of 1, the second
+// MULTIPLE_LINKS_FACTOR, the third MULTIPLE_LINKS_FACTOR**2, etc.
 PersonSchema.methods.getStrength = function() {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getStrength';
@@ -99,12 +108,17 @@ PersonSchema.methods.getStrength = function() {
 
     var strength = INNATE_STRENGTH[that.role];
     var successfulActivityLinks = _.filter(that._activityLinks, 'success');
+    var nLinksByOther = {};
     _.forEach(successfulActivityLinks, function(al) {
+        var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
+        nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
+        var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);
+
         if (al.source.id === that.id) {
-            strength += 1;
+            strength += activityLinkValue;
         } else {
             if (al.source.team === that.team) {
-                strength += 1;
+                strength += activityLinkValue;
             }
         }
     });
