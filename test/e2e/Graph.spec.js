@@ -35,7 +35,7 @@ h.describe('Graph API methods', function() {
                         expect(typeof node.fullName).toBe('string');
                         break;
                     case 'friendOfFriend':
-						expect(typeof node.fullName).toBe('undefined');
+						expect(node.fullName).toBeUndefined();
                         break;
                     case 'default':
                         expect('unkown node type').toBe('never happening');
