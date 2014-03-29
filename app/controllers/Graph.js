@@ -6,6 +6,30 @@ var Person = mongoose.model('Person');
 var GraphNode = mongoose.model('GraphNode');
 var ActivityLink = mongoose.model('ActivityLink');
 
+var getNode = function(person, graphnode) {
+	var result = {
+		id:       person.id,
+		fullName: person.fullName,
+		team:     person.team,
+		type:     'maybe',
+	}
+
+	if (typeof graphnode !== 'undefined') {
+        if (typeof graphnode.coordX !== 'undefined') {
+            result.coordX = graphnode.coordX;
+        }
+        if (typeof graphnode.coordY !== 'undefined') {
+            result.coordY = graphnode.coordY;
+        }
+	}
+
+	if (typeof person.password !== 'undefined') {
+		result.type = 'user';
+	}
+
+	return result;
+}
+
 // TODO: this needs unit testing
 // TODO: this function is ridiculously long
 var getGraph = function(person, cb) {
@@ -20,35 +44,20 @@ var getGraph = function(person, cb) {
 
             // Massage nodes to be in the right format
             nodes = _.map(nodes, function(n) {
-                var result = {};
-                result.fullName = n.target.fullName;
-                result.id = n.target.id;
-                result.team = n.target.team;
-                if (typeof n.target.coordX !== 'undefined') {
-                    result.coordX = n.target.coordX;
-                }
-                if (typeof n.target.coordY !== 'undefined') {
-                    result.coordY = n.target.coordY;
-                }
-
-                // Compute the type of node
-                result.type = 'maybe';
-                if (typeof n.target.password !== 'undefined') {
-                    result.type = 'user';
-                }
-
-                return result;
+				return getNode(n.target, n);
             });
 
             // Add a 'me' node
-            nodes.push({
-                fullName: person.fullName,
-                id: person.id,
-                type: 'me',
-                team: person.team,
-                coordX: 0.5,
-                coordY: 0.5
-            });
+            nodes.push(
+				_.assign(
+					getNode(person),
+					{
+						type: 'me',
+						coordX: 0.5,
+						coordY: 0.5
+					}
+				)
+            );
 
             // Get the list of all the people we want to fine the links for
             var personIdList = _.pluck(nodes, 'id');
@@ -65,6 +74,8 @@ var getGraph = function(person, cb) {
                     {sources: { $in: personIdList } },
                     {targets: { $in: personIdList } }
                 ])
+				.populate('sources')
+				.populate('targets')
                 .exec(function(err, links) {
                     // We need to map these activity links, and transform them into a 2d
                     // structure that maps source/target pairs to counts.
@@ -72,14 +83,20 @@ var getGraph = function(person, cb) {
                     _.each(links, function(l) {
                         _.each(l.sources, function(s) {
                             _.each(l.targets, function(t) {
-                                counts[s] = counts[s] || {};
-                                if (typeof counts[s][t] === 'undefined') {
-                                    counts[s][t] = {
+                                counts[s.id] = counts[s.id] || {};
+                                if (typeof counts[s.id][t.id] === 'undefined') {
+                                    counts[s.id][t.id] = {
                                         open: 0,
                                         completed: 0
                                     };
                                 }
-                                counts[s][t][l.success ? 'completed' : 'open'] += 1;
+                                counts[s.id][t.id][l.success ? 'completed' : 'open'] += 1;
+								_.each([s, t], function(p) {
+									if (!nodes[p.id])
+										nodes[p.id] = _.assign(getNode(p, undefined), {type: 'friendOfFriend', fullName: undefined})
+									if (l.success && nodes[p.id].type === 'maybe')
+										nodes[p.id].type = 'baby';
+								});
                             });
                         });
                     });
@@ -101,25 +118,6 @@ var getGraph = function(person, cb) {
                         });
                     });
                     graphLinks = _.flatten(graphLinks);
-
-                    _.each(graphLinks, function(c) {
-                        _.each([c.source, c.target], function(personId) {
-                            // Go through the links and make sure we have nodes for all of them
-                            if (typeof nodes[personId] === 'undefined') {
-                                // No node, ad a friendOfFriend node
-                                nodes[personId] = {
-                                    id: personId,
-                                    type: 'friendOfFriend',
-                                    team: 'neutral' // TODO: get the correct team
-                                };
-                            }
-
-                            // Promote some nodes from 'maybe' to 'baby' state if they have activities
-                            else if (c.completedActivities > 0 && nodes[personId].type === 'maybe') {
-                                nodes[personId].type = 'baby';
-                            }
-                        });
-                    });
 
                     cb(null, {
                         nodes: nodes,
