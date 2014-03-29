@@ -123,6 +123,38 @@ describe('A person', function() {
         });
     });
 
+    it('knows when it\'s captured', function() {
+        h.runAsync(function(done) {
+            h.setupFixtures(function(err) {
+                expect(err).toBeUndefined();
+
+                async.series([
+                    function(next) {
+                        Person.findOne({email: 'foo@bar.baz'}).exec(function(err, alice) {
+                            expect(err).toBeNull();
+                            alice.populateActivityLinks(function(err) {
+                                expect(err).toBeNull();
+                                expect(alice.isCaptured()).toBe(false);
+                                next();
+                            });
+                        });
+                    },
+
+                    function(next) {
+                        Person.findOne({email: 'im@stoop.id'}).exec(function(err, bob) {
+                            expect(err).toBeNull();
+                            bob.populateActivityLinks(function(err) {
+                                expect(err).toBeNull();
+                                expect(bob.isCaptured()).toBe(false);
+                                next();
+                            });
+                        });
+                    },
+                ], done());
+            });
+        });
+    });
+
     h.afterAll(function() {
         h.runAsync(function(done) {
             mongoose.disconnect(done);

@@ -89,6 +89,10 @@ PersonSchema.methods.getType = function() {
     }
 };
 
+PersonSchema.methods.isCaptured = function() {
+    return (this.getHits() >= this.getStrength());
+};
+
 // Computes the strength of a person.
 //
 // A person has an innate strength depending on their role. It also gets
