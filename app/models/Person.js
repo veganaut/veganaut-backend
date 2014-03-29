@@ -8,6 +8,7 @@
 
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var ActivityLink = mongoose.model('ActivityLink');
 
 var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
@@ -50,6 +51,17 @@ PersonSchema.pre('save', function(next) {
 
 PersonSchema.methods.verify = function(candidatePassword, next) {
     bcrypt.compare(candidatePassword, this.password, next);
+};
+
+PersonSchema.methods.populateActivityLinks = function(next) {
+    var that = this;
+    ActivityLink.find()
+        .or([{sources: [that.id]}, {targets: [that.id]}])
+        .exec(function(err, activityLinks) {
+            if (err) { return next(err); }
+            that._activityLinks = activityLinks;
+            return next(null);
+        });
 };
 
 mongoose.model('Person', PersonSchema);

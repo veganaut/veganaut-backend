@@ -40,6 +40,23 @@ describe('A person', function() {
         });
     });
 
+    it('can populate its activities', function() {
+        h.runAsync(function(done) {
+            h.setupFixtures(function(err) {
+                expect(err).toBeUndefined();
+
+                Person.findOne({email: 'foo@bar.baz'}).exec(function(err, person) {
+                    expect(err).toBeNull();
+                    person.populateActivityLinks(function(err) {
+                        expect(err).toBeNull();
+                        expect(person._activityLinks.length).toBe(3);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
     h.afterAll(function() {
         h.runAsync(function(done) {
             mongoose.disconnect(done);
