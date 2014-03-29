@@ -30,15 +30,12 @@ h.describe('Graph API methods', function() {
                         expect(typeof node.fullName).toBe('string');
                         expect(typeof node.coordX).toBe('number');
                         expect(typeof node.coordY).toBe('number');
-                        expect(Object.keys(node).length).toBe(6);
                         break;
                     case 'user':
                         expect(typeof node.fullName).toBe('string');
-                        expect(Object.keys(node).length).toBe(4);
                         break;
                     case 'friendOfFriend':
 						expect(typeof node.fullName).toBe('undefined');
-                        expect(Object.keys(node).length).toBe(3);
                         break;
                     case 'default':
                         expect('unkown node type').toBe('never happening');
