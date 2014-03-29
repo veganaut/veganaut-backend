@@ -59,7 +59,7 @@ PersonSchema.methods.verify = function(candidatePassword, next) {
 PersonSchema.methods.populateActivityLinks = function(next) {
     var that = this;
     ActivityLink.find()
-        .or([{sources: [that.id]}, {targets: [that.id]}])
+        .or([{source: that.id}, {target: that.id}])
         .exec(function(err, activityLinks) {
             if (err) { return next(err); }
             that._activityLinks = activityLinks;

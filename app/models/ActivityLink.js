@@ -20,8 +20,8 @@ var generateReferenceCode = function() {
 
 var ActivityLinkSchema = new Schema({
     activity: { type: Schema.Types.ObjectId, ref: 'Activity' },
-    sources: [ { type: Schema.Types.ObjectId, ref: 'Person' } ],
-    targets: [ { type: Schema.Types.ObjectId, ref: 'Person' } ],
+    source: { type: Schema.Types.ObjectId, ref: 'Person' },
+    target: { type: Schema.Types.ObjectId, ref: 'Person' },
     location: String,
     startDate: Date,
     success: { type: Boolean, default: false },

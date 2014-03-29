@@ -60,14 +60,12 @@ var getGraph = function(person, cb) {
             });
 
             // Add a 'me' node
-            nodes.push(_.assign(
-				getNode(person),
-				{
-					relation: 'me',
-					coordX: 0.5,
-					coordY: 0.5
-				}
-			));
+            nodes.push(_.assign(getNode(person), {
+                    relation: 'me',
+                    coordX: 0.5,
+                    coordY: 0.5
+                })
+            );
 
             // Get the list of all the people we want to fine the links for
             var personIdList = _.pluck(nodes, 'id');
@@ -81,33 +79,29 @@ var getGraph = function(person, cb) {
             ActivityLink
                 .find()
                 .or([
-                    {sources: { $in: personIdList } },
-                    {targets: { $in: personIdList } }
+                    {source: { $in: personIdList } },
+                    {target: { $in: personIdList } }
                 ])
-				.populate('sources')
-				.populate('targets')
+				.populate('source')
+				.populate('target')
                 .exec(function(err, links) {
                     // We need to map these activity links, and transform them into a 2d
                     // structure that maps source/target pairs to counts.
 					var newnodes = {};
                     var counts = {};
                     _.each(links, function(l) {
-                        _.each(l.sources, function(s) {
-                            _.each(l.targets, function(t) {
-                                counts[s.id] = counts[s.id] || {};
-                                if (typeof counts[s.id][t.id] === 'undefined') {
-                                    counts[s.id][t.id] = {
-                                        open: 0,
-                                        completed: 0
-                                    };
-                                }
-                                counts[s.id][t.id][l.success ? 'completed' : 'open'] += 1;
-								_.each([s,t], function(p) {
-									if (!nodes[p.id]) {
-										newnodes[p.id] = p;
-									}
-								});
-                            });
+                        counts[l.source.id] = counts[l.source.id] || {};
+                        if (typeof counts[l.source.id][l.target.id] === 'undefined') {
+                            counts[l.source.id][l.target.id] = {
+                                open: 0,
+                                completed: 0
+                            };
+                        }
+                        counts[l.source.id][l.target.id][l.success ? 'completed' : 'open'] += 1;
+                        _.each([l.source, l.target], function(p) {
+                            if (!nodes[p.id]) {
+                                newnodes[p.id] = p;
+                            }
                         });
                     });
 

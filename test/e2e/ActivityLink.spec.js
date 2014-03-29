@@ -13,7 +13,7 @@ h.describe('ActivityLink API methods', function() {
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
                     expect(res.body.referenceCode).toEqual('OiWCrB');
-                    expect(res.body.targets.length).toEqual(1);
+                    expect(res.body.target).toBeDefined();
                     done();
                 })
             ;
@@ -39,9 +39,9 @@ h.describe('ActivityLink API methods', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'activityLink')
                 .send({
-                    targets: [{
+                    target: {
                         fullName: 'Tester'
-                    }],
+                    },
                     location: 'Bern',
                     startDate: '01.02.2014',
                     activity: {
@@ -64,9 +64,9 @@ h.describe('ActivityLink API methods', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'activityLink')
                 .send({
-                    targets: [{
+                    target: {
                         id: '000000000000000000000002'
-                    }],
+                    },
                     activity: {
                         id: 'a00000000000000000000001'
                     }
@@ -83,9 +83,9 @@ h.describe('ActivityLink API methods', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'activityLink')
                 .send({
-                    targets: [{
+                    target: {
                         id: '000000000000000000000005'
-                    }],
+                    },
                     activity: {
                         id: 'a00000000000000000000001'
                     }
@@ -109,8 +109,8 @@ h.describe('ActivityLink API methods', function() {
                     expect(res.body.length).toBeGreaterThan(0);
 
                     var openLink = res.body[0];
-                    expect(openLink.targets.length).toBeGreaterThan(0);
-                    expect(typeof openLink.targets[0]).toBe('string');
+                    expect(openLink.target).toBeDefined();
+                    expect(typeof openLink.target).toBe('string');
                     expect(typeof openLink.activity).toBe('string');
                     expect(typeof openLink.referenceCode).toBe('string');
                     done();

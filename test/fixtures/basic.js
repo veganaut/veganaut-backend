@@ -72,8 +72,8 @@ var getFixtures = function() {
 
     fix.aliceBuysSomethingForBob = new ActivityLink({
         activity: fix.buyActivity.id,
-        sources: [fix.alice.id],
-        targets: [fix.bob.id],
+        source: fix.alice.id,
+        target: fix.bob.id,
         location: 'Bern, Switzerland',
         startDate: '2014-01-10',
         success: true,
@@ -82,8 +82,8 @@ var getFixtures = function() {
 
     fix.aliceCooksSomethingForCarol = new ActivityLink({
         activity: fix.cookActivity.id,
-        sources: [fix.alice.id],
-        targets: [fix.carol.id],
+        source: fix.alice.id,
+        target: fix.carol.id,
         location: 'Bern',
         startDate: '2014-02-20',
         success: true,
@@ -92,16 +92,16 @@ var getFixtures = function() {
 
     fix.aliceWantsToBuySomethingForDave = new ActivityLink({
         activity: fix.buyActivity.id,
-        sources: [fix.alice.id],
-        targets: [fix.dave.id],
+        source: fix.alice.id,
+        target: fix.dave.id,
         success: false,
         referenceCode: 'OiWCrB'
     });
 
     fix.bobWantsToBuySomethingForEve = new ActivityLink({
         activity: fix.buyActivity.id,
-        sources: [fix.bob.id],
-        targets: [fix.eve.id],
+        source: fix.bob.id,
+        target: fix.eve.id,
         success: false,
         referenceCode: 'AK92oj'
     });

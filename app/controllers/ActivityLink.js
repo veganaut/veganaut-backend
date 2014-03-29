@@ -54,10 +54,10 @@ exports.referenceCode = function(req, res, next) {
             personMerged = true;
 
             // Store reference to the old target.
-            var oldTarget = activityLink.targets[0];
+            var oldTarget = activityLink.target;
 
             // Set the activityLink target to the current user
-            activityLink.targets = [user.id];
+            activityLink.target = user.id;
             // TODO: don't save twice, already saved in updateActivityLink
             activityLink.save(function(err) {
                 if (err) {
@@ -106,8 +106,8 @@ exports.referenceCode = function(req, res, next) {
 
     var createGraphForTarget = function(cb) {
         createGraphNodeFor(
-            activityLink.targets[0],
-            activityLink.sources[0],
+            activityLink.target,
+            activityLink.source,
             cb
         );
     };
@@ -119,8 +119,8 @@ exports.referenceCode = function(req, res, next) {
         }
         else {
             createGraphNodeFor(
-                activityLink.sources[0],
-                activityLink.targets[0],
+                activityLink.source,
+                activityLink.target,
                 cb
             );
         }
@@ -138,7 +138,7 @@ exports.referenceCode = function(req, res, next) {
             return next(err);
         }
         else {
-            return res.send(_.pick(activityLink, 'referenceCode', 'targets'));
+            return res.send(_.pick(activityLink, 'referenceCode', 'target'));
         }
     });
 };
@@ -170,7 +170,7 @@ exports.link = function(req, res, next) {
 
     var createPersonIfNeeded = function(cb) {
         // Check if the person has an id
-        var person = req.body.targets[0];
+        var person = req.body.target;
         if (typeof person.id !== 'undefined') {
             // This person already exists TODO: verify it really exists
             targetPerson = person;
@@ -180,8 +180,8 @@ exports.link = function(req, res, next) {
             ActivityLink
                 .findOne('', '_id')
                 .or([
-                    { sources: [user.id], targets: [person.id] },
-                    { sources: [person.id], targets: [user.id] }
+                    { source: user.id, target: person.id },
+                    { source: person.id, target: user.id }
                 ])
                 .exec(function(err, link) {
                     if (!err && !link) {
@@ -223,8 +223,8 @@ exports.link = function(req, res, next) {
     var createLink = function(cb) {
         var link = new ActivityLink({
             activity: activity ? activity.id : undefined,
-            sources: [user.id],
-            targets: [targetPerson.id],
+            source: user.id,
+            target: targetPerson.id,
             location: req.body.location,
             startDate: req.body.startDate
         });
@@ -257,8 +257,8 @@ exports.openList = function(req, res, next) {
 
     // Query all the activityLinks from the logged in user that
     // aren't successful yet
-    ActivityLink.find({sources: me.id, success: false})
-        .populate('targets', 'fullName')
+    ActivityLink.find({source: me.id, success: false})
+        .populate('target', 'fullName')
         .populate('activity', 'name')
         .exec(function(err, links) {
             if (err) {
@@ -269,7 +269,7 @@ exports.openList = function(req, res, next) {
             links = _.map(links, function(link) {
                 return {
                     activity: link.activity.name,
-                    targets: _.pluck(link.targets, 'fullName'),
+                    target: link.target.fullName,
                     referenceCode: link.referenceCode
                 };
             });
