@@ -73,15 +73,9 @@ exports.register = function(req, res, next) {
         updatePerson
     ], function(err) {
         if (err) {
-            // TODO: don't render error here, middleware should do that
-            // TODO: also check for statusCode should be smarter. actually the Error object should contain the status code
-            if (res.statusCode === 200) {
-                res.status(500);
-            }
-            return res.send({error: err.message});
+            return next(err);
         }
-        else {
-            return res.send(201, _.pick(person, '_id', 'email', 'fullName', 'alienName'));
-        }
+
+        return res.send(201, _.pick(person, '_id', 'email', 'fullName', 'alienName'));
     });
 };
