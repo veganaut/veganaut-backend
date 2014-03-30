@@ -86,6 +86,17 @@ describe('A person', function() {
                             });
                         });
                     },
+
+                    function(next) {
+                        Person.findOne({fullName: 'Dave Donaldsson'}).exec(function(err, dave) {
+                            expect(err).toBeNull();
+                            dave.populateActivityLinks(function(err) {
+                                expect(err).toBeNull();
+                                expect(dave.getStrength()).toBe(0.5);
+                                next();
+                            });
+                        });
+                    },
                 ], done());
             });
         });
@@ -150,6 +161,17 @@ describe('A person', function() {
                             });
                         });
                     },
+
+                    function(next) {
+                        Person.findOne({fullName: 'Dave Donaldsson'}).exec(function(err, dave) {
+                            expect(err).toBeNull();
+                            dave.populateActivityLinks(function(err) {
+                                expect(err).toBeNull();
+                                expect(dave.isCaptured()).toBe(false);
+                                next();
+                            });
+                        });
+                    }
                 ], done());
             });
         });
