@@ -29,7 +29,7 @@ exports.referenceCode = function(req, res, next) {
             else if (link.success === true) {
                 res.status(409);
                 err = new Error('This referenceCode has already been used: ' + referenceCode);
-            } else if (link.target.isUser && (!user || !user._id.equals(link.target._id))) {
+            } else if (link.target.isUser() && (!user || !user._id.equals(link.target._id))) {
                 res.status(409);
                 err = new Error('This referenceCode belongs to a different user: ' + referenceCode);
                 err.details = {promptLogin: true};
