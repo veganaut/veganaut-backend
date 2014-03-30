@@ -36,6 +36,21 @@ h.describe('ActivityLink API methods', function() {
         });
     });
 
+    it('cannot use reference code for different person', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink/reference')
+                .send({
+                    referenceCode: 'AK92oj'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(409);
+                    expect(typeof res.body.error).toBe('string');
+                    done();
+                })
+            ;
+        });
+    });
+
     it('can create a activity link with dummy', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'activityLink')
