@@ -10,6 +10,7 @@ h.describe('ActivityLink API methods', function() {
                 .send({
                     referenceCode: 'OiWCrB'
                 })
+                .set('Authorization', null)
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
                     expect(res.body.referenceCode).toEqual('OiWCrB');
