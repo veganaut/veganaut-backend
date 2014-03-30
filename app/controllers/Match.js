@@ -58,6 +58,7 @@ var computeScores = function(next) {
                     result[team].score = result[team].users +
                                          SCORE_FACTOR_CAPTURED * result[team].captured +
                                          SCORE_FACTOR_BABIES * result[team].babies;
+                    result[team].score = Math.round(result[team].score);
                 });
 
                 return next(null, result);

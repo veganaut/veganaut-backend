@@ -4,6 +4,8 @@
 'use strict';
 /* global runs, waitsFor, describe */
 
+var _ = require('lodash');
+
 /** An express server */
 exports.server = require('../app');
 exports.port = 3001;
@@ -52,7 +54,6 @@ exports.request = function(method, url) {
 
 // Fixtures
 var fixtures = require('./fixtures/basic');
-var setupFixtures = fixtures.setupFixtures;
 exports.setupFixtures = fixtures.setupFixtures;
 
 /** Runs the given command synchronously */
@@ -92,10 +93,23 @@ exports.createSessionFor = createSessionFor;
 
 /**
  * describe is our wrapper around jasmine's describe. It runs a server, sets up fixtures, etc.
- * @param what The item that's being described
- * @param how  A function that contains the description
+ * @param what     The item that's being described
+ * @param options  An optional hash that can be used to choose the fixtures, the logged-in user, etc.
+ * @param how      A function that contains the description
  */
-exports.describe = function(what, how) {
+exports.describe = function(what, options, how) {
+
+    if (typeof(how) === 'undefined') {
+        how = options;
+        options = {};
+    }
+    _.defaults(options, {
+        fixtures: 'basic',
+        user: 'foo@bar.baz'
+    });
+
+    var setupFixtures = require('./fixtures/' + options.fixtures).setupFixtures;
+
     var wrapper = function() {
         // Start a server and initialize fixtures
         beforeAll(function () {
@@ -106,7 +120,7 @@ exports.describe = function(what, how) {
                         if (err) { console.log(err); }
                         setupFixtures(function(err) {
                             if (err) { console.log(err); }
-                            createSessionFor('foo@bar.baz', function(err, sid) {
+                            createSessionFor(options.user, function(err, sid) {
                                 if (err) { console.log(err); }
                                 exports.sessionId = sid;
                                 done();
