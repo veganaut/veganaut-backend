@@ -17,8 +17,7 @@ var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
 
 // Constants used in strength and hits computation
-var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10, maybe: 0.5};
-var INNATE_STRENGTH_MAYBE = 0.5;
+var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10, 'default': 0.5};
 var MULTIPLE_LINKS_FACTOR = 0.5;
 
 function generateNickName() {
@@ -120,7 +119,7 @@ PersonSchema.methods.getStrength = function() {
 
     var that = this;
 
-    var strength = that.role ? INNATE_STRENGTH[that.role] : INNATE_STRENGTH_MAYBE;
+    var strength = INNATE_STRENGTH[that.role || 'default'];
     var successfulActivityLinks = _.filter(that._activityLinks, 'success');
     var nLinksByOther = {};
     _.forEach(successfulActivityLinks, function(al) {
