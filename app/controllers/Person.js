@@ -19,7 +19,7 @@ exports.register = function(req, res, next) {
 
 
     // Pick the posted data
-    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'role', 'team',  '_id');
+    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'role', 'team', 'nickName',  '_id');
     var person;
 
     var verifyEmailUnused = function(cb) {
@@ -63,6 +63,7 @@ exports.register = function(req, res, next) {
         // TODO: find a better way of doing this (less verbose)
         person.email = personData.email;
         person.fullName = personData.fullName;
+        person.nickName = personData.nickName;
         person.password = personData.password;
         person.role = personData.role;
         person.team = personData.team;
