@@ -74,12 +74,16 @@ PersonSchema.methods.populateActivityLinks = function(next) {
         });
 };
 
+PersonSchema.methods.isUser = function() {
+    return typeof this.password !== 'undefined';
+};
+
 PersonSchema.methods.getType = function() {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getType';
     }
 
-    if (typeof this.password !== 'undefined') {
+    if (this.isUser()) {
         return 'user';
     } else if (_.some(this._activityLinks, 'success')) {
         return 'baby';
