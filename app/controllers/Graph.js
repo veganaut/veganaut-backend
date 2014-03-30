@@ -11,7 +11,7 @@ var getNode = function(person, graphnode) {
     var result = {
         id:         person.id,
         fullName:   person.fullName,
-		nickName:   person.nickName,
+        nickName:   person.nickName,
         team:       person.team,
         role:       person.role,
         type:       person.getType(),
