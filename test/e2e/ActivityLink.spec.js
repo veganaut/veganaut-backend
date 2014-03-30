@@ -2,6 +2,8 @@
 /* global  it, expect */
 
 var h = require('../helpers');
+var mongoose = require('mongoose');
+var Person = mongoose.model('Person');
 
 h.describe('ActivityLink API methods', function() {
     it('can use a reference code', function() {
@@ -15,7 +17,10 @@ h.describe('ActivityLink API methods', function() {
                     expect(res.statusCode).toBe(200);
                     expect(res.body.referenceCode).toEqual('OiWCrB');
                     expect(res.body.target).toBe('000000000000000000000004');
-                    done();
+                    Person.findById('000000000000000000000004', function (err, dave) {
+                        expect(dave.team).toBe('blue');
+                        done();
+                    });
                 })
             ;
         });

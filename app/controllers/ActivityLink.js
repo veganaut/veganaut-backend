@@ -21,6 +21,7 @@ exports.referenceCode = function(req, res, next) {
         ActivityLink
             .findOne({referenceCode: referenceCode})
         .populate('target')
+        .populate('source')
         .exec(function(err, link) {
             if (!err && !link) {
                 res.status(404);
@@ -53,7 +54,11 @@ exports.referenceCode = function(req, res, next) {
      */
     var mergePerson = function(cb) {
         if (typeof user === 'undefined') {
-            // No logged in user, nothing to do
+            // No logged in user, set team of target
+            if (typeof activityLink.target.team === 'undefined') {
+                activityLink.target.team = activityLink.source.team;
+                return activityLink.target.save(cb);
+            }
             return cb();
         }
         else {
@@ -114,7 +119,7 @@ exports.referenceCode = function(req, res, next) {
     var createGraphForTarget = function(cb) {
         createGraphNodeFor(
             activityLink.target._id,
-            activityLink.source,
+            activityLink.source._id,
             cb
         );
     };
@@ -126,7 +131,7 @@ exports.referenceCode = function(req, res, next) {
         }
         else {
             createGraphNodeFor(
-                activityLink.source,
+                activityLink.source._id,
                 activityLink.target._id,
                 cb
             );
