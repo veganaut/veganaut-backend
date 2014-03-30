@@ -169,4 +169,17 @@ PersonSchema.methods.getHits = function() {
     return hits;
 };
 
+PersonSchema.methods.toApiObject = function () {
+    return _.assign(
+        _.pick(this, 'email', 'nickName', 'fullName', 'gender', 'dateOfBirth', 'phone', 'address', 'team', 'role'),
+        {
+            id:         this.id,
+            type:       this.getType(),
+            strength:   this.getStrength(),
+            hits:       this.getHits(),
+            isCaptured: this.isCaptured(),
+        }
+    );
+};
+
 mongoose.model('Person', PersonSchema);

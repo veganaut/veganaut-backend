@@ -8,17 +8,7 @@ var GraphNode = mongoose.model('GraphNode');
 var ActivityLink = mongoose.model('ActivityLink');
 
 var getNode = function(person, graphnode) {
-    var result = {
-        id:         person.id,
-        fullName:   person.fullName,
-        nickName:   person.nickName,
-        team:       person.team,
-        role:       person.role,
-        type:       person.getType(),
-        strength:   person.getStrength(),
-        hits:       person.getHits(),
-        isCaptured: person.isCaptured()
-    };
+    var result = person.toApiObject();
 
     if (typeof graphnode !== 'undefined') {
         if (typeof graphnode.coordX !== 'undefined') {

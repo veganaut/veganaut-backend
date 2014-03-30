@@ -19,15 +19,15 @@ exports.register = function(req, res, next) {
 
 
     // Pick the posted data
-    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'role', 'nickName', '_id');
+    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'role', 'nickName', 'id');
     // Assign a random team
     personData.team = (Math.random() < 0.5) ? 'green' : 'blue';
 
     var person;
 
     var getOrCreatePerson = function(cb) {
-        if (typeof personData._id === 'string') {
-            Person.findById(personData._id, function(err, existingPerson) {
+        if (typeof personData.id === 'string') {
+            Person.findById(personData.id, function(err, existingPerson) {
                 if (err) { return cb(err); }
 
                 // Check if the given id points to an existing person
@@ -62,7 +62,8 @@ exports.register = function(req, res, next) {
 
     async.series([
         getOrCreatePerson,
-        updatePerson
+        updatePerson,
+        function (cb) {person.populateActivityLinks(cb);}
     ], function(err) {
         if (err) {
             // Send a 400 status if the email address is already used
@@ -72,6 +73,15 @@ exports.register = function(req, res, next) {
             return next(err);
         }
 
-        return res.send(201, _.pick(person, '_id', 'email', 'fullName', 'nickName', 'role', 'team'));
+        return res.send(201, person.toApiObject());
+    });
+};
+
+exports.me = function (req, res, next) {
+    req.user.populateActivityLinks(function (err) {
+        if (err) {
+            return next(err);
+        }
+        return res.send(200, req.user.toApiObject());
     });
 };

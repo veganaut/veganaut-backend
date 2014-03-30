@@ -3,6 +3,8 @@
 
 var h = require('../helpers');
 
+// TODO test person/me
+
 h.describe('Person API methods', function() {
     it('can register new user', function() {
         h.runAsync(function(done) {
@@ -34,7 +36,7 @@ h.describe('Person API methods', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'person')
                 .send({
-                    _id: '000000000000000000000003',
+                    id: '000000000000000000000003',
                     email: 'carol@carol.ca',
                     fullName: 'Carol Curie',
                     role: 'veteran',
@@ -45,7 +47,7 @@ h.describe('Person API methods', function() {
                     expect(res.statusCode).toBe(201);
 
                     // Some sanity checks on the returned person
-                    expect(res.body._id).toEqual('000000000000000000000003');
+                    expect(res.body.id).toEqual('000000000000000000000003');
                     expect(res.body.email).toEqual('carol@carol.ca');
                     expect(res.body.fullName).toEqual('Carol Curie');
 
@@ -77,7 +79,7 @@ h.describe('Person API methods', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'person')
                 .send({
-                    _id: '000000000000000000000001',
+                    id: '000000000000000000000001',
                     email: 'a@b.ch',
                     fullName: 'Hacker DeHack',
                     role: 'scout',
