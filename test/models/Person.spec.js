@@ -97,7 +97,7 @@ describe('A person', function() {
                             });
                         });
                     },
-                ], done());
+                ], done);
             });
         });
     });
@@ -129,7 +129,7 @@ describe('A person', function() {
                             });
                         });
                     },
-                ], done());
+                ], done);
             });
         });
     });
@@ -172,7 +172,7 @@ describe('A person', function() {
                             });
                         });
                     }
-                ], done());
+                ], done);
             });
         });
     });
