@@ -63,7 +63,7 @@ exports.referenceCode = function(req, res, next) {
             var oldTarget = activityLink.target;
 
             // Set the activityLink target to the current user
-            activityLink.target = user.id;
+            activityLink.target = user;
             // TODO: don't save twice, already saved in updateActivityLink
             activityLink.save(function(err) {
                 if (err) {
@@ -72,12 +72,12 @@ exports.referenceCode = function(req, res, next) {
 
                 // TODO: handle halfway successful merges
                 // Delete the now obsolete person
-                Person.findByIdAndRemove(oldTarget, function(err) {
+                Person.findByIdAndRemove(oldTarget._id, function(err) {
                     if (err) {
                         return cb(err);
                     }
 
-                    GraphNode.remove({ target: oldTarget }, function(err) {
+                    GraphNode.remove({ target: oldTarget._id }, function(err) {
                         cb(err);
                     });
                 });
@@ -112,7 +112,7 @@ exports.referenceCode = function(req, res, next) {
 
     var createGraphForTarget = function(cb) {
         createGraphNodeFor(
-            activityLink.target,
+            activityLink.target._id,
             activityLink.source,
             cb
         );
@@ -126,7 +126,7 @@ exports.referenceCode = function(req, res, next) {
         else {
             createGraphNodeFor(
                 activityLink.source,
-                activityLink.target,
+                activityLink.target._id,
                 cb
             );
         }
@@ -144,7 +144,10 @@ exports.referenceCode = function(req, res, next) {
             return next(err);
         }
         else {
-            return res.send(_.pick(activityLink, 'referenceCode', 'target'));
+            return res.send({
+                referenceCode: activityLink.referenceCode,
+                target:        activityLink.target._id
+            });
         }
     });
 };
