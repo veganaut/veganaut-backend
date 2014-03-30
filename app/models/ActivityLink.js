@@ -7,16 +7,11 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var generatePassword = require('password-generator');
 
-// TODO: make reference codes that can be remembered and typed easily (on phones)
 var generateReferenceCode = function() {
-    var ALPHABET = '23456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ';
-    var REFERENCE_CODE_LENGTH = 6;
-    var result = '';
-    for (var i = 0; i < REFERENCE_CODE_LENGTH; ++i) {
-        result = result + ALPHABET.charAt(Math.floor(Math.random() * ALPHABET.length));
-    }
-    return result;
+    var REFERENCE_CODE_LENGTH = 10;
+    return generatePassword(REFERENCE_CODE_LENGTH);
 };
 
 var ActivityLinkSchema = new Schema({
