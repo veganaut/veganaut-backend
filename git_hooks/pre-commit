@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # A hook script to verify what is about to be committed.
 # Called by "git commit" with no arguments.  The hook should
@@ -52,7 +52,7 @@ if ! node_modules/.bin/jshint .; then
     exit 1
 fi
 
-if grep -r -l '\t' app test *.js; then
+if grep -r -l $'\t' app test *.js; then
 	echo "Tabs in the above files. Please fix before committing"
 	exit 1
 fi
