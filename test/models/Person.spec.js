@@ -21,8 +21,15 @@ describe('A person', function() {
     });
 
     it('can be created', function() {
-        var p = new Person({email: 'foo@bar.baz'});
-        expect(p.email).toBe('foo@bar.baz');
+        h.runAsync(function(done) {
+            Person.remove().exec(function(err) {
+                expect(err).toBeNull();
+                done();
+            });
+        });
+
+        var p = new Person({email: 'mynewperson@example.com'});
+        expect(p.email).toBe('mynewperson@example.com');
         expect(p.id).toBeTruthy();
         expect(p.nickName).toMatch(/Zorg-\d+/);
 
@@ -36,7 +43,7 @@ describe('A person', function() {
         h.runAsync(function(done) {
             Person.findOne(p.id).exec(function(err, person) {
                 expect(err).toBeNull();
-                expect(person.email).toBe('foo@bar.baz');
+                expect(person.email).toBe('mynewperson@example.com');
                 done();
             });
         });

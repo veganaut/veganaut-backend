@@ -25,7 +25,7 @@ function generateNickName() {
 }
 
 var PersonSchema = new Schema({
-    email: {type: String},
+    email: {type: String, unique: true, sparse: true},
     password: String,
     nickName: { type: String, default: generateNickName },
 

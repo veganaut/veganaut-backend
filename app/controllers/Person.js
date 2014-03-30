@@ -19,40 +19,36 @@ exports.register = function(req, res, next) {
 
 
     // Pick the posted data
-    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'role', 'team', 'nickName',  '_id');
-    var person;
+    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'role', 'nickName', '_id');
+    // Assign a random team
+    personData.team = (Math.random() < 0.5) ? 'green' : 'blue';
 
-    var verifyEmailUnused = function(cb) {
-        Person.findOne({email: personData.email}, function(err, existingPerson) {
-            if (!err && existingPerson) {
-                res.status(400);
-                err = new Error('This e-mail address is already used.');
-            }
-            return cb(err);
-        });
-    };
+    var person;
 
     var getOrCreatePerson = function(cb) {
         if (typeof personData._id === 'string') {
-            Person.findOne({_id: personData._id}, function(err, existingPerson) {
-                if (err) {
+            Person.findById(personData._id, function(err, existingPerson) {
+                if (err) { return cb(err); }
+
+                // Check if the given id points to an existing person
+                if (!existingPerson) {
+                    res.status(404);
+                    err = new Error('Could not find any user with the given id.');
                     return cb(err);
                 }
 
                 // Check if the person is already a full user
-                if (existingPerson && typeof existingPerson.password !== 'undefined') {
+                if (existingPerson.isUser()) {
                     res.status(403);
                     err = new Error('This user is already registered.');
                     return cb(err);
                 }
-                else {
-                    // All good, use the found person
-                    person = existingPerson;
-                    return cb();
-                }
+
+                // All good, use the found person
+                person = existingPerson;
+                return cb();
             });
-        }
-        else {
+        } else {
             // No person id given, create completely new user
             person = new Person();
             return cb();
@@ -60,25 +56,22 @@ exports.register = function(req, res, next) {
     };
 
     var updatePerson = function(cb) {
-        // TODO: find a better way of doing this (less verbose)
-        person.email = personData.email;
-        person.fullName = personData.fullName;
-        person.nickName = personData.nickName;
-        person.password = personData.password;
-        person.role = personData.role;
-        person.team = personData.team;
+        _.assign(person, personData);
         person.save(cb);
     };
 
     async.series([
-        verifyEmailUnused,
         getOrCreatePerson,
         updatePerson
     ], function(err) {
         if (err) {
+            // Send a 400 status if the email address is already used
+            if (err.name === 'MongoError' && err.code === 11000) {
+                res.status(400);
+            }
             return next(err);
         }
 
-        return res.send(201, _.pick(person, '_id', 'email', 'fullName', 'nickName'));
+        return res.send(201, _.pick(person, '_id', 'email', 'fullName', 'nickName', 'role', 'team'));
     });
 };
