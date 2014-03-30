@@ -104,13 +104,10 @@ PersonSchema.methods.getStrength = function() {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getStrength';
     }
-    if (typeof(this.role) === 'undefined') {
-        throw 'Cannot call getStrength if role is not set';
-    }
 
     var that = this;
 
-    var strength = INNATE_STRENGTH[that.role];
+    var strength = that.role ? INNATE_STRENGTH[that.role] : 0;
     var successfulActivityLinks = _.filter(that._activityLinks, 'success');
     var nLinksByOther = {};
     _.forEach(successfulActivityLinks, function(al) {
