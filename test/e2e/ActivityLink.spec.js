@@ -100,6 +100,26 @@ h.describe('ActivityLink API methods', function() {
         });
     });
 
+    it('cannot create activity link with herself', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink')
+                .send({
+                    target: {
+                        id: '000000000000000000000001'
+                    },
+                    activity: {
+                        id: 'a00000000000000000000001'
+                    }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(403);
+                    expect(typeof res.body.error).toBe('string');
+                    done();
+                }
+            );
+        });
+    });
+
     it('can query the open activity links', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'activityLink/mine/open')
