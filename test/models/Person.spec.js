@@ -24,7 +24,7 @@ describe('A person', function() {
         var p = new Person({email: 'foo@bar.baz'});
         expect(p.email).toBe('foo@bar.baz');
         expect(p.id).toBeTruthy();
-        expect(p.alienName).toMatch(/Zorg-\d+/);
+        expect(p.nickName).toMatch(/Zorg-\d+/);
 
         h.runAsync(function(done) {
             p.save(function(err) {

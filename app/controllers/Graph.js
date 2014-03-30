@@ -11,6 +11,7 @@ var getNode = function(person, graphnode) {
     var result = {
         id:         person.id,
         fullName:   person.fullName,
+		nickName:   person.nickName,
         team:       person.team,
         role:       person.role,
         type:       person.getType(),
@@ -36,7 +37,7 @@ var getNode = function(person, graphnode) {
 var getGraph = function(person, cb) {
     GraphNode
         .find({owner: person.id})
-        .populate('target', 'fullName password team')
+        .populate('target')
         .exec(function (err, nodes) {
             if (err) {
                 cb(err);

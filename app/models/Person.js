@@ -21,14 +21,14 @@ var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10, maybe: 0.5};
 var INNATE_STRENGTH_MAYBE = 0.5;
 var MULTIPLE_LINKS_FACTOR = 0.5;
 
-function generateAlienName() {
+function generateNickName() {
     return 'Zorg-' + ((1000000 * Math.random()).toFixed(0));
 }
 
 var PersonSchema = new Schema({
     email: {type: String},
     password: String,
-    alienName: { type: String, default: generateAlienName },
+    nickName: { type: String, default: generateNickName },
 
     fullName: String,
     // dateOfBirth can be just a year, year-month, or year-month-day

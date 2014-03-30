@@ -76,6 +76,6 @@ exports.register = function(req, res, next) {
             return next(err);
         }
 
-        return res.send(201, _.pick(person, '_id', 'email', 'fullName', 'alienName'));
+        return res.send(201, _.pick(person, '_id', 'email', 'fullName', 'nickName'));
     });
 };
