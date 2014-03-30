@@ -18,7 +18,10 @@ exports.referenceCode = function(req, res, next) {
 
     var findActivityLink = function(cb) {
         var referenceCode = req.body.referenceCode;
-        ActivityLink.findOne({referenceCode: referenceCode}, function(err, link) {
+        ActivityLink
+            .findOne({referenceCode: referenceCode})
+        .populate('target', 'type')
+        .exec(function(err, link) {
             if (!err && !link) {
                 res.status(404);
                 err = new Error('Could not find activityLink with referenceCode: ' + referenceCode);
@@ -26,7 +29,7 @@ exports.referenceCode = function(req, res, next) {
             else if (link.success === true) {
                 res.status(409);
                 err = new Error('This referenceCode has already been used: ' + referenceCode);
-            } else if (user && link.target !== user) {
+            } else if (user && link.target._id !== user && link.target.type === 'user') {
                 res.status(409);
                 err = new Error('This referenceCode belongs to a different user: ' + referenceCode);
             }

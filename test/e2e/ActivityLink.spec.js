@@ -21,6 +21,23 @@ h.describe('ActivityLink API methods', function() {
         });
     });
 
+    it('can use a reference for a baby when logged in', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink/reference')
+                .send({
+                    referenceCode: 'AK92oj',
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    expect(res.body.referenceCode).toEqual('AK92oj');
+                    expect(res.body.target).toBeDefined();
+                    done();
+                })
+            ;
+        });
+    });
+
+
     it('cannot use already used reference code', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'activityLink/reference')
