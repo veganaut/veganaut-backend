@@ -14,7 +14,7 @@ h.describe('ActivityLink API methods', function() {
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
                     expect(res.body.referenceCode).toEqual('OiWCrB');
-                    expect(res.body.target).toBeDefined();
+                    expect(res.body.target).toBe('000000000000000000000004');
                     done();
                 })
             ;
@@ -30,7 +30,7 @@ h.describe('ActivityLink API methods', function() {
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
                     expect(res.body.referenceCode).toEqual('AK92oj');
-                    expect(res.body.target).toBeDefined();
+                    expect(res.body.target).toBe('000000000000000000000005');
                     done();
                 })
             ;
