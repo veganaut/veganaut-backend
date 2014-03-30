@@ -44,6 +44,9 @@ var getGraph = function(person, cb) {
 
             // transform this into a map for easier random access
             persons = _.indexBy(persons, 'id');
+            if (typeof persons[person.id] === 'undefined') {
+                persons[person.id] = person;
+            }
             nodes   = _.indexBy(nodes, function(n) { return n.target.id; });
 
             // Count the activities between the people in the social graph
