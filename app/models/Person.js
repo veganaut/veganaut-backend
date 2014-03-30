@@ -46,6 +46,14 @@ var PersonSchema = new Schema({
 PersonSchema.pre('save', function(next) {
     var user = this;
 
+    if (this.isUser()) {
+        _.each(['fullName', 'role', 'email', 'team'], function (key) {
+            if (typeof user[key] === 'undefined') {
+                return next(new Error('Required field ' + key + ' missing for Person of type user.'));
+            }
+        });
+    }
+
     // only hash the password if it has been modified (or is new)
     if (!user.isModified('password')) { return next(); }
 

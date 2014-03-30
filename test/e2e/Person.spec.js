@@ -10,6 +10,8 @@ h.describe('Person API methods', function() {
                 .send({
                     email: 'doge@mac.dog',
                     fullName: 'Doge MacDog',
+                    role: 'rookie',
+                    team: 'green',
                     password: 'wow. such secure. so protect.'
                 })
                 .end(function(res) {
@@ -35,6 +37,8 @@ h.describe('Person API methods', function() {
                     _id: '000000000000000000000003',
                     email: 'carol@carol.ca',
                     fullName: 'Carol Curie',
+                    role: 'veteran',
+                    team: 'blue',
                     password: 'oh. yeah.'
                 })
                 .end(function(res) {
@@ -57,6 +61,8 @@ h.describe('Person API methods', function() {
                 .send({
                     email: 'foo@bar.baz',
                     fullName: 'Dudette That',
+                    role: 'scout',
+                    team: 'blue',
                     password: 'already has an account but forgot 2 months ago'
                 })
                 .end(function(res) {
@@ -74,6 +80,8 @@ h.describe('Person API methods', function() {
                     _id: '000000000000000000000001',
                     email: 'a@b.ch',
                     fullName: 'Hacker DeHack',
+                    role: 'scout',
+                    team: 'blue',
                     password: 'ups'
                 })
                 .end(function(res) {
