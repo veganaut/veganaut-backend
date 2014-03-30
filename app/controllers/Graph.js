@@ -104,7 +104,7 @@ var getGraph = function(person, cb) {
                             if (err) {
                                 cb(err);
                             } else {
-                                var friendIndex = _.indexBy(friendIds, 'id');
+                                var friendIndex = _.indexBy(friendIds);
                                 var resultnodes = _.map(persons, function (n) {
                                     var result = getNode(n, nodes[n.id]);
                                     if (result.id === person.id) {
