@@ -44,13 +44,11 @@ var getFixtures = function() {
 
     fix.dave = new Person({
         _id: '000000000000000000000004',
-        team: 'blue',
         fullName: 'Dave Donaldsson'
     });
 
     fix.eve = new Person({
         _id: '000000000000000000000005',
-        team: 'green',
         fullName: 'Eve'
     });
 

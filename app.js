@@ -20,6 +20,7 @@ var Graph = require('./app/controllers/Graph');
 var Session = require('./app/controllers/Session');
 var Activity = require('./app/controllers/Activity');
 var ActivityLink = require('./app/controllers/ActivityLink');
+var Match = require('./app/controllers/Match');
 
 var app = express();
 
@@ -62,7 +63,6 @@ app.get('/graph/me', cors(), Session.restrict, Graph.view);
 app.get('/graph/:personId', cors(), Graph.viewById);
 app.put('/graph', cors(), Session.restrict, Graph.update);
 
-
 // Session
 app.options('/session', cors());
 app.post('/session', cors(), Session.create);
@@ -84,6 +84,11 @@ app.get('/activityLink/mine/open', cors(), Session.restrict, ActivityLink.openLi
 // Person
 app.options('/person', cors());
 app.post('/person', cors(), Person.register);
+
+// Match
+app.options('/match', cors());
+app.get('/match', cors(), Match.current);
+
 
 // Handle errors and if no one responded to the request
 app.use(function(err, req, res, next) {
