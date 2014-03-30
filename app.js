@@ -101,7 +101,7 @@ app.use(function(err, req, res, next) {
         }
 
         // Send the error details
-        res.send({ error: err.message });
+        res.send({ error: err.message, details: err.details });
     }
     else {
         // No error given, still ended up here, must be 404
