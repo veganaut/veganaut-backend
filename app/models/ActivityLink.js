@@ -4,6 +4,7 @@
 
 'use strict';
 
+var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
@@ -27,5 +28,24 @@ var ActivityLinkSchema = new Schema({
     success: { type: Boolean, default: false },
     referenceCode: { type: String, default: generateReferenceCode }
 });
+
+ActivityLinkSchema.pre('save', function(next) {
+    var that = this;
+    var id = {};
+    _.each(['source', 'target'], function (key) {
+        if (typeof that[key] === 'string') {
+            id[key] = that[key];
+        } else {
+            id[key] = that[key].id;
+        }
+    });
+    if (id.source === id.target) {
+        console.log(id);
+        console.log((new Error()).stack);
+        return next(new Error('ActivityLinks must have different source and target.'));
+    }
+    return next();
+});
+
 
 mongoose.model('ActivityLink', ActivityLinkSchema);
