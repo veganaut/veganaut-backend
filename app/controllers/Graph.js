@@ -9,10 +9,14 @@ var ActivityLink = mongoose.model('ActivityLink');
 
 var getNode = function(person, graphnode) {
     var result = {
-        id:       person.id,
-        fullName: person.fullName,
-        team:     person.team,
-        type:     person.getType()
+        id:         person.id,
+        fullName:   person.fullName,
+        team:       person.team,
+        role:       person.role,
+        type:       person.getType(),
+        strength:   person.getStrength(),
+        hits:       person.getHits(),
+        isCaptured: person.isCaptured()
     };
 
     if (typeof graphnode !== 'undefined') {

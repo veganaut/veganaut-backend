@@ -14,37 +14,43 @@ h.describe('Graph API methods', function() {
                 expect(res.statusCode).toBe(200);
 
                 // Make sure we get nodes and links
-                expect(_.isPlainObject(res.body.nodes)).toBe(true);
-                expect(_.isArray(res.body.links)).toBe(true);
+                expect(_.isPlainObject(res.body.nodes)).toBe(true, 'nodes is an object');
+                expect(_.isArray(res.body.links)).toBe(true, 'links is an array');
 
                 // Check that there's the right amount of nodes and links
                 var nodeKeys = Object.keys(res.body.nodes);
-                expect(nodeKeys.length).toBe(5);
-                expect(res.body.links.length).toBe(4);
+                expect(nodeKeys.length).toBe(5, 'number of nodes in graph');
+                expect(res.body.links.length).toBe(4, 'number of links in graph');
 
                 // Validate all the nodes
                 nodeKeys.forEach(function(id) {
                     var node = res.body.nodes[id];
 
-                    expect(typeof node.id).toBe('string');
-                    expect(typeof node.type).toBe('string');
-                    expect(node.type).toMatch(/^(user|baby|maybe)$/);
-                    expect(typeof node.team).toBe('string');
-                    expect(typeof node.relation).toBe('string');
+                    expect(typeof node.id).toBe('string', 'id is string');
+                    expect(typeof node.type).toBe('string', 'type is string');
+                    expect(node.type).toMatch(/^(user|baby|maybe)$/, 'type is one of user,baby or maybe');
+                    expect(typeof node.team).toBe('string', 'team is a string');
+                    //expect(node.role).toMatch(/^(rookie|scout|veteran|)$/, 'role is one of rookie,scout or veteran'); can be undefined
+                    expect(typeof node.strength).toBe('number', 'strength is a number');
+                    expect(node.strength).toBeGreaterThan(-1, '... and positive');
+                    expect(typeof node.hits).toBe('number', 'hits is a number');
+                    expect(node.hits).toBeGreaterThan(-1, '... and positive');
+                    expect(typeof node.isCaptured).toBe('boolean', 'isCaptured is a boolean');
+                    expect(typeof node.relation).toBe('string', 'relation is a string');
                     switch (node.relation) {
                     case 'me':
-                        expect(typeof node.fullName).toBe('string');
-                        expect(typeof node.coordX).toBe('number');
-                        expect(typeof node.coordY).toBe('number');
+                        expect(typeof node.fullName).toBe('string', 'fullName of me is set');
+                        expect(typeof node.coordX).toBe('number', 'coordX of me is set');
+                        expect(typeof node.coordY).toBe('number', 'coordY of me is set');
                         break;
                     case 'friend':
-                        expect(typeof node.fullName).toBe('string');
+                        expect(typeof node.fullName).toBe('string', 'fullName of friends is set');
                         break;
                     case 'friendOfFriend':
-                        expect(node.fullName).toBeUndefined();
+                        expect(node.fullName).toBeUndefined('fullName of friendsOfFriends is *not* set');
                         break;
                     default:
-                        expect('unkown node type').toBe('never happening');
+                        expect('unkown node type').toBe('never happening', 'relation is one of me,friend or friendOfFriend');
                     }
                 });
 
