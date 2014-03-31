@@ -11,8 +11,8 @@ h.describe('The Match controller', {fixtures: 'extended'}, function() {
 
                 expect(res.body).toEqual({
                     blue: {
-                        score: 6,
-                        users: 5,
+                        score: 7,
+                        users: 6,
                         babies: 1,
                         captured: 0
                     },
