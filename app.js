@@ -61,7 +61,7 @@ app.options('/graph/:personId', cors());
 app.options('/graph', cors());
 app.get('/graph/me', cors(), Session.restrict, Graph.view);
 app.get('/graph/:personId', cors(), Graph.viewById);
-app.put('/graph', cors(), Session.restrict, Graph.update);
+app.put('/graph/me', cors(), Session.restrict, Graph.update);
 
 // Session
 app.options('/session', cors());

@@ -87,7 +87,7 @@ h.describe('Graph API methods', function() {
 h.describe('Graph API update', function () {
     it('can update coordinates for my graph', function () {
         h.runAsync(function(done) {
-            h.request('PUT', h.baseURL + 'graph')
+            h.request('PUT', h.baseURL + 'graph/me')
                 .send({
                     nodes: {
                         '000000000000000000000001' : {id: '000000000000000000000001', coordX: 1.1, coordY: 1.2},
@@ -132,7 +132,7 @@ h.describe('Graph API update', function () {
 
     it('does not accept update with missing id', function () {
         h.runAsync(function(done) {
-            h.request('PUT', h.baseURL + 'graph')
+            h.request('PUT', h.baseURL + 'graph/me')
                 .send({
                     nodes: {
                         '000000000000000000000001' : {id: '000000000000000000000001', coordX: 1.1, coordY: 1.2},
