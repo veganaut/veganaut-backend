@@ -13,7 +13,6 @@ require('../../app/models/GraphNode');
 var Person = mongoose.model('Person');
 var Activity = mongoose.model('Activity');
 var ActivityLink = mongoose.model('ActivityLink');
-var GraphNode = mongoose.model('GraphNode');
 
 var getFixtures = function() {
     var fix = {};
@@ -51,7 +50,6 @@ var getFixtures = function() {
         _id: '000000000000000000000005',
         fullName: 'Eve'
     });
-
 
     fix.buyActivity = new Activity({
         _id: 'a00000000000000000000001',
@@ -102,37 +100,6 @@ var getFixtures = function() {
         target: fix.eve.id,
         success: false,
         referenceCode: 'AK92oj'
-    });
-
-
-    fix.aliceKnowsBob = new GraphNode({
-        owner: fix.alice.id,
-        target: fix.bob.id
-    });
-
-    fix.bobKnowsAlice = new GraphNode({
-        owner: fix.bob.id,
-        target: fix.alice.id
-    });
-
-    fix.aliceKnowsCarol = new GraphNode({
-        owner: fix.alice.id,
-        target: fix.carol.id
-    });
-
-    fix.aliceKnowsDave = new GraphNode({
-        owner: fix.alice.id,
-        target: fix.dave.id
-    });
-
-    fix.carolKnowsAlice = new GraphNode({
-        owner: fix.carol.id,
-        target: fix.alice.id
-    });
-
-    fix.bobKnowsEve = new GraphNode({
-        owner: fix.bob.id,
-        target: fix.eve.id
     });
 
     return fix;

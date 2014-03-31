@@ -92,59 +92,11 @@ exports.referenceCode = function(req, res, next) {
         }
     };
 
-    /**
-     * Creates the given GraphNode if it doesn't already exist
-     * @param owner
-     * @param target
-     * @param cb
-     */
-    var createGraphNodeFor = function(owner, target, cb) {
-        GraphNode.findOne({owner: owner, target: target}, function(err, node) {
-            // If there is an error return it, if the node already exists, there is nothing to do
-            if (err || node) {
-                return cb(err);
-            }
-
-            // Create new node
-            var newNode = new GraphNode({
-                owner: owner,
-                target: target
-            });
-            newNode.save(function(err) {
-                cb(err);
-            });
-        });
-    };
-
-    var createGraphForTarget = function(cb) {
-        createGraphNodeFor(
-            activityLink.target.id,
-            activityLink.source.id,
-            cb
-        );
-    };
-
-    var createGraphForSource = function(cb) {
-        if (!personMerged) {
-            // No person merged, no need to add GraphNode for target
-            return cb();
-        }
-        else {
-            createGraphNodeFor(
-                activityLink.source.id,
-                activityLink.target.id,
-                cb
-            );
-        }
-    };
-
     // TODO: better error and input checking along the way
     async.series([
         findActivityLink,
         updateActivityLink,
         mergePerson,
-        createGraphForTarget,
-        createGraphForSource
     ], function(err) {
         if (err) {
             return next(err);
@@ -220,21 +172,6 @@ exports.link = function(req, res, next) {
         }
     };
 
-    var createNodeIfNeeded = function(cb) {
-        if (targetWasCreated) {
-            var newNode = new GraphNode({
-                owner: user.id,
-                target: targetPerson.id
-            });
-            newNode.save(function(err) {
-                cb(err);
-            });
-        }
-        else {
-            cb(null);
-        }
-    };
-
     var createLink = function(cb) {
         var link = new ActivityLink({
             activity: activity ? activity.id : undefined,
@@ -255,7 +192,6 @@ exports.link = function(req, res, next) {
     async.series([
         findActivity,
         createPersonIfNeeded,
-        createNodeIfNeeded,
         createLink
     ], function(err) {
         if (err) {

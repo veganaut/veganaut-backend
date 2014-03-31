@@ -7,127 +7,158 @@ var Person = mongoose.model('Person');
 var GraphNode = mongoose.model('GraphNode');
 var ActivityLink = mongoose.model('ActivityLink');
 
-var getNode = function(person, graphnode) {
-    var result = person.toApiObject();
-
-    if (typeof graphnode !== 'undefined') {
-        if (typeof graphnode.coordX !== 'undefined') {
-            result.coordX = graphnode.coordX;
-        }
-        if (typeof graphnode.coordY !== 'undefined') {
-            result.coordY = graphnode.coordY;
-        }
-    }
-
-    return result;
-};
-
 // TODO: this needs unit testing
 // TODO: this function is ridiculously long
 var getGraph = function(person, cb) {
-    GraphNode
-        .find({owner: person.id})
-        .populate('target')
-        .exec(function (err, nodes) {
+    var friendIds = {};
+    var friendOfFriendIds = {};
+    var links = {};
+    var persons;
+    var graphnodes;
+
+    var getFriendIds = function (cb) {
+        ActivityLink
+            .find()
+            .or([{source: person.id}, {target: person.id}])
+            .exec(function (err, ls) {
+                if (err) {
+                    cb(err);
+                    return;
+                }
+
+                _.each(ls, function(l) {
+                    links[l.id] = l;
+                    friendIds[l.target] = true;
+                    friendIds[l.source] = true;
+                });
+
+                return cb();
+            });
+    };
+
+    var getFriendOfFriendIds = function (cb) {
+        var idlist = _.keys(friendIds);
+        ActivityLink
+            .find()
+            .or([{source: {$in: idlist}}, {target: {$in: idlist}}])
+            .exec(function (err, ls) {
+                if (err) {
+                    cb(err);
+                    return;
+                }
+                _.each(ls, function(l) {
+                    links[l.id] = l;
+                    friendOfFriendIds[l.target] = true;
+                    friendOfFriendIds[l.source] = true;
+                });
+
+                return cb();
+            });
+    };
+
+    var getPersons = function (cb) {
+        Person
+            .find({_id: {$in: _.keys(_.assign(_.zipObject([[person.id, true]]), friendIds, friendOfFriendIds))}})
+            .exec(function (err, result) {
+                if (err) {
+                    return cb(err);
+                }
+
+                persons = result;
+                async.each(
+                    _.toArray(persons),
+                    function(p, cb) {
+                        p.populateActivityLinks(cb);
+                    },
+                    cb
+                );
+            });
+    };
+
+    var getGraphNodes = function (cb) {
+        GraphNode
+            .find({owner: { $in: _.pluck(persons, 'id') }})
+            .exec(function (err, result) {
+                if (err) {
+                    return cb(err);
+                }
+                graphnodes = _.indexBy(result, 'target');
+                return cb();
+            });
+    };
+
+    async.series(
+        [
+            getFriendIds,
+            getFriendOfFriendIds,
+            getPersons,
+            getGraphNodes,
+        ],
+        function (err) {
             if (err) {
-                cb(err);
-                return;
+                console.log(err.stack);
+                return cb(err);
             }
 
-            var persons = _.pluck(nodes, 'target');
-            var friendIds = _.pluck(persons, 'id');
+            // Count links per person pair
+            var counts = {};
+            _.each(_.toArray(links), function (l) {
+                counts[l.source] = counts[l.source] || {};
+                if (typeof counts[l.source][l.target] === 'undefined') {
+                    counts[l.source][l.target] = {
+                        open: 0,
+                        completed: 0
+                    };
+                }
+                counts[l.source][l.target][l.success ? 'completed' : 'open'] += 1;
+            });
 
-            // transform this into a map for easier random access
-            persons = _.indexBy(persons, 'id');
-            if (typeof persons[person.id] === 'undefined') {
-                persons[person.id] = person;
-            }
-            nodes   = _.indexBy(nodes, function(n) { return n.target.id; });
+            // Convert links to the format needed by the frontend
+            var graphLinks = _.map(counts, function(cc, s) {
+                return _.map(cc, function(c, t) {
+                    var link = {
+                        source: s,
+                        target: t
+                    };
 
-            // Count the activities between the people in the social graph
-            // Get all the activities of the user and the friends
-            // (including activities to friends of friends)
-            ActivityLink
-                .find()
-                .or([
-                    {source: { $in: friendIds } },
-                    {target: { $in: friendIds } }
-                ])
-                .populate('source')
-                .populate('target')
-                .exec(function(err, links) {
-                    // We need to map these activity links, and transform them into a 2d
-                    // structure that maps source/target pairs to counts.
-                    var counts = {};
-                    _.each(links, function(l) {
-                        counts[l.source.id] = counts[l.source.id] || {};
-                        if (typeof counts[l.source.id][l.target.id] === 'undefined') {
-                            counts[l.source.id][l.target.id] = {
-                                open: 0,
-                                completed: 0
-                            };
-                        }
-                        counts[l.source.id][l.target.id][l.success ? 'completed' : 'open'] += 1;
-                        _.each([l.source, l.target], function(p) {
-                            if (typeof persons[p.id] === 'undefined') {
-                                persons[p.id] = p;
-                            }
-                        });
-                    });
+                    // Add the number of activities if the given person is part of the link
+                    if (s === person.id || t === person.id) {
+                        link.openActivities = c.open;
+                        link.completedActivities = c.completed;
+                    }
+                    return link;
+                });
+            });
+            graphLinks = _.flatten(graphLinks);
 
-                    // Convert to the format needed by the frontend
-                    var graphLinks = _.map(counts, function(cc, s) {
-                        return _.map(cc, function(c, t) {
-                            var link = {
-                                source: s,
-                                target: t
-                            };
+            // Convert persons to the format needed by the frontend
+            var graphNodes = _.map(persons, function (p) {
+                var result = p.toApiObject();
 
-                            // Add the number of activities if the given person is part of the link
-                            if (s === person.id || t === person.id) {
-                                link.openActivities = c.open;
-                                link.completedActivities = c.completed;
-                            }
-                            return link;
-                        });
-                    });
-                    graphLinks = _.flatten(graphLinks);
+                if (typeof graphnodes[p.id] !== 'undefined') {
+                    result.coordX = graphnodes[p.id].coordX;
+                    result.coordY = graphnodes[p.id].coordY;
+                }
 
-                    async.each(
-                        _.toArray(persons),
-                        function(p, cb) {
-                            p.populateActivityLinks(cb);
-                        },
-                        function (err) {
-                            if (err) {
-                                cb(err);
-                            } else {
-                                var friendIndex = _.indexBy(friendIds);
-                                var resultnodes = _.map(persons, function (n) {
-                                    var result = getNode(n, nodes[n.id]);
-                                    if (result.id === person.id) {
-                                        result.relation = 'me';
-                                        result.coordX = 0.5;
-                                        result.coordY = 0.5;
-                                    } else if (friendIndex[result.id]) {
-                                        result.relation = 'friend';
-                                    } else {
-                                        result.relation = 'friendOfFriend';
-                                        result.fullName = undefined;
-                                    }
-                                    return result;
-                                });
-                                cb(null, {
-                                    nodes: _.indexBy(resultnodes, 'id'),
-                                    links: graphLinks
-                                });
-                            }
-                        }
-                    );
-                })
-            ;
-        })
-    ;
+                if (result.id === person.id) {
+                    result.relation = 'me';
+                    result.coordX = 0.5;
+                    result.coordY = 0.5;
+                } else if (friendIds[result.id]) {
+                    result.relation = 'friend';
+                } else  {
+                    result.relation = 'friendOfFriend';
+                    result.fullName = undefined;
+                }
+
+                return result;
+            });
+
+            cb(null, {
+                nodes: _.indexBy(graphNodes, 'id'),
+                links: graphLinks
+            });
+        });
 };
 
 exports.view = function(req, res, next) {
