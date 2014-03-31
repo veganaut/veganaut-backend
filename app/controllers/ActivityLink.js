@@ -20,24 +20,26 @@ exports.referenceCode = function(req, res, next) {
         var referenceCode = req.body.referenceCode;
         ActivityLink
             .findOne({referenceCode: referenceCode})
-        .populate('target')
-        .populate('source')
-        .exec(function(err, link) {
-            if (!err && !link) {
-                res.status(404);
-                err = new Error('Could not find activityLink with referenceCode: ' + referenceCode);
-            }
-            else if (link.success === true) {
-                res.status(409);
-                err = new Error('This referenceCode has already been used: ' + referenceCode);
-            } else if (link.target.isUser() && (!user || user.id !== link.target.id)) {
-                res.status(409);
-                err = new Error('This referenceCode belongs to a different user: ' + referenceCode);
-                err.details = {promptLogin: true};
-            }
-            activityLink = link;
-            cb(err);
-        });
+            .populate('target')
+            .populate('source')
+            .exec(function(err, link) {
+                if (!err && !link) {
+                    res.status(404);
+                    err = new Error('Could not find activityLink with referenceCode: ' + referenceCode);
+                }
+                else if (link.success === true) {
+                    res.status(409);
+                    err = new Error('This referenceCode has already been used: ' + referenceCode);
+                }
+                else if (link.target.isUser() && (!user || !user._id.equals(link.target._id))) {
+                    res.status(409);
+                    err = new Error('This referenceCode belongs to a different user: ' + referenceCode);
+                    err.details = {promptLogin: true};
+                }
+                activityLink = link;
+                cb(err);
+            })
+        ;
     };
 
     var updateActivityLink = function(cb) {
@@ -60,6 +62,10 @@ exports.referenceCode = function(req, res, next) {
                 return activityLink.target.save(cb);
             }
             return cb();
+        }
+        else if (user.id === activityLink.target.id) {
+            // The logged in user is already target of the activity link -> do nothing
+            cb();
         }
         else {
             // Need to merge

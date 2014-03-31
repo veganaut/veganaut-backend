@@ -202,9 +202,10 @@ h.describe('ActivityLink between existing users', {fixtures: fix, user: 'alice@e
 
                     // Check if alice and bob still exists
                     // This is to make sure no nodes get deleted or merged away by mistake
-                    Person.findById('000000000000000000000001', function (err, alice) {
+                    Person.findOne({fullName: 'Alice Example'}, function (err, alice) {
                         expect(alice).not.toBeNull('alice still exists');
-                        Person.findById('000000000000000000000002', function (err, bob) {
+
+                        Person.findOne({fullName: 'Bob Example'}, function (err, bob) {
                             expect(typeof bob).not.toBeNull('bob still exists');
                             done();
                         });
