@@ -30,7 +30,7 @@ exports.referenceCode = function(req, res, next) {
             else if (link.success === true) {
                 res.status(409);
                 err = new Error('This referenceCode has already been used: ' + referenceCode);
-            } else if (link.target.isUser() && (!user || !user._id.equals(link.target._id))) {
+            } else if (link.target.isUser() && (!user || user.id !== link.target.id)) {
                 res.status(409);
                 err = new Error('This referenceCode belongs to a different user: ' + referenceCode);
                 err.details = {promptLogin: true};
@@ -78,12 +78,12 @@ exports.referenceCode = function(req, res, next) {
 
                 // TODO: handle halfway successful merges
                 // Delete the now obsolete person
-                Person.findByIdAndRemove(oldTarget._id, function(err) {
+                Person.findByIdAndRemove(oldTarget.id, function(err) {
                     if (err) {
                         return cb(err);
                     }
 
-                    GraphNode.remove({ target: oldTarget._id }, function(err) {
+                    GraphNode.remove({ target: oldTarget.id }, function(err) {
                         cb(err);
                     });
                 });
@@ -118,8 +118,8 @@ exports.referenceCode = function(req, res, next) {
 
     var createGraphForTarget = function(cb) {
         createGraphNodeFor(
-            activityLink.target._id,
-            activityLink.source._id,
+            activityLink.target.id,
+            activityLink.source.id,
             cb
         );
     };
@@ -131,8 +131,8 @@ exports.referenceCode = function(req, res, next) {
         }
         else {
             createGraphNodeFor(
-                activityLink.source._id,
-                activityLink.target._id,
+                activityLink.source.id,
+                activityLink.target.id,
                 cb
             );
         }
@@ -152,7 +152,7 @@ exports.referenceCode = function(req, res, next) {
         else {
             return res.send({
                 referenceCode: activityLink.referenceCode,
-                target:        activityLink.target._id
+                target:        activityLink.target.id
             });
         }
     });
