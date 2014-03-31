@@ -97,7 +97,7 @@ var getFixtures = function() {
     addPerson(fix, 'nellie', 'blue', 'scout');
     addPerson(fix, 'olivia', 'blue', 'veteran');
     addPerson(fix, 'paula', 'blue', 'rookie');
-	addPerson(fix, 'nova', 'blue', 'rookie');
+    addPerson(fix, 'nova', 'blue', 'rookie');
 
     // A few maybes
     addMaybe(fix, 'vanessa');
