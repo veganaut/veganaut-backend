@@ -6,6 +6,7 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var FixtureLoader = require('./FixtureLoader');
+var activities = require('./activities');
 
 var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
@@ -13,11 +14,15 @@ var GraphNode = mongoose.model('GraphNode');
 
 /**
  * FixtureCreator constructor. Helper for creating fixtures.
+ * Will add the Activity fixtures by default.
  * @param fixtures
  * @constructor
  */
 var FixtureCreator = function(fixtures) {
     this._fixtures = fixtures || {};
+
+    // Add the basic activities if not set yet
+    _.defaults(this._fixtures, activities.getFixtures());
 };
 
 // Converts an integer into a mongoose-style object id.
@@ -33,7 +38,33 @@ var capitalize = function(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-FixtureCreator.prototype.addPerson = function(name, team, role) {
+/**
+ * Adds a user to the fixtures
+ *
+ * @param {string} name
+ * @param {string} [team]
+ * @param {string} [role]
+ * @returns {FixtureCreator}
+ */
+FixtureCreator.prototype.user = function(name, team, role) {
+    // Assign random values when they are not provided
+    if (typeof team === 'undefined') {
+        team = (Math.random() < 0.5) ? 'blue' : 'green';
+    }
+
+    if (typeof role === 'undefined') {
+        var rand = Math.random();
+        if (rand < 0.33) {
+            role = 'rookie';
+        }
+        else if (rand < 0.67) {
+            role = 'scout';
+        }
+        else {
+            role = 'veteran';
+        }
+    }
+
     this._fixtures[name] = new Person({
         _id: intToId(_.size(this._fixtures)),
         email: name + '@example.com',
@@ -42,16 +73,37 @@ FixtureCreator.prototype.addPerson = function(name, team, role) {
         team: team,
         role: role
     });
+
+    return this;
 };
 
-FixtureCreator.prototype.addMaybe = function(name) {
+/**
+ * Adds a 'maybe' to the fixtures
+ *
+ * @param {string} name
+ * @returns {FixtureCreator}
+ */
+FixtureCreator.prototype.maybe = function(name) {
     this._fixtures[name] = new Person({
         _id: intToId(_.size(this._fixtures)),
         fullName: name.charAt(0).toUpperCase() + name.slice(1) + ' the Maybe'
     });
+
+    return this;
 };
 
-FixtureCreator.prototype.addActivityLink = function(source, target, success) {
+/**
+ * Ads an activity link to the fixtures
+ * @param {string} source Name of the source
+ * @param {string} target Name of the target
+ * @param {boolean} [success=true]
+ * @returns {FixtureCreator}
+ */
+FixtureCreator.prototype.activityLink = function(source, target, success) {
+    // Set default value
+    if (typeof success === 'undefined') {
+        success = true;
+    }
     var linkName = source + 'DoesSomethingFor' + capitalize(target);
     var suffix = 0;
 
@@ -84,6 +136,12 @@ FixtureCreator.prototype.addActivityLink = function(source, target, success) {
             target: this._fixtures[source].id
         });
     }
+
+    return this;
+};
+
+FixtureCreator.prototype.getFixtures = function() {
+    return this._fixtures;
 };
 
 FixtureCreator.prototype.setupFixtures = function(done) {

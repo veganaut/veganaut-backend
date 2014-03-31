@@ -1,9 +1,10 @@
 'use strict';
-/* global  it, expect */
+/* global it, expect */
 
 var h = require('../helpers');
 var mongoose = require('mongoose');
 var Person = mongoose.model('Person');
+var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
 
 h.describe('ActivityLink API methods', function() {
     it('can use a reference code', function() {
@@ -30,7 +31,7 @@ h.describe('ActivityLink API methods', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'activityLink/reference')
                 .send({
-                    referenceCode: 'AK92oj',
+                    referenceCode: 'AK92oj'
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
@@ -175,6 +176,39 @@ h.describe('ActivityLink API methods', {fixtures: 'extended'}, function() {
                     expect(res.statusCode).toBe(409);
                     expect(typeof res.body.error).toBe('string');
                     done();
+                })
+            ;
+        });
+    });
+});
+
+
+var fix = new FixtureCreator();
+fix
+    .user('alice')
+    .user('bob')
+    .activityLink('alice', 'bob', true)
+    .activityLink('bob', 'alice', false)
+;
+h.describe('ActivityLink between existing users', {fixtures: fix, user: 'alice@example.com'}, function() {
+    it('can use reference code between existing users', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink/reference')
+                .send({
+                    referenceCode: 'bobDoesSomethingForAlice'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    // Check if alice and bob still exists
+                    // This is to make sure no nodes get deleted or merged away by mistake
+                    Person.findById('000000000000000000000001', function (err, alice) {
+                        expect(alice).not.toBeNull('alice still exists');
+                        Person.findById('000000000000000000000002', function (err, bob) {
+                            expect(typeof bob).not.toBeNull('bob still exists');
+                            done();
+                        });
+                    });
                 })
             ;
         });

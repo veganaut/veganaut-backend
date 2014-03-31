@@ -5,14 +5,14 @@
 
 var mongoose = require('mongoose');
 var FixtureLoader = require('./FixtureLoader');
+var activites = require('./activities');
 
 var Person = mongoose.model('Person');
-var Activity = mongoose.model('Activity');
 var ActivityLink = mongoose.model('ActivityLink');
 var GraphNode = mongoose.model('GraphNode');
 
 var getFixtures = function() {
-    var fix = {};
+    var fix = activites.getFixtures();
     fix.alice = new Person({
         _id: '000000000000000000000001',
         email: 'foo@bar.baz',
@@ -46,21 +46,6 @@ var getFixtures = function() {
     fix.eve = new Person({
         _id: '000000000000000000000005',
         fullName: 'Eve'
-    });
-
-
-    fix.buyActivity = new Activity({
-        _id: 'a00000000000000000000001',
-        name: 'Buy something vegan for ...',
-        className: 'Shopping',
-        givesVegBytes: false
-    });
-
-    fix.cookActivity = new Activity({
-        _id: 'a00000000000000000000002',
-        name: 'Cook something vegan for ...',
-        className: 'Cooking',
-        givesVegBytes: true
     });
 
 

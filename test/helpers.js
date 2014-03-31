@@ -98,7 +98,6 @@ exports.createSessionFor = createSessionFor;
  * @param how      A function that contains the description
  */
 exports.describe = function(what, options, how) {
-
     if (typeof(how) === 'undefined') {
         how = options;
         options = {};
@@ -108,7 +107,16 @@ exports.describe = function(what, options, how) {
         user: 'foo@bar.baz'
     });
 
-    var setupFixtures = require('./fixtures/' + options.fixtures).setupFixtures;
+    // Check if the fixtures is given as an object or a string
+    var fixtures;
+    if (typeof options.fixtures === 'string') {
+        // If it's a string, try to load the fixture set of that name
+        fixtures = require('./fixtures/' + options.fixtures);
+    }
+    else {
+        // It's not a string: must be a FixtureCreator object
+        fixtures = options.fixtures;
+    }
 
     var wrapper = function() {
         // Start a server and initialize fixtures
@@ -118,7 +126,7 @@ exports.describe = function(what, options, how) {
                     if (err) { console.log(err); }
                     exports.server.listen(exports.port, function(err) {
                         if (err) { console.log(err); }
-                        setupFixtures(function(err) {
+                        fixtures.setupFixtures(function(err) {
                             if (err) { console.log(err); }
                             createSessionFor(options.user, function(err, sid) {
                                 if (err) { console.log(err); }

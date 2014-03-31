@@ -12,61 +12,61 @@ var getFixtures = function() {
 
     // As a mnemonic, we have guys in the green team and girls in the blue
     // team.
-    fix.addPerson('george', 'green', 'rookie');
-    fix.addPerson('harry', 'green', 'scout');
-    fix.addPerson('isaac', 'green', 'veteran');
-    fix.addPerson('king', 'green', 'rookie');
-    fix.addPerson('louie', 'green', 'scout');
-    fix.addPerson('mary', 'blue', 'rookie');
-    fix.addPerson('nellie', 'blue', 'scout');
-    fix.addPerson('olivia', 'blue', 'veteran');
-    fix.addPerson('paula', 'blue', 'rookie');
-    fix.addPerson('nova', 'blue', 'rookie');
+    fix.user('george', 'green', 'rookie');
+    fix.user('harry', 'green', 'scout');
+    fix.user('isaac', 'green', 'veteran');
+    fix.user('king', 'green', 'rookie');
+    fix.user('louie', 'green', 'scout');
+    fix.user('mary', 'blue', 'rookie');
+    fix.user('nellie', 'blue', 'scout');
+    fix.user('olivia', 'blue', 'veteran');
+    fix.user('paula', 'blue', 'rookie');
+    fix.user('nova', 'blue', 'rookie');
 
     // A few maybes
-    fix.addMaybe('vanessa');
-    fix.addMaybe('william');
-    fix.addMaybe('xymna');
-    fix.addMaybe('yana');
-    fix.addMaybe('zachary');
+    fix.maybe('vanessa');
+    fix.maybe('william');
+    fix.maybe('xymna');
+    fix.maybe('yana');
+    fix.maybe('zachary');
 
     // Let's create a clique between George, Harry and Isaac
-    fix.addActivityLink('george', 'harry', true);
-    fix.addActivityLink('george', 'isaac', true);
-    fix.addActivityLink('harry', 'george', true);
-    fix.addActivityLink('harry', 'isaac', true);
-    fix.addActivityLink('isaac', 'george', true);
-    fix.addActivityLink('isaac', 'harry', true);
+    fix.activityLink('george', 'harry', true);
+    fix.activityLink('george', 'isaac', true);
+    fix.activityLink('harry', 'george', true);
+    fix.activityLink('harry', 'isaac', true);
+    fix.activityLink('isaac', 'george', true);
+    fix.activityLink('isaac', 'harry', true);
 
-    fix.addActivityLink('isaac', 'king', true);
-    fix.addActivityLink('isaac', 'louie', false);
-    fix.addActivityLink('king', 'louie', true);
-    fix.addActivityLink('louie', 'isaac', true);
+    fix.activityLink('isaac', 'king', true);
+    fix.activityLink('isaac', 'louie', false);
+    fix.activityLink('king', 'louie', true);
+    fix.activityLink('louie', 'isaac', true);
 
-    fix.addActivityLink('king', 'mary', false);
-    fix.addActivityLink('king', 'nellie', true);
+    fix.activityLink('king', 'mary', false);
+    fix.activityLink('king', 'nellie', true);
 
-    fix.addActivityLink('mary', 'nellie', true);
-    fix.addActivityLink('mary', 'olivia', true);
-    fix.addActivityLink('nellie', 'olivia', true);
-    fix.addActivityLink('nellie', 'mary', true);
+    fix.activityLink('mary', 'nellie', true);
+    fix.activityLink('mary', 'olivia', true);
+    fix.activityLink('nellie', 'olivia', true);
+    fix.activityLink('nellie', 'mary', true);
 
     // George seems to be quite popular with the girls (and captured by their team)
-    fix.addActivityLink('mary', 'george', true);
-    fix.addActivityLink('nellie', 'george', true);
-    fix.addActivityLink('olivia', 'george', true);
-    fix.addActivityLink('olivia', 'george', true);
-    fix.addActivityLink('paula', 'george', true);
-    fix.addActivityLink('paula', 'george', true);
-    fix.addActivityLink('paula', 'george', true);
+    fix.activityLink('mary', 'george', true);
+    fix.activityLink('nellie', 'george', true);
+    fix.activityLink('olivia', 'george', true);
+    fix.activityLink('olivia', 'george', true);
+    fix.activityLink('paula', 'george', true);
+    fix.activityLink('paula', 'george', true);
+    fix.activityLink('paula', 'george', true);
 
     // Some activity links towards maybes
-    fix.addActivityLink('isaac', 'vanessa', false);
-    fix.addActivityLink('louie', 'william', false);
-    fix.addActivityLink('louie', 'william', false);
-    fix.addActivityLink('mary', 'xymna', false);
-    fix.addActivityLink('paula', 'yana', false);
-    fix.addActivityLink('olivia', 'zachary', false);
+    fix.activityLink('isaac', 'vanessa', false);
+    fix.activityLink('louie', 'william', false);
+    fix.activityLink('louie', 'william', false);
+    fix.activityLink('mary', 'xymna', false);
+    fix.activityLink('paula', 'yana', false);
+    fix.activityLink('olivia', 'zachary', false);
 
     return fix;
 };
