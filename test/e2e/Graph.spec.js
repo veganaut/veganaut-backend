@@ -4,9 +4,6 @@
 var _ = require('lodash');
 var h = require('../helpers');
 
-var mongoose = require('mongoose');
-var GraphNode = mongoose.model('GraphNode');
-
 h.describe('Graph API methods', function() {
     it('can get me', function() {
         h.runAsync(function(done) {
@@ -85,31 +82,25 @@ h.describe('Graph API methods', function() {
     });
 });
 
-h.describe('Graph API methods', function() {
+h.describe('Graph API methods for new user', {fixtures: 'extended', user: 'nova@example.com'}, function() {
     it('can get me if I\'m a new user', function() {
         h.runAsync(function(done) {
-            // Simulate a new user who doesn't yet know anybody.
-            // We just delete all of Alice's graph nodes :)
-            GraphNode.remove().exec(function(err) {
-                expect(err).toBeNull();
+            h.request('GET', h.baseURL + 'graph/me').end(function(res) {
+                expect(res.statusCode).toBe(200);
 
-                h.request('GET', h.baseURL + 'graph/me').end(function(res) {
-                    expect(res.statusCode).toBe(200);
+                // Make sure we get nodes and links
+                expect(_.isPlainObject(res.body.nodes)).toBe(true);
+                expect(_.isArray(res.body.links)).toBe(true);
 
-                    // Make sure we get nodes and links
-                    expect(_.isPlainObject(res.body.nodes)).toBe(true);
-                    expect(_.isArray(res.body.links)).toBe(true);
+                // Check that there's the right amount of nodes and links
+                var nodeKeys = Object.keys(res.body.nodes);
+                expect(nodeKeys.length).toBe(1);
+                expect(res.body.links.length).toBe(0);
 
-                    // Check that there's the right amount of nodes and links
-                    var nodeKeys = Object.keys(res.body.nodes);
-                    expect(nodeKeys.length).toBe(1);
-                    expect(res.body.links.length).toBe(0);
-
-                    var alice = _.values(res.body.nodes)[0];
-                    expect(alice.fullName).toBe('Alice Alison');
-                    expect(alice.relation).toBe('me');
-                    done();
-                });
+                var alice = _.values(res.body.nodes)[0];
+                expect(alice.fullName).toBe('Nova Example');
+                expect(alice.relation).toBe('me');
+                done();
             });
         });
     });
