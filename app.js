@@ -67,7 +67,6 @@ app.put('/graph', cors(), Session.restrict, Graph.update);
 app.options('/session', cors());
 app.post('/session', cors(), Session.create);
 app.delete('/session', cors(), Session.restrict, Session.delete);
-app.get('/session/status', cors(), Session.restrict, Session.status); //TODO remove this test eventually once login works
 
 // Activity
 app.options('/activity', cors());

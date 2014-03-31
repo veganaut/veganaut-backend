@@ -127,14 +127,3 @@ exports.delete = function (req, res) {
     delete sessionStore[req.sessionId];
     res.send({ status: 'OK' });
 };
-
-/**
- * Check if one is logged in
- * @param req
- * @param res
- */
-exports.status = function (req, res) {
-    // You are logged in!
-    res.send({ status: 'OK' });
-};
-
