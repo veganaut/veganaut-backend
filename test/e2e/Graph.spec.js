@@ -82,6 +82,74 @@ h.describe('Graph API methods', function() {
     });
 });
 
+// TODO: test more wrong inputs
+// TODO: test against partial updates
+h.describe('Graph API update', function () {
+    it('can update coordinates for my graph', function () {
+        h.runAsync(function(done) {
+            h.request('PUT', h.baseURL + 'graph')
+                .send({
+                    nodes: {
+                        '000000000000000000000001' : {id: '000000000000000000000001', coordX: 1.1, coordY: 1.2},
+                        '000000000000000000000002' : {id: '000000000000000000000002', coordX: 2.1, coordY: 2.2},
+                        '000000000000000000000003' : {id: '000000000000000000000003', coordX: 3.1, coordY: 3.2},
+                        '000000000000000000000004' : {id: '000000000000000000000004', coordX: 4.1, coordY: 4.2},
+                        '000000000000000000000005' : {id: '000000000000000000000005', coordX: 5.1, coordY: 5.2},
+                    }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    h.request('GET', h.baseURL + 'graph/me').end(function(res) {
+                        expect(res.statusCode).toBe(200);
+
+                        // Make sure we get nodes and links
+                        expect(_.isPlainObject(res.body.nodes)).toBe(true, 'nodes is an object');
+                        expect(_.isArray(res.body.links)).toBe(true, 'links is an array');
+
+                        // Check that there's the right amount of nodes and links
+                        var nodeKeys = Object.keys(res.body.nodes);
+                        expect(nodeKeys.length).toBe(5, 'number of nodes in graph');
+                        expect(res.body.links.length).toBe(4, 'number of links in graph');
+
+                        // Validate all the nodes
+                        nodeKeys.forEach(function(id) {
+                            var node = res.body.nodes[id];
+                            var num = _.parseInt(id);
+                            if (node.relation === 'me') {
+                                expect(node.coordX).toBe(0.5, 'can not overwrite my coordinates');
+                                expect(node.coordY).toBe(0.5, 'can not overwrite my coordinates');
+                            } else {
+                                expect(node.coordX).toBe(num + 0.1, 'returns updated coordinates');
+                                expect(node.coordY).toBe(num + 0.2, 'returns updated coordinates');
+                            }
+                        });
+
+                        done();
+                    });
+                });
+        });
+    });
+
+    it('does not accept update with missing id', function () {
+        h.runAsync(function(done) {
+            h.request('PUT', h.baseURL + 'graph')
+                .send({
+                    nodes: {
+                        '000000000000000000000001' : {id: '000000000000000000000001', coordX: 1.1, coordY: 1.2},
+                        '000000000000000000000002' : {coordX: 2.1, coordY: 2.2},
+                        '000000000000000000000003' : {id: '000000000000000000000003', coordX: 3.1, coordY: 3.2},
+                        '000000000000000000000004' : {id: '000000000000000000000004', coordX: 4.1, coordY: 4.2},
+                        '000000000000000000000005' : {id: '000000000000000000000005', coordX: 5.1, coordY: 5.2},
+                    }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(400);
+                    done();
+                });
+        });
+    });
+});
+
 h.describe('Graph API methods for new user', {fixtures: 'extended', user: 'nova@example.com'}, function() {
     it('can get me if I\'m a new user', function() {
         h.runAsync(function(done) {

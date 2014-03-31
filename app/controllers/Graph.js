@@ -199,6 +199,55 @@ exports.viewById = function(req, res, next) {
     });
 };
 
-exports.update = function(req, res) {
-    res.send({ status: 'OK' });
+exports.update = function(req, res, next) {
+    var nodes = _.toArray(req.body.nodes);
+
+    var error = _.find(_.map(nodes, function (node) {
+        if (typeof node.id === 'undefined') {
+            return new Error('Node without id.');
+        } else if (typeof node.coordX === 'undefined') {
+            return new Error('Node without coordX.');
+        } else if (typeof node.coordY === 'undefined') {
+            return new Error('Node without coordY.');
+        }
+    }));
+    if (error) {
+        res.status(400);
+        return next(error);
+    }
+
+    async.each(
+        nodes,
+        function (node, cb) {
+            GraphNode
+                .findOne({owner: req.user.id, target: node.id})
+                .exec(function(err, graphnode) {
+                    // If there is an error return it, if the node already exists, there is nothing to do
+                    if (err) {
+                        return cb(err);
+                    }
+
+                    if (!graphnode) {
+                        graphnode = new GraphNode({
+                            owner: req.user.id,
+                            target: node.id,
+                            coordX: node.coordX,
+                            coordY: node.coordY
+                        });
+                    } else {
+                        graphnode.coordX = node.coordX;
+                        graphnode.coordY = node.coordY;
+                    }
+
+                    graphnode.save(cb);
+                });
+        },
+        function (err) {
+            if (err) {
+                return next(err);
+            }
+
+            res.send({ status: 'OK' });
+        }
+    );
 };
