@@ -6,11 +6,6 @@
 var mongoose = require('mongoose');
 var FixtureLoader = require('./FixtureLoader');
 var basic = require('./basic');
-
-require('../../app/models/Person');
-require('../../app/models/Activity');
-require('../../app/models/ActivityLink');
-require('../../app/models/GraphNode');
 var Person = mongoose.model('Person');
 
 var getFixtures = function() {
