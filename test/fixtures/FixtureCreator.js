@@ -86,14 +86,14 @@ FixtureCreator.prototype.user = function(name, team, role) {
 FixtureCreator.prototype.maybe = function(name) {
     this._fixtures[name] = new Person({
         _id: intToId(_.size(this._fixtures)),
-        fullName: name.charAt(0).toUpperCase() + name.slice(1) + ' the Maybe'
+        fullName: capitalize(name) + ' the Maybe'
     });
 
     return this;
 };
 
 /**
- * Ads an activity link to the fixtures
+ * Adds an activity link to the fixtures
  * @param {string} source Name of the source
  * @param {string} target Name of the target
  * @param {boolean} [success=true]
