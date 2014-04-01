@@ -20,9 +20,6 @@ exports.register = function(req, res, next) {
 
     // Pick the posted data
     var personData = _.pick(req.body, 'email', 'fullName', 'password', 'role', 'nickName', 'id');
-    // Assign a random team
-    personData.team = (Math.random() < 0.5) ? 'green' : 'blue';
-
     var person;
 
     var getOrCreatePerson = function(cb) {
@@ -56,6 +53,11 @@ exports.register = function(req, res, next) {
     };
 
     var updatePerson = function(cb) {
+        // Assign a random team
+        if (typeof person.team === 'undefined') {
+            person.team = (Math.random() < 0.5) ? 'green' : 'blue';
+        }
+
         _.assign(person, personData);
         person.save(cb);
     };
