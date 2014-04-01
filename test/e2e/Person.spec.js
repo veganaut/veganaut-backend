@@ -13,7 +13,6 @@ h.describe('Person API methods', function() {
                     email: 'doge@mac.dog',
                     fullName: 'Doge MacDog',
                     role: 'rookie',
-                    team: 'green',
                     password: 'wow. such secure. so protect.'
                 })
                 .end(function(res) {
@@ -40,7 +39,6 @@ h.describe('Person API methods', function() {
                     email: 'carol@carol.ca',
                     fullName: 'Carol Curie',
                     role: 'veteran',
-                    team: 'blue',
                     password: 'oh. yeah.'
                 })
                 .end(function(res) {
@@ -50,6 +48,9 @@ h.describe('Person API methods', function() {
                     expect(res.body.id).toEqual('000000000000000000000003');
                     expect(res.body.email).toEqual('carol@carol.ca');
                     expect(res.body.fullName).toEqual('Carol Curie');
+
+                    // make sure the team was not overwritten (TODO: make this test deterministic)
+                    expect(res.body.team).toEqual('blue');
 
                     done();
                 })
