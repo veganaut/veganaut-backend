@@ -83,6 +83,8 @@ app.get('/activityLink/mine/open', cors(), Session.restrict, ActivityLink.openLi
 // Person
 app.options('/person', cors());
 app.post('/person', cors(), Person.register);
+app.options('/person/me', cors());
+app.get('/person/me', cors(), Session.restrict, Person.me);
 
 // Match
 app.options('/match', cors());
