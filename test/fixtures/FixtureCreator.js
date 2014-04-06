@@ -10,7 +10,6 @@ var activities = require('./activities');
 
 var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
-var GraphNode = mongoose.model('GraphNode');
 
 /**
  * FixtureCreator constructor. Helper for creating fixtures.
@@ -120,22 +119,6 @@ FixtureCreator.prototype.activityLink = function(source, target, success) {
         success: success,
         referenceCode: linkName
     });
-
-    // Ensure that the corresponding graph nodes exist
-    var graphNodeName = source + 'Knows' + capitalize(target);
-    if (!this._fixtures[graphNodeName]) {
-        this._fixtures[graphNodeName] = new GraphNode({
-            owner: this._fixtures[source].id,
-            target: this._fixtures[target].id
-        });
-    }
-    var reverseGraphNodeName = target + 'Knows' + capitalize(source);
-    if (success && !this._fixtures[reverseGraphNodeName]) {
-        this._fixtures[reverseGraphNodeName] = new GraphNode({
-            owner: this._fixtures[target].id,
-            target: this._fixtures[source].id
-        });
-    }
 
     return this;
 };
