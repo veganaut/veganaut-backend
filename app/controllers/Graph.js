@@ -57,8 +57,9 @@ var getGraph = function(person, cb) {
     };
 
     var getPersons = function (cb) {
+        var allPersonIds = _.union([person.id], _.keys(friendIds), _.keys(friendOfFriendIds));
         Person
-            .find({_id: {$in: _.keys(_.assign(_.zipObject([[person.id, true]]), friendIds, friendOfFriendIds))}})
+            .find({_id: {$in: allPersonIds}})
             .exec(function (err, result) {
                 if (err) {
                     return cb(err);
