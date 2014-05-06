@@ -48,11 +48,17 @@ h.describe('Graph API methods', function() {
                         expect(node.fullName).toBeUndefined('fullName of friendsOfFriends is *not* set');
                         break;
                     default:
-                        expect('unkown node type').toBe('never happening', 'relation is one of me,friend or friendOfFriend');
+                        expect('unknown node type').toBe('never happening', 'relation is one of me, friend or friendOfFriend');
                     }
                 });
 
-                // TODO: check that not too much information is exposed (no names or num activity infos for friends of friends)
+                _.each(res.body.links, function(link) {
+                    expect(typeof link.source).toBe('string', 'source is a string');
+                    expect(typeof link.target).toBe('string', 'target is a string');
+                    expect(typeof link.openActivities).toBe('number', 'openActivities is a number');
+                    expect(typeof link.completedActivities).toBe('number', 'completedActivities is a number');
+                });
+
                 done();
             });
         });
@@ -94,7 +100,7 @@ h.describe('Graph API update', function () {
                         '000000000000000000000002' : {id: '000000000000000000000002', coordX: 2.1, coordY: 2.2},
                         '000000000000000000000003' : {id: '000000000000000000000003', coordX: 3.1, coordY: 3.2},
                         '000000000000000000000004' : {id: '000000000000000000000004', coordX: 4.1, coordY: 4.2},
-                        '000000000000000000000005' : {id: '000000000000000000000005', coordX: 5.1, coordY: 5.2},
+                        '000000000000000000000005' : {id: '000000000000000000000005', coordX: 5.1, coordY: 5.2}
                     }
                 })
                 .end(function(res) {
@@ -139,7 +145,7 @@ h.describe('Graph API update', function () {
                         '000000000000000000000002' : {coordX: 2.1, coordY: 2.2},
                         '000000000000000000000003' : {id: '000000000000000000000003', coordX: 3.1, coordY: 3.2},
                         '000000000000000000000004' : {id: '000000000000000000000004', coordX: 4.1, coordY: 4.2},
-                        '000000000000000000000005' : {id: '000000000000000000000005', coordX: 5.1, coordY: 5.2},
+                        '000000000000000000000005' : {id: '000000000000000000000005', coordX: 5.1, coordY: 5.2}
                     }
                 })
                 .end(function(res) {

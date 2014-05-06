@@ -93,7 +93,7 @@ var getGraph = function(person, cb) {
             getFriendIds,
             getFriendOfFriendIds,
             getPersons,
-            getGraphNodes,
+            getGraphNodes
         ],
         function (err) {
             if (err) {
@@ -117,17 +117,12 @@ var getGraph = function(person, cb) {
             // Convert links to the format needed by the frontend
             var graphLinks = _.map(counts, function(cc, s) {
                 return _.map(cc, function(c, t) {
-                    var link = {
+                    return {
                         source: s,
-                        target: t
+                        target: t,
+                        openActivities: c.open,
+                        completedActivities: c.completed
                     };
-
-                    // Add the number of activities if the given person is part of the link
-                    if (s === person.id || t === person.id) {
-                        link.openActivities = c.open;
-                        link.completedActivities = c.completed;
-                    }
-                    return link;
                 });
             });
             graphLinks = _.flatten(graphLinks);
@@ -145,9 +140,11 @@ var getGraph = function(person, cb) {
                     result.relation = 'me';
                     result.coordX = 0.5;
                     result.coordY = 0.5;
-                } else if (friendIds[result.id]) {
+                }
+                else if (friendIds[result.id]) {
                     result.relation = 'friend';
-                } else  {
+                }
+                else  {
                     result.relation = 'friendOfFriend';
                     result.fullName = undefined;
                 }
