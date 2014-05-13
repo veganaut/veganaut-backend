@@ -20,14 +20,14 @@ var BCRYPT_WORK_FACTOR = 10;
 var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10, nonUser: 0.5};
 var MULTIPLE_LINKS_FACTOR = 0.5;
 
-function generateNickName() {
+function generateNickname() {
     return 'Zorg-' + ((1000000 * Math.random()).toFixed(0));
 }
 
 var PersonSchema = new Schema({
     email: {type: String, unique: true, sparse: true},
     password: String,
-    nickName: { type: String, default: generateNickName },
+    nickname: { type: String, default: generateNickname },
 
     fullName: String,
     // dateOfBirth can be just a year, year-month, or year-month-day
@@ -172,7 +172,7 @@ PersonSchema.methods.getHits = function() {
 
 PersonSchema.methods.toApiObject = function () {
     return _.assign(
-        _.pick(this, 'email', 'nickName', 'fullName', 'gender', 'dateOfBirth', 'phone', 'address', 'team', 'role'),
+        _.pick(this, 'email', 'nickname', 'fullName', 'gender', 'dateOfBirth', 'phone', 'address', 'team', 'role'),
         {
             id:         this.id,
             type:       this.getType(),

@@ -12,7 +12,7 @@ h.describe('Person API methods', function() {
                 .send({
                     email: 'doge@mac.dog',
                     fullName: 'Doge MacDog',
-                    nickName: 'Doger',
+                    nickname: 'Doger',
                     password: 'wow. such secure. so protect.'
                 })
                 .end(function(res) {
@@ -21,7 +21,7 @@ h.describe('Person API methods', function() {
                     // Some sanity checks on the returned person
                     expect(res.body.email).toEqual('doge@mac.dog');
                     expect(res.body.fullName).toEqual('Doge MacDog');
-                    expect(res.body.nickName).toEqual('Doger');
+                    expect(res.body.nickname).toEqual('Doger');
                     expect(res.body.role).toEqual('rookie', 'should set "rookie" role as default');
 
                     // Make sure password is not returned

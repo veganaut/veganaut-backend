@@ -31,7 +31,7 @@ describe('A person', function() {
         var p = new Person({email: 'mynewperson@example.com'});
         expect(p.email).toBe('mynewperson@example.com');
         expect(p.id).toBeTruthy();
-        expect(p.nickName).toMatch(/Zorg-\d+/);
+        expect(p.nickname).toMatch(/Zorg-\d+/);
 
         h.runAsync(function(done) {
             p.save(function(err) {
@@ -103,7 +103,7 @@ describe('A person', function() {
                                 next();
                             });
                         });
-                    },
+                    }
                 ], done);
             });
         });
@@ -135,7 +135,7 @@ describe('A person', function() {
                                 next();
                             });
                         });
-                    },
+                    }
                 ], done);
             });
         });

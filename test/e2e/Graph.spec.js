@@ -24,7 +24,7 @@ h.describe('Graph API methods', function() {
                     var node = res.body.nodes[id];
 
                     expect(typeof node.id).toBe('string', 'id is string');
-                    expect(typeof node.nickName).toBe('string', 'nickName is string');
+                    expect(typeof node.nickname).toBe('string', 'nickname is string');
                     expect(typeof node.type).toBe('string', 'type is string');
                     expect(node.type).toMatch(/^(user|baby|maybe)$/, 'type is one of user,baby or maybe');
                     //expect(typeof node.team).toBe('string', 'team is a string');  can be undefined
