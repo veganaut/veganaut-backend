@@ -21,7 +21,7 @@ var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10, nonUser: 0.5};
 var MULTIPLE_LINKS_FACTOR = 0.5;
 
 function generateNickname() {
-    return 'Zorg-' + ((1000000 * Math.random()).toFixed(0));
+    return 'Veganaut-' + ((1000000 * Math.random()).toFixed(0));
 }
 
 var PersonSchema = new Schema({
