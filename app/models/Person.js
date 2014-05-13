@@ -17,7 +17,7 @@ var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
 
 // Constants used in strength and hits computation
-var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10, 'default': 0.5};
+var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10, nonUser: 0.5};
 var MULTIPLE_LINKS_FACTOR = 0.5;
 
 function generateNickName() {
@@ -39,7 +39,7 @@ var PersonSchema = new Schema({
     locale: {type: String, default: 'en'},
 
     team: {type: String, enum: ['blue', 'green']},
-    role: {type: String, enum: ['rookie', 'scout', 'veteran']}
+    role: {type: String, enum: ['rookie', 'scout', 'veteran'], default: 'rookie'}
 });
 
 PersonSchema.pre('save', function(next) {
@@ -119,7 +119,8 @@ PersonSchema.methods.getStrength = function() {
 
     var that = this;
 
-    var strength = INNATE_STRENGTH[that.role || 'default'];
+    var innateStrengthType = that.isUser() ? that.role : 'nonUser';
+    var strength = INNATE_STRENGTH[innateStrengthType];
     var successfulActivityLinks = _.filter(that._activityLinks, 'success');
     var nLinksByOther = {};
     _.forEach(successfulActivityLinks, function(al) {
@@ -177,7 +178,7 @@ PersonSchema.methods.toApiObject = function () {
             type:       this.getType(),
             strength:   this.getStrength(),
             hits:       this.getHits(),
-            isCaptured: this.isCaptured(),
+            isCaptured: this.isCaptured()
         }
     );
 };

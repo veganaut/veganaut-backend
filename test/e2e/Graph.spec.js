@@ -28,7 +28,7 @@ h.describe('Graph API methods', function() {
                     expect(typeof node.type).toBe('string', 'type is string');
                     expect(node.type).toMatch(/^(user|baby|maybe)$/, 'type is one of user,baby or maybe');
                     //expect(typeof node.team).toBe('string', 'team is a string');  can be undefined
-                    //expect(node.role).toMatch(/^(rookie|scout|veteran|)$/, 'role is one of rookie,scout or veteran'); can be undefined
+                    expect(node.role).toMatch(/^(rookie|scout|veteran|)$/, 'role is one of rookie,scout or veteran');
                     expect(typeof node.strength).toBe('number', 'strength is a number');
                     expect(node.strength).toBeGreaterThan(-1, '... and positive');
                     expect(typeof node.hits).toBe('number', 'hits is a number');

@@ -21,11 +21,27 @@ h.describe('Person API methods', function() {
                     expect(res.body.email).toEqual('doge@mac.dog');
                     expect(res.body.fullName).toEqual('Doge MacDog');
                     expect(res.body.role).toEqual('rookie', 'should set "rookie" role as default');
-                    console.log(res.body);
 
                     // Make sure password is not returned
                     expect(typeof res.body.password).toEqual('undefined');
 
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('cannot set role when registering', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'person')
+                .send({
+                    email: 'doge@do.ge',
+                    fullName: 'Just Doge',
+                    role: 'scout',
+                    password: 'much safe. so security. wow.'
+                })
+                .end(function(res) {
+                    expect(res.body.role).toEqual('rookie', 'should have rookie role even when providing another one');
                     done();
                 })
             ;
