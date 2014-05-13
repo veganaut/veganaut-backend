@@ -12,7 +12,6 @@ h.describe('Person API methods', function() {
                 .send({
                     email: 'doge@mac.dog',
                     fullName: 'Doge MacDog',
-                    role: 'rookie',
                     password: 'wow. such secure. so protect.'
                 })
                 .end(function(res) {
@@ -21,6 +20,8 @@ h.describe('Person API methods', function() {
                     // Some sanity checks on the returned person
                     expect(res.body.email).toEqual('doge@mac.dog');
                     expect(res.body.fullName).toEqual('Doge MacDog');
+                    expect(res.body.role).toEqual('rookie', 'should set "rookie" role as default');
+                    console.log(res.body);
 
                     // Make sure password is not returned
                     expect(typeof res.body.password).toEqual('undefined');
@@ -38,7 +39,6 @@ h.describe('Person API methods', function() {
                     id: '000000000000000000000003',
                     email: 'carol@carol.ca',
                     fullName: 'Carol Curie',
-                    role: 'veteran',
                     password: 'oh. yeah.'
                 })
                 .end(function(res) {
@@ -64,7 +64,6 @@ h.describe('Person API methods', function() {
                 .send({
                     email: 'foo@bar.baz',
                     fullName: 'Dudette That',
-                    role: 'scout',
                     team: 'blue',
                     password: 'already has an account but forgot 2 months ago'
                 })
@@ -83,7 +82,6 @@ h.describe('Person API methods', function() {
                     id: '000000000000000000000001',
                     email: 'a@b.ch',
                     fullName: 'Hacker DeHack',
-                    role: 'scout',
                     team: 'blue',
                     password: 'ups'
                 })
