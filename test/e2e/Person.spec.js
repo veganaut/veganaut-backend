@@ -12,6 +12,7 @@ h.describe('Person API methods', function() {
                 .send({
                     email: 'doge@mac.dog',
                     fullName: 'Doge MacDog',
+                    nickName: 'Doger',
                     password: 'wow. such secure. so protect.'
                 })
                 .end(function(res) {
@@ -20,6 +21,7 @@ h.describe('Person API methods', function() {
                     // Some sanity checks on the returned person
                     expect(res.body.email).toEqual('doge@mac.dog');
                     expect(res.body.fullName).toEqual('Doge MacDog');
+                    expect(res.body.nickName).toEqual('Doger');
                     expect(res.body.role).toEqual('rookie', 'should set "rookie" role as default');
 
                     // Make sure password is not returned
@@ -31,7 +33,7 @@ h.describe('Person API methods', function() {
         });
     });
 
-    it('cannot set role when registering', function() {
+    it('cannot set values that are not writable when registering', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'person')
                 .send({
@@ -42,6 +44,7 @@ h.describe('Person API methods', function() {
                 })
                 .end(function(res) {
                     expect(res.body.role).toEqual('rookie', 'should have rookie role even when providing another one');
+                    // TODO: should check that team cannot be set, but it's random, so tricky to test
                     done();
                 })
             ;
@@ -80,7 +83,6 @@ h.describe('Person API methods', function() {
                 .send({
                     email: 'foo@bar.baz',
                     fullName: 'Dudette That',
-                    team: 'blue',
                     password: 'already has an account but forgot 2 months ago'
                 })
                 .end(function(res) {
@@ -98,7 +100,6 @@ h.describe('Person API methods', function() {
                     id: '000000000000000000000001',
                     email: 'a@b.ch',
                     fullName: 'Hacker DeHack',
-                    team: 'blue',
                     password: 'ups'
                 })
                 .end(function(res) {
