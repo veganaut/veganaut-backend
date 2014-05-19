@@ -110,3 +110,87 @@ h.describe('Person API methods', function() {
         });
     });
 });
+
+h.describe('Person API methods for logged in user', function() {
+    it('can get own profile information', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'person/me').end(function(res) {
+                expect(res.statusCode).toBe(200);
+
+                expect(res.body.id).toEqual('000000000000000000000001');
+                expect(res.body.email).toEqual('foo@bar.baz');
+                expect(res.body.fullName).toEqual('Alice Alison');
+                expect(res.body.role).toEqual('veteran');
+                expect(res.body.team).toEqual('blue');
+                expect(res.body.type).toEqual('user');
+                expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
+                expect(typeof res.body.nickname).toEqual('string', 'should have a nickname');
+                expect(typeof res.body.strength).toEqual('number', 'should have a strength');
+                expect(typeof res.body.hits).toEqual('number', 'should have hits');
+                expect(typeof res.body.isCaptured).toEqual('boolean', 'should have a isCaptured flag');
+
+                done();
+            });
+        });
+    });
+
+    it('can update own profile information', function() {
+        h.runAsync(function(done) {
+            h.request('PUT', h.baseURL + 'person/me')
+                .send({
+                    email: 'alice@bar.baz',
+                    fullName: 'Alice Alisonja',
+                    nickname: 'Al',
+                    password: 'even better password'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    expect(res.body.id).toEqual('000000000000000000000001', 'user id should not change');
+                    expect(res.body.email).toEqual('alice@bar.baz');
+                    expect(res.body.fullName).toEqual('Alice Alisonja');
+                    expect(res.body.nickname).toEqual('Al');
+                    expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
+
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('gets new profile info after profile update', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'person/me').end(function(res) {
+                expect(res.statusCode).toBe(200);
+
+                expect(res.body.email).toEqual('alice@bar.baz');
+                expect(res.body.fullName).toEqual('Alice Alisonja');
+                expect(res.body.nickname).toEqual('Al');
+                expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
+
+                done();
+            });
+        });
+    });
+});
+
+h.describe('Person API methods for logged in user trying naughty things', function() {
+    it('cannot update profile fields that are not writable', function() {
+        h.runAsync(function(done) {
+            h.request('PUT', h.baseURL + 'person/me')
+                .send({
+                    role: 'scout',
+                    type: 'maybe'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    expect(res.body.role).toEqual('veteran', 'role has not changed');
+                    expect(res.body.type).toEqual('user', 'type has not changed');
+
+                    done();
+                })
+            ;
+        });
+    });
+});
