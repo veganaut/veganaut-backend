@@ -9,7 +9,7 @@ var Schema = mongoose.Schema;
 
 var LocationSchema = new Schema({
     coordinates: {type: [Number], index: '2d'},
-    title: String,
+    name: String,
     type: {type: String, enum: ['gastronomy', 'retail', 'event', 'private']}
 });
 
