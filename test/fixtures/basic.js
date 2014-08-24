@@ -9,6 +9,9 @@ var activites = require('./activities');
 
 var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
+var Location = mongoose.model('Location');
+var Visit = mongoose.model('Visit');
+var Mission = mongoose.model('Mission');
 
 var getFixtures = function() {
     var fix = activites.getFixtures();
@@ -82,6 +85,40 @@ var getFixtures = function() {
         target: fix.eve.id,
         success: false,
         referenceCode: 'AK92oj'
+    });
+
+    fix.dosha = new Location({
+        id: 'a1',
+        coordinates: [46.957113, 7.452544],
+        name: '3dosha',
+        type: 'gastronomy'
+    });
+    fix.ruprecht = new Location({
+        id: 'a2',
+        coordinates: [46.946757, 7.441016],
+        name: 'Reformhaus Ruprecht',
+        type: 'retail'
+    });
+    fix.hollow = new Location({
+        id: 'a3',
+        coordinates: [46.953880, 7.446611],
+        name: 'Kremoby Hollow',
+        type: 'private'
+    });
+    fix.bobVisitedRuprecht = new Visit({
+        location: fix.ruprecht.id,
+        person: fix.bob.id,
+        completed: '2014-08-24'
+    });
+    fix.bobMissionOptionsAvailable = new Mission({
+        type: 'optionsAvailable',
+        visit: fix.bobVisitedRuprecht.id,
+        outcome: true
+    });
+    fix.bobMissionWhatOptions = new Mission({
+        type: 'whatOptions',
+        visit: fix.bobVisitedRuprecht.id,
+        outcome: ['fries', 'napoli']
     });
 
     return fix;
