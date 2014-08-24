@@ -25,6 +25,7 @@ var Activity = require('./app/controllers/Activity');
 var ActivityLink = require('./app/controllers/ActivityLink');
 var Match = require('./app/controllers/Match');
 var Visit = require('./app/controllers/Visit');
+var Location = require('./app/controllers/Location');
 
 var app = express();
 
@@ -95,9 +96,14 @@ app.put('/person/me', cors(), Session.restrict, Person.updateMe);
 app.options('/match', cors());
 app.get('/match', cors(), Match.current);
 
-//Visit
+// Visit
 app.options('/visit', cors());
 app.post('/visit', cors(), Session.restrict, Visit.visit);
+
+// Location
+app.options('/location', cors());
+app.post('/location', cors(), Session.restrict, Location.location);
+app.get('/location/list', cors(), Session.restrict, Location.list);
 
 // Handle errors and if no one responded to the request
 app.use(function(err, req, res, next) {
