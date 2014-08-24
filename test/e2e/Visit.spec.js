@@ -15,7 +15,6 @@ h.describe('Visit API methods', {fixtures: fix, user: 'alice@example.com'}, func
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'visit')
                 .send({
-                    person: 1,
                     location: 2,
                     missions: [
                         {type: 'optionsAvailable', outcome: true},
