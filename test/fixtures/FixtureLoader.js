@@ -18,6 +18,8 @@ var Activity = mongoose.model('Activity');
 var ActivityLink = mongoose.model('ActivityLink');
 var GraphNode = mongoose.model('GraphNode');
 var Location = mongoose.model('Location');
+var Visit = mongoose.model('Visit');
+var Mission = mongoose.model('Mission');
 
 
 var load = function(fixtures, done) {
@@ -27,7 +29,9 @@ var load = function(fixtures, done) {
         ActivityLink.remove.bind(ActivityLink),
         GraphNode.remove.bind(GraphNode),
         Person.remove.bind(Person),
-        Location.remove.bind(Location)
+        Location.remove.bind(Location),
+        Visit.remove.bind(Visit),
+        Mission.remove.bind(Mission)
     ];
 
     // Add all the fixtures
