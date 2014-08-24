@@ -10,6 +10,7 @@ var activities = require('./activities');
 
 var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
+var Location = mongoose.model('Location');
 
 /**
  * FixtureCreator constructor. Helper for creating fixtures.
@@ -121,6 +122,15 @@ FixtureCreator.prototype.activityLink = function(source, target, success) {
     });
 
     return this;
+};
+
+FixtureCreator.prototype.location = function (name, coordinates, type) {
+    this._fixtures[name] = new Location({
+        _id: intToId(_.size(this._fixtures)),
+        name: name,
+        coordinates: coordinates,
+        type: type
+    });
 };
 
 FixtureCreator.prototype.getFixtures = function() {

@@ -13,6 +13,9 @@ require('./app/models/Activity.js');
 require('./app/models/ActivityLink.js');
 require('./app/models/GraphNode.js');
 require('./app/models/Person.js');
+require('./app/models/Visit.js');
+require('./app/models/Location.js');
+require('./app/models/Mission.js');
 
 // Controllers
 var Person = require('./app/controllers/Person');
@@ -21,6 +24,7 @@ var Session = require('./app/controllers/Session');
 var Activity = require('./app/controllers/Activity');
 var ActivityLink = require('./app/controllers/ActivityLink');
 var Match = require('./app/controllers/Match');
+var Visit = require('./app/controllers/Visit');
 
 var app = express();
 
@@ -91,6 +95,9 @@ app.put('/person/me', cors(), Session.restrict, Person.updateMe);
 app.options('/match', cors());
 app.get('/match', cors(), Match.current);
 
+//Visit
+app.options('/visit', cors());
+app.post('/visit', cors(), Session.restrict, Visit.visit);
 
 // Handle errors and if no one responded to the request
 app.use(function(err, req, res, next) {
