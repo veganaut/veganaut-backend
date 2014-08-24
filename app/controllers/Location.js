@@ -25,7 +25,8 @@ exports.list = function (req, res, next) {
                 return next(err);
             } else {
                 locations = _.map(locations, function(l) {
-                    return _.pick(l, ['name', 'coordinates', 'type', 'id']);
+                    l.team = 'green'; // TODO: remove this once it's set correctly
+                    return _.pick(l, ['name', 'coordinates', 'type', 'id', 'team']);
                 });
                 return res.send(locations);
             }
