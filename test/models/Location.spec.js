@@ -44,4 +44,10 @@ describe('A location', function() {
             });
         });
     });
+
+    h.afterAll(function() {
+        h.runAsync(function(done) {
+            mongoose.disconnect(done);
+        });
+    });
 });
