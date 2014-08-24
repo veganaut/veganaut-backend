@@ -9,7 +9,7 @@ var Visit = mongoose.model('Visit');
 var Mission = mongoose.model('Mission');
 
 exports.visit = function(req, res, next) {
-    var person, location, visit;
+    var person, location, visit, missions;
     async.series([
         function (cb) {
             Person.findOne(req.body.person, function (err, p) {
@@ -38,16 +38,19 @@ exports.visit = function(req, res, next) {
                 req.body.missions,
                 function (values, cb) {
                     var m = new Mission(_.assign(values, {visit: visit.id}));
-                    m.save(function (err) {cb(err, m);});
+                    m.save(function (err) {cb(err, _.pick(m, ['id', 'type', 'outcome']));});
                 },
-                cb
+                function (err, ms) {
+                    missions = ms;
+                    cb(err);
+                }
             );
         },
     ], function(err) {
         if (err) {
             return next(err);
         } else {
-            return res.send(visit);
+            return res.send(_.assign(_.pick(visit, ['id', 'person', 'location', 'completed']), {missions: missions}));
         }
     });
 };

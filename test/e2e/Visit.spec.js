@@ -18,12 +18,21 @@ h.describe('Visit API methods', {fixtures: fix, user: 'alice@example.com'}, func
                     person: 1,
                     location: 2,
                     missions: [
-                        {type: 'optionsAvailable', outcome: true, points: {blue: 3}},
-                        {type: 'whatOptions', outcome: ['fries', 'napoli'], point: {blue: 3}}
+                        {type: 'optionsAvailable', outcome: true},
+                        {type: 'whatOptions', outcome: ['fries', 'napoli']}
                     ]
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
+                    expect(typeof res.body.id).toBe('string', 'id is a string');
+                    expect(typeof res.body.person).toBe('string', 'person is a string');
+                    expect(typeof res.body.location).toBe('string', 'location is a string');
+                    expect(typeof res.body.completed).toBe('string', 'completed is a string');
+                    expect(res.body.missions.length).toBe(2, 'missions is an array of length 2');
+                    expect(res.body.missions[0].type).toBe('optionsAvailable', 'type of first mission');
+                    expect(res.body.missions[0].outcome).toBe(true, 'outcome of first mission');
+                    expect(res.body.missions[1].type).toBe('whatOptions', 'type of second mission');
+                    expect(res.body.missions[1].outcome).toEqual(['fries', 'napoli'], 'outcome of second mission');
                     done();
                 })
             ;
