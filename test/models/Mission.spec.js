@@ -26,7 +26,7 @@ describe('A mission', function() {
             });
         });
 
-        var p = new Mission();
+        var p = new Mission({visit: '000000000000000000000009', type: 'buyOptions', outcome: ['fries']});
         expect(p.id).toBeTruthy();
 
         h.runAsync(function(done) {
@@ -40,6 +40,9 @@ describe('A mission', function() {
             Mission.findOne(p.id).exec(function(err, mission) {
                 expect(mission instanceof Mission).toBe(true);
                 expect(err).toBeNull();
+                expect(typeof mission.type).toBe('string', 'type is a string');
+                expect(mission.outcome).toBeDefined('outcome is defined');
+                expect(mission.points).toBeDefined('points is defined');
                 done();
             });
         });
