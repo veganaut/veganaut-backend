@@ -27,6 +27,7 @@ h.describe('Visit API methods', function() {
                     expect(typeof res.body).toBe('object', 'returns an array of locations');
                     expect(res.body.length).toBe(1, 'only one location');
                     expect(res.body[0].name).toBe('Tingelkringel', 'the created location');
+                    expect(typeof res.body[0].id).toBe('string', 'id is string');
                     done();
                 })
             ;

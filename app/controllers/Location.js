@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = require('lodash');
+
 var mongoose = require('mongoose');
 var Location = mongoose.model('Location');
 
@@ -18,11 +20,14 @@ exports.location = function (req, res, next) {
 exports.list = function (req, res, next) {
     Location
         .find()
-        .exec(function(err, activities) {
+        .exec(function(err, locations) {
             if (err) {
                 return next(err);
             } else {
-                return res.send(activities);
+                locations = _.map(locations, function(l) {
+                    return _.pick(l, ['name', 'coordinates', 'type', 'id']);
+                });
+                return res.send(locations);
             }
         })
     ;
