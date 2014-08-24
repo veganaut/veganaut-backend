@@ -13,7 +13,7 @@ exports.visit = function(req, res, next) {
         function (cb) {
             Location.findOne(req.body.location, function (err, l) {
                 if (!err && !l) {
-                    err = new Error('Could not find person with id: ' + req.body.location);
+                    err = new Error('Could not find location with id: ' + req.body.location);
                 }
                 location = l;
                 cb(err);
