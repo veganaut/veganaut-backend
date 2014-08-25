@@ -7,6 +7,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+require('./Visit');
+require('./Person');
 var Visit = mongoose.model('Visit');
 var Person = mongoose.model('Person');
 

@@ -8,18 +8,20 @@ var mongoose = require('mongoose');
 var _ = require('lodash');
 var async = require('async');
 
-require('../../app/models/Person');
 require('../../app/models/Activity');
 require('../../app/models/ActivityLink');
 require('../../app/models/GraphNode');
 require('../../app/models/Location');
-var Person = mongoose.model('Person');
+require('../../app/models/Mission');
+require('../../app/models/Person');
+require('../../app/models/Visit');
 var Activity = mongoose.model('Activity');
 var ActivityLink = mongoose.model('ActivityLink');
 var GraphNode = mongoose.model('GraphNode');
 var Location = mongoose.model('Location');
-var Visit = mongoose.model('Visit');
 var Mission = mongoose.model('Mission');
+var Person = mongoose.model('Person');
+var Visit = mongoose.model('Visit');
 
 
 var load = function(fixtures, done) {

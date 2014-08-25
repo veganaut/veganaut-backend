@@ -5,7 +5,7 @@
 
 var mongoose = require('mongoose');
 var FixtureLoader = require('./FixtureLoader');
-var activites = require('./activities');
+var activities = require('./activities');
 
 var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
@@ -14,7 +14,7 @@ var Visit = mongoose.model('Visit');
 var Mission = mongoose.model('Mission');
 
 var getFixtures = function() {
-    var fix = activites.getFixtures();
+    var fix = activities.getFixtures();
     fix.alice = new Person({
         _id: '000000000000000000000001',
         email: 'foo@bar.baz',
