@@ -11,7 +11,6 @@ var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
 var Location = mongoose.model('Location');
 var Visit = mongoose.model('Visit');
-var Mission = mongoose.model('Mission');
 
 var getFixtures = function() {
     var fix = activities.getFixtures();
@@ -109,17 +108,18 @@ var getFixtures = function() {
         _id: '000000000000000000000009',
         location: fix.ruprecht.id,
         person: fix.bob.id,
-        completed: '2014-08-24'
-    });
-    fix.bobMissionOptionsAvailable = new Mission({
-        type: 'optionsAvailable',
-        visit: fix.bobVisitedRuprecht.id,
-        outcome: true
-    });
-    fix.bobMissionWhatOptions = new Mission({
-        type: 'whatOptions',
-        visit: fix.bobVisitedRuprecht.id,
-        outcome: ['fries', 'napoli']
+        completed: '2014-08-24',
+        missions: [
+            {
+                _id: '000000000000000000000010',
+                type: 'optionsAvailable',
+                outcome: true
+            },
+            {
+                type: 'whatOptions',
+                outcome: ['fries', 'napoli']
+            }
+        ]
     });
 
     return fix;
