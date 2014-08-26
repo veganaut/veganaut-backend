@@ -10,8 +10,17 @@ var Schema = mongoose.Schema;
 require('./Person');
 var Person = mongoose.model('Person');
 
+var MISSION_TYPES = [
+    'visitBonus',
+    'hasOptions',
+    'whatOptions',
+    'buyOptions',
+    'giveFeedback',
+    'rateOptions'
+];
+
 var MissionSchema = new Schema({
-    type: { type: String, enum: ['optionsAvailable', 'whatOptions', 'buyOptions', 'staffFeedback', 'rateLocation'], required: true },
+    type: { type: String, enum: MISSION_TYPES, required: true },
     outcome: { type: Schema.Types.Mixed, required: true },
     points: { type: Schema.Types.Mixed },
 });
@@ -21,12 +30,13 @@ MissionSchema.pre('save', function(next) {
 
     if (typeof mission.points === 'undefined') {
         var visit = mission.parent();
-        Person.findById(visit.person, function (err, person) {
+        Person.findById(visit.person, function(err, person) {
             mission.points = {};
             mission.points[person.team] = 3;
             next(err);
         });
-    } else {
+    }
+    else {
         return next();
     }
 });

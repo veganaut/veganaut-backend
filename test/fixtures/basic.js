@@ -102,7 +102,7 @@ var getFixtures = function() {
         _id: '000000000000000000000008',
         coordinates: [46.953880, 7.446611],
         name: 'Kremoby Hollow',
-        type: 'private'
+        type: 'gastronomy'
     });
     fix.bobVisitedRuprecht = new Visit({
         _id: '000000000000000000000009',
@@ -112,10 +112,11 @@ var getFixtures = function() {
         missions: [
             {
                 _id: '000000000000000000000010',
-                type: 'optionsAvailable',
+                type: 'hasOptions',
                 outcome: true
             },
             {
+                _id: '000000000000000000000011',
                 type: 'whatOptions',
                 outcome: ['fries', 'napoli']
             }
