@@ -171,7 +171,7 @@ exports.view = function(req, res, next) {
 
 exports.viewById = function(req, res, next) {
     var personId = req.params.personId;
-    Person.findOne({_id: personId}, function(err, person) {
+    Person.findById(personId, function(err, person) {
         if (err) {
             return next(err);
         }

@@ -10,7 +10,7 @@ exports.visit = function(req, res, next) {
     var location, visit;
     async.series([
         function (cb) {
-            Location.findOne(req.body.location, function (err, l) {
+            Location.findById(req.body.location, function (err, l) {
                 if (!err && !l) {
                     err = new Error('Could not find location with id: ' + req.body.location);
                 }

@@ -37,7 +37,7 @@ describe('A visit', function() {
         });
 
         h.runAsync(function(done) {
-            Visit.findOne(p.id).exec(function(err, visit) {
+            Visit.findById(p.id).exec(function(err, visit) {
                 expect(visit instanceof Visit).toBe(true);
                 expect(err).toBeNull();
                 done();

@@ -41,7 +41,7 @@ describe('A person', function() {
         });
 
         h.runAsync(function(done) {
-            Person.findOne(p.id).exec(function(err, person) {
+            Person.findById(p.id).exec(function(err, person) {
                 expect(err).toBeNull();
                 expect(person.email).toBe('mynewperson@example.com');
                 done();
