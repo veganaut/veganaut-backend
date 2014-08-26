@@ -22,7 +22,7 @@ h.describe('Visit API methods', {fixtures: fix, user: 'alice@example.com'}, func
                     ]
                 })
                 .end(function(res) {
-                    expect(res.statusCode).toBe(200);
+                    expect(res.statusCode).toBe(201);
                     expect(typeof res.body.id).toBe('string', 'id is a string');
                     expect(typeof res.body.person).toBe('string', 'person is a string');
                     expect(typeof res.body.location).toBe('string', 'location is a string');
@@ -53,7 +53,7 @@ h.describe('Visit API methods', {fixtures: fix, user: 'alice@example.com'}, func
                     ]
                 })
                 .end(function(res) {
-                    expect(res.statusCode).toBe(200);
+                    expect(res.statusCode).toBe(201);
                     expect(res.body.missions.length).toBe(6, 'missions is an array of length 6');
                     expect(res.body.missions[0].type).toBe('visitBonus', 'type of mission 1');
                     expect(res.body.missions[0].points).toEqual({blue: 100}, 'points of mission 1');

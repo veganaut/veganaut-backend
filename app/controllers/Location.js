@@ -1,36 +1,40 @@
 'use strict';
 
 var _ = require('lodash');
+var async = require('async');
 
 var mongoose = require('mongoose');
 var Location = mongoose.model('Location');
 
-exports.location = function (req, res, next) {
+exports.location = function(req, res, next) {
     var location = new Location(req.body);
-    location.save(function (err) {
+    location.save(function(err) {
         if (err) {
             return next(err);
-        } else {
+        }
+        else {
             return res.send(location);
         }
     });
 };
 
 
-exports.list = function (req, res, next) {
-    Location
-        .find()
-        .exec(function(err, locations) {
-            if (err) {
-                return next(err);
-            } else {
-                var i = 0;
-                locations = _.map(locations, function(l) {
-                    l.team = (i++ % 2 === 0) ? 'green' : 'blue'; // TODO: remove this once it's set correctly
-                    return _.pick(l, ['name', 'coordinates', 'type', 'id', 'team']);
-                });
-                return res.send(locations);
-            }
-        })
-    ;
+exports.list = function(req, res, next) {
+    Location.find(function(err, locations) {
+        if (err) {
+            return next(err);
+        }
+
+        async.each(locations, function(location, cb) {
+            location.populateRecentVisits(function(err) {
+                cb(err);
+            });
+        }, function() {
+            locations = _.map(locations, function(l) {
+                l.calculatePoints();
+                return l.toApiObject();
+            });
+            return res.send(locations);
+        });
+    });
 };

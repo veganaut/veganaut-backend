@@ -90,35 +90,136 @@ var getFixtures = function() {
         _id: '000000000000000000000006',
         coordinates: [46.957113, 7.452544],
         name: '3dosha',
-        type: 'gastronomy'
+        type: 'gastronomy',
+        previousOwnerStart: '2014-08-20',
+        currentOwnerStart: '2014-08-20'
     });
     fix.ruprecht = new Location({
         _id: '000000000000000000000007',
         coordinates: [46.946757, 7.441016],
         name: 'Reformhaus Ruprecht',
-        type: 'retail'
+        type: 'retail',
+        previousOwnerStart: '2014-08-24',
+        currentOwnerStart: '2014-08-25'
     });
     fix.hollow = new Location({
         _id: '000000000000000000000008',
         coordinates: [46.953880, 7.446611],
         name: 'Kremoby Hollow',
-        type: 'gastronomy'
+        type: 'gastronomy',
+        previousOwnerStart: '2014-08-10',
+        currentOwnerStart: '2014-08-15'
     });
+
+    fix.bobVisitedDosha = new Visit({
+        location: fix.dosha.id,
+        person: fix.bob.id,
+        completed: '2014-08-20',
+        missions: [
+            {
+                type: 'visitBonus',
+                outcome: true
+            },
+            {
+                type: 'hasOptions',
+                outcome: true
+            },
+            {
+                type: 'whatOptions',
+                outcome: ['curry']
+            }
+        ]
+    });
+
     fix.bobVisitedRuprecht = new Visit({
-        _id: '000000000000000000000009',
         location: fix.ruprecht.id,
         person: fix.bob.id,
         completed: '2014-08-24',
         missions: [
             {
-                _id: '000000000000000000000010',
                 type: 'hasOptions',
                 outcome: true
             },
             {
-                _id: '000000000000000000000011',
                 type: 'whatOptions',
                 outcome: ['fries', 'napoli']
+            }
+        ]
+    });
+    fix.aliceVisitedRuprecht = new Visit({
+        location: fix.ruprecht.id,
+        person: fix.alice.id,
+        completed: '2014-08-25',
+        missions: [
+            {
+                type: 'visitBonus',
+                outcome: true
+            },
+            {
+                type: 'hasOptions',
+                outcome: true
+            }
+        ]
+    });
+
+    fix.aliceVisitedHollow = new Visit({
+        location: fix.hollow.id,
+        person: fix.alice.id,
+        completed: '2014-08-10',
+        missions: [
+            {
+                type: 'visitBonus',
+                outcome: true
+            },
+            {
+                type: 'hasOptions',
+                outcome: true
+            },
+            {
+                type: 'whatOptions',
+                outcome: ['smoothie', 'cake']
+            },
+            {
+                type: 'giveFeedback',
+                outcome: { text: 'Your vegan food is so tasty', didNotDoIt: true }
+            }
+        ]
+    });
+    fix.bobVisitedHollow = new Visit({
+        location: fix.hollow.id,
+        person: fix.bob.id,
+        completed: '2014-08-12',
+        missions: [
+            {
+                type: 'hasOptions',
+                outcome: true
+            },
+            {
+                type: 'whatOptions',
+                outcome: ['smoothie', 'cookies', 'cake']
+            }
+        ]
+    });
+    fix.bobVisitedHollowAgain = new Visit({
+        location: fix.hollow.id,
+        person: fix.bob.id,
+        completed: '2014-08-15',
+        missions: [
+            {
+                type: 'visitBonus',
+                outcome: true
+            },
+            {
+                type: 'hasOptions',
+                outcome: true
+            },
+            {
+                type: 'whatOptions',
+                outcome: ['smoothie', 'cookies', 'cake']
+            },
+            {
+                type: 'buyOptions',
+                outcome: ['smoothie', 'cake']
             }
         ]
     });
