@@ -67,6 +67,8 @@ h.describe('Visit API methods', {fixtures: fix, user: 'alice@example.com'}, func
                     expect(res.body.missions[4].points).toEqual({blue: 20}, 'points of mission 5');
                     expect(res.body.missions[5].type).toBe('rateOptions', 'type of mission 6');
                     expect(res.body.missions[5].points).toEqual({blue: 10}, 'points of mission 6');
+
+                    expect(res.body.totalPoints).toEqual({blue: 170}, 'returns the summed up total points');
                     done();
                 })
             ;
