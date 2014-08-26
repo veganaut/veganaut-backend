@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "start": "node app.js",
-        "test": "./node_modules/.bin/jasmine-node test/e2e/ test/models"
+        "test": "./node_modules/.bin/jasmine-node --captureExceptions test/e2e/ test/models"
     },
     "dependencies": {
         "bcrypt": "0.7.7",
