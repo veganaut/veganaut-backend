@@ -70,7 +70,8 @@ LocationSchema.methods.calculatePoints = function() {
         that._totalPoints = addPoints(that._totalPoints, visit.getTotalPoints());
     });
 
-    that._bestTeam = undefined;
+    // TODO: remove the default. for now we just say the team is blue if nothing is defined, but this should never happen once we have an initial mission that will always be made
+    that._bestTeam = 'blue';
     var bestPoints = 0;
     _.each(that._totalPoints, function(points, team) {
         // TODO: handle equal points correctly (team that had it for longer keeps it)
