@@ -73,6 +73,7 @@ LocationSchema.methods.calculatePoints = function() {
     that._bestTeam = undefined;
     var bestPoints = 0;
     _.each(that._totalPoints, function(points, team) {
+        // TODO: handle equal points correctly (team that had it for longer keeps it)
         if (points > bestPoints) {
             bestPoints = points;
             that._bestTeam = team;
