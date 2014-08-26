@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/monkey-tail.iml" filepath="$PROJECT_DIR$/.idea/monkey-tail.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/veganaut-backend.iml" filepath="$PROJECT_DIR$/.idea/veganaut-backend.iml" />
     </modules>
   </component>
 </project>

@@ -16,7 +16,7 @@ var async = require('async');
 describe('A person', function() {
     h.beforeAll(function() {
         h.runAsync(function(done) {
-            mongoose.connect('mongodb://localhost/monkey', done);
+            mongoose.connect('mongodb://localhost/veganaut', done);
         });
     });
 

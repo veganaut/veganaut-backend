@@ -43,7 +43,7 @@ exports.request = function(method, url) {
 
     // Here, the actual defaults are set
     var r = request(method, url)
-        .set('Authorization', 'MonkeyBearer ' + exports.sessionId);
+        .set('Authorization', 'VeganautBearer ' + exports.sessionId);
 
     if (callback) {
         return r.end(callback);
@@ -122,7 +122,7 @@ exports.describe = function(what, options, how) {
         // Start a server and initialize fixtures
         beforeAll(function () {
             runAsync(function(done) {
-                mongoose.connect('mongodb://localhost/monkey', function(err) {
+                mongoose.connect('mongodb://localhost/veganaut', function(err) {
                     if (err) { console.log(err); }
                     exports.server.listen(exports.port, function(err) {
                         if (err) { console.log(err); }

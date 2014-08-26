@@ -52,7 +52,7 @@ app.use(function(err, req, res, next) {
 // Server
 var server = http.createServer(app);
 if (require.main === module) {
-    mongoose.connect('mongodb://localhost/monkey', function(err) {
+    mongoose.connect('mongodb://localhost/veganaut', function(err) {
         if (err) {
             console.log('Could not connect to Mongo: ', err);
             process.exit();

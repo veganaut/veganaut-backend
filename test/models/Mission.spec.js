@@ -14,7 +14,7 @@ var Visit = mongoose.model('Visit');
 h.describe('A mission', function() {
     h.beforeAll(function() {
         h.runAsync(function(done) {
-            mongoose.connect('mongodb://localhost/monkey', done);
+            mongoose.connect('mongodb://localhost/veganaut', done);
         });
     });
 

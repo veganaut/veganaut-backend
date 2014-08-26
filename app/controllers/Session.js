@@ -59,9 +59,9 @@ exports.addUserToRequest = function(req, res, next) {
     var authHeader = req.get('Authorization');
     if (authHeader) {
         var parts = authHeader.split(' ');
-        // We use "MonkeyBearer" identifier, it's almost oauth, but not quite
+        // We use "VeganautBearer" identifier, it's almost oauth, but not quite
         // (or is it? I don't know, the docs are too long)
-        if (parts.length === 2 && parts[0] === 'MonkeyBearer' && sessionStore[parts[1]]) {
+        if (parts.length === 2 && parts[0] === 'VeganautBearer' && sessionStore[parts[1]]) {
             req.sessionId = parts[1];
             req.user = sessionStore[req.sessionId];
         }
