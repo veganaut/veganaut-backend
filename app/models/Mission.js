@@ -15,6 +15,7 @@ var Person = mongoose.model('Person');
  * @type {string[]}
  */
 var MISSION_TYPES = [
+    'addLocation',
     'visitBonus',
     'hasOptions',
     'whatOptions',
@@ -28,6 +29,7 @@ var MISSION_TYPES = [
  * @type {{}}
  */
 var POINTS_BY_TYPE = {
+    addLocation:  10,
     visitBonus:  100, // TODO: make sure visitBonus is not claimed when it wasn't available
     hasOptions:   10,
     whatOptions:  10,

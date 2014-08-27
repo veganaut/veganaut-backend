@@ -5,13 +5,29 @@ var _ = require('lodash');
 var h = require('../helpers');
 
 h.describe('Visit API methods', function() {
+    it('can create a new location', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'location')
+                .send({
+                    name: 'Tingelkringel',
+                    coordinates: [46.951081, 7.438637],
+                    type: 'gastronomy'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    done();
+                })
+            ;
+        });
+    });
+
     it('can list locations', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/list')
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
                     expect(typeof res.body).toBe('object', 'returns an array of locations');
-                    expect(res.body.length).toBe(3, '3 locations');
+                    expect(res.body.length).toBe(4, '4 locations (3 from fixtures, one from previous test)');
 
                     _.each(res.body, function(location) {
                         expect(typeof location.name).toBe('string', 'has a name');
@@ -27,24 +43,9 @@ h.describe('Visit API methods', function() {
 
                         expect(location.team).toMatch(/^(blue|green)$/, 'team is blue or green');
                         expect(typeof location.points).toBe('object', 'points is an object');
-                    });
-                    done();
-                })
-            ;
-        });
-    });
 
-    it('can create a new location', function() {
-        // TODO: this test should happen before the other, but doesn't work yet because newly added place don't have points so no team
-        h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'location')
-                .send({
-                    name: 'Tingelkringel',
-                    coordinates: [46.951081, 7.438637],
-                    type: 'gastronomy'
-                })
-                .end(function(res) {
-                    expect(res.statusCode).toBe(200);
+                        // TODO: should we test the exact points?
+                    });
                     done();
                 })
             ;

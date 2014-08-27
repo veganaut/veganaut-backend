@@ -18,6 +18,7 @@ exports.visit = function(req, res, next) {
             });
         },
         function(cb) {
+            // TODO: pick the wanted data from missions (to make sure that points aren't sent for example)
             visit = new Visit({person: req.user.id, location: location.id, completed: Date.now(), missions: req.body.missions});
             visit.save(cb);
         }

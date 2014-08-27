@@ -35,8 +35,6 @@ ActivityLinkSchema.pre('save', function(next) {
         }
     });
     if (id.source === id.target) {
-        console.log(id);
-        console.log((new Error()).stack);
         return next(new Error('ActivityLinks must have different source and target.'));
     }
     return next();
