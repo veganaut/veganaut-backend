@@ -18,13 +18,14 @@ h.describe('Basic functionality of Visit API methods.', {fixtures: fix, user: 'a
                 .send({
                     location: '000000000000000000000003',
                     missions: [
-                        {type: 'hasOptions', outcome: true},
-                        {type: 'whatOptions', outcome: ['fries', 'napoli']}
+                        {type: 'hasOptions', outcome: true, points: 10},
+                        {type: 'whatOptions', outcome: ['fries', 'napoli'], points: 10}
                     ]
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     var visit = res.body;
+                    console.log('visit: ', visit);
                     expect(typeof visit.id).toBe('string', 'id is a string');
                     expect(typeof visit.person).toBe('string', 'person is a string');
                     expect(typeof visit.location).toBe('string', 'location is a string');
@@ -48,12 +49,12 @@ h.describe('Basic functionality of Visit API methods.', {fixtures: fix, user: 'a
                 .send({
                     location: '000000000000000000000003',
                     missions: [
-                        { type: 'visitBonus', outcome: true },
-                        { type: 'hasOptions', outcome: true },
-                        { type: 'whatOptions', outcome: ['fries', 'napoli'] },
-                        { type: 'buyOptions', outcome: ['fries'] },
-                        { type: 'giveFeedback', outcome: { text: 'Moar sauce', didNotDoIt: false } },
-                        { type: 'rateOptions', outcome: { fries: 2, napoli: 6 }}
+                        { type: 'visitBonus', outcome: true, points: 100 },
+                        { type: 'hasOptions', outcome: true, points: 10 },
+                        { type: 'whatOptions', outcome: ['fries', 'napoli'], points: 10 },
+                        { type: 'buyOptions', outcome: ['fries'], points: 20 },
+                        { type: 'giveFeedback', outcome: { text: 'Moar sauce', didNotDoIt: false }, points: 20 },
+                        { type: 'rateOptions', outcome: { fries: 2, napoli: 6 }, points: 10}
                     ]
                 })
                 .end(function(res) {
@@ -87,11 +88,11 @@ h.describe('Visit API methods and their influence on locations.', function() {
                 .send({
                     location: '000000000000000000000006', // Visit dosha
                     missions: [
-                        {type: 'visitBonus', outcome: true},
-                        {type: 'hasOptions', outcome: true},
-                        {type: 'whatOptions', outcome: ['curry', 'samosa']},
-                        {type: 'buyOptions', outcome: ['samosa']},
-                        {type: 'giveFeedback', outcome: { text: 'Tasty vegan options', didNotDoIt: false}}
+                        {type: 'visitBonus', outcome: true, points: 100},
+                        {type: 'hasOptions', outcome: true, points: 10},
+                        {type: 'whatOptions', outcome: ['curry', 'samosa'], points: 10},
+                        {type: 'buyOptions', outcome: ['samosa'], points: 20},
+                        {type: 'giveFeedback', outcome: { text: 'Tasty vegan options', didNotDoIt: false}, points: 20}
                     ]
                 })
                 .end(function(res) {

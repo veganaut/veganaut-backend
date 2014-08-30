@@ -5,6 +5,7 @@
 
 'use strict';
 
+var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
@@ -47,18 +48,24 @@ var missionSchema = new Schema({
 
 missionSchema.pre('save', function(next) {
     var mission = this;
+    var visit = mission.parent();
 
-    if (typeof mission.points === 'undefined') {
-        var visit = mission.parent();
-        Person.findById(visit.person, function(err, person) {
-            mission.points = {};
-            mission.points[person.team] = POINTS_BY_TYPE[mission.type];
-            next(err);
+    // validate points
+    // FIXME: Test that this indeed catches errors. Jonas suspects it might not really work.
+    Person.findById(visit.person, function(err, person) {
+        if (err) { return next(err); }
+
+        _.forOwn(mission.points, function(p, t) {
+            if (p < 0 || p > POINTS_BY_TYPE[mission.type] || p !== Math.round(p)) {
+                return next(new Error('Invalid points for mission of type ' + mission.type + ': ' + p));
+            }
+            if (t !== person.team) {
+                return next(new Error('Mission points attributed to wrong team: ' + t + ' instead of ' + person.team));
+            }
         });
-    }
-    else {
+
         return next();
-    }
+    });
 });
 
 module.exports = missionSchema;

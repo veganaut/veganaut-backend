@@ -132,11 +132,10 @@ locationSchema.methods.notifyVisitCreated = function(visit, next) {
 
     _.each(visit.missions, function(mission) {
         _.forOwn(mission.points, function(p, t) {
-            points[t] += p;
-            availablePoints -= p;
+            points[t] += Math.min(p, availablePoints);
+            availablePoints -= Math.min(p, availablePoints);
         });
     });
-    availablePoints = Math.max(availablePoints, 0);
 
     _.forOwn(points, function(p, t) {
         if (p > teamPoints) {

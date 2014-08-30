@@ -24,7 +24,10 @@ exports.visit = function(req, res, next) {
 
             // Sanitize missions
             var missions = _.map(req.body.missions, function(m) {
-                return _.pick(m, ['type', 'outcome']);
+                var sanitized = _.pick(m, ['type', 'outcome']);
+                sanitized.points = {};
+                sanitized.points[req.user.team] = m.points;
+                return sanitized;
             });
 
             visit = new Visit({
