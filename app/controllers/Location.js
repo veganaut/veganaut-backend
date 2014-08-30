@@ -8,7 +8,9 @@ var Location = mongoose.model('Location');
 var Visit = mongoose.model('Visit');
 
 exports.location = function(req, res, next) {
-    var location = new Location(_.pick(req.body, 'coordinates', 'name', 'type'));
+    var location = new Location(_.assign(_.pick(req.body, 'name', 'type'), {
+        coordinates: [req.body.lat, req.body.lng]
+    }));
 
     // Create first visit at this location with the addLocation mission completed
     // TODO: this should probably go in the Location Model pre save or something, then one can also change FixtureCreator.location

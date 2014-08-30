@@ -137,7 +137,11 @@ locationSchema.methods.performOwnerChange = function(visit) {
  * @returns {{}}
  */
 locationSchema.methods.toApiObject = function (person) {
-    var apiObj = _.pick(this, ['name', 'coordinates', 'type', 'id', 'currentOwnerStart']);
+    var apiObj = _.pick(this, ['name', 'type', 'id', 'currentOwnerStart']);
+
+    // Add lat/lng in the format the frontend expects
+    apiObj.lat = this.coordinates[0];
+    apiObj.lng = this.coordinates[1];
 
     // Add points information if it's available
     if (typeof this._bestTeam !== 'undefined') {

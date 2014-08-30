@@ -20,7 +20,8 @@ h.describe('Visit API methods', function() {
             h.request('POST', h.baseURL + 'location')
                 .send({
                     name: 'Tingelkringel',
-                    coordinates: [46.951081, 7.438637],
+                    lat: 46.951081,
+                    lng: 7.438637,
                     type: 'gastronomy'
                 })
                 .end(function(res) {
@@ -41,10 +42,8 @@ h.describe('Visit API methods', function() {
 
                     _.each(res.body, function(location) {
                         expect(typeof location.name).toBe('string', 'has a name');
-                        expect(typeof location.coordinates).toBe('object', 'has coordinates');
-                        expect(location.coordinates.length).toBe(2, 'has 2 coordinates');
-                        expect(typeof location.coordinates[0]).toBe('number', 'coordinates are numbers');
-                        expect(typeof location.coordinates[1]).toBe('number', 'coordinates are numbers');
+                        expect(typeof location.lat).toBe('number', 'has lat');
+                        expect(typeof location.lng).toBe('number', 'has lng');
                         expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
                         expect(typeof location.currentOwnerStart).toBe('string', 'currentOwnerStart is a string');
                         expect(isNaN(new Date(location.currentOwnerStart).getTime())).toBe(false,
