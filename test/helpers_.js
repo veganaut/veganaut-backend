@@ -1,5 +1,8 @@
 /**
- * Test helpers
+ * Test helpers.
+ *
+ * Note that this is called helpers_ (with underscore) because jasmine treats
+ * files called "helpers.js" specially.
  */
 'use strict';
 /* global runs, waitsFor, describe */

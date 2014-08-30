@@ -5,7 +5,7 @@
 'use strict';
 /* global describe, it, expect */
 
-var h = require('../helpers');
+var h = require('../helpers_');
 
 var mongoose = require('mongoose');
 require('../../app/models/Person');

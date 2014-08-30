@@ -2,7 +2,7 @@
 /* global it, expect */
 
 var _ = require('lodash');
-var h = require('../helpers');
+var h = require('../helpers_');
 
 h.describe('Graph API methods', function() {
     it('can get me', function() {

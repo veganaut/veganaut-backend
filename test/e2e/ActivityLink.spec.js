@@ -1,7 +1,7 @@
 'use strict';
 /* global it, expect */
 
-var h = require('../helpers');
+var h = require('../helpers_');
 var mongoose = require('mongoose');
 var Person = mongoose.model('Person');
 var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;

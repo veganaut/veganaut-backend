@@ -1,7 +1,7 @@
 'use strict';
 /* global it, expect */
 
-var h = require('../helpers');
+var h = require('../helpers_');
 
 h.describe('Our API', function() {
 

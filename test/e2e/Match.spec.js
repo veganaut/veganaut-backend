@@ -1,7 +1,7 @@
 'use strict';
 /* global it, expect */
 
-var h = require('../helpers');
+var h = require('../helpers_');
 
 h.describe('The Match controller', {fixtures: 'extended'}, function() {
     it('can compute scores', function() {

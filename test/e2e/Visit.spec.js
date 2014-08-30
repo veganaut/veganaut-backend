@@ -2,7 +2,7 @@
 /* global it, expect */
 
 var _ = require('lodash');
-var h = require('../helpers');
+var h = require('../helpers_');
 var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
 
 var fix = new FixtureCreator();

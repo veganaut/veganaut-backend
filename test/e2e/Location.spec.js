@@ -2,7 +2,7 @@
 /* global it, expect */
 
 var _ = require('lodash');
-var h = require('../helpers');
+var h = require('../helpers_');
 
 // TODO: this seems to complicated to be in a test
 // Helper values for the nextVisitBonusDate
