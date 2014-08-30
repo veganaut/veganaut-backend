@@ -80,6 +80,16 @@ locationSchema.methods.calculatePoints = function() {
 };
 
 /**
+ * Makes the necessary operations (updating timestamps) when the owner
+ * of this location change through the given Visit
+ * @param {Visit} visit
+ */
+locationSchema.methods.performOwnerChange = function(visit) {
+    this.previousOwnerStart = this.currentOwnerStart;
+    this.currentOwnerStart = visit.completed;
+};
+
+/**
  * Returns this location ready to be sent to the frontend
  * @returns {{}}
  */

@@ -11,6 +11,7 @@ var activities = require('./activities');
 var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
 var Location = mongoose.model('Location');
+var Visit = mongoose.model('Visit');
 
 /**
  * FixtureCreator constructor. Helper for creating fixtures.
@@ -124,12 +125,22 @@ FixtureCreator.prototype.activityLink = function(source, target, success) {
     return this;
 };
 
-FixtureCreator.prototype.location = function (name, coordinates, type) {
+FixtureCreator.prototype.location = function (user, name, coordinates, type) {
     this._fixtures[name] = new Location({
         _id: intToId(_.size(this._fixtures)),
         name: name,
         coordinates: coordinates,
         type: type
+    });
+
+    this._fixtures[name + 'FirstVisit'] = new Visit({
+        person: this._fixtures[user].id,
+        location: this._fixtures[name],
+        completed: new Date(),
+        missions: [{
+            type: 'addLocation',
+            outcome: true
+        }]
     });
 };
 

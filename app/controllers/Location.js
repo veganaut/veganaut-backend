@@ -11,7 +11,7 @@ exports.location = function(req, res, next) {
     var location = new Location(_.pick(req.body, 'coordinates', 'name', 'type'));
 
     // Create first visit at this location with the addLocation mission completed
-    // TODO: this should probably go in the Location Model pre save or something
+    // TODO: this should probably go in the Location Model pre save or something, then one can also change FixtureCreator.location
     var visit = new Visit({
         person: req.user.id,
         location: location.id,

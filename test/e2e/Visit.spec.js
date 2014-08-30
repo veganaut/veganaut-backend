@@ -8,7 +8,7 @@ var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
 var fix = new FixtureCreator();
 fix
     .user('alice', 'blue')
-    .location('Tingelkringel')
+    .location('alice', 'Tingelkringel')
 ;
 
 h.describe('Basic functionality of Visit API methods.', {fixtures: fix, user: 'alice@example.com'}, function() {
@@ -24,15 +24,18 @@ h.describe('Basic functionality of Visit API methods.', {fixtures: fix, user: 'a
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    expect(typeof res.body.id).toBe('string', 'id is a string');
-                    expect(typeof res.body.person).toBe('string', 'person is a string');
-                    expect(typeof res.body.location).toBe('string', 'location is a string');
-                    expect(typeof res.body.completed).toBe('string', 'completed is a string');
-                    expect(res.body.missions.length).toBe(2, 'missions is an array of length 2');
-                    expect(res.body.missions[0].type).toBe('hasOptions', 'type of first mission');
-                    expect(res.body.missions[0].outcome).toBe(true, 'outcome of first mission');
-                    expect(res.body.missions[1].type).toBe('whatOptions', 'type of second mission');
-                    expect(res.body.missions[1].outcome).toEqual(['fries', 'napoli'], 'outcome of second mission');
+                    var visit = res.body;
+                    expect(typeof visit.id).toBe('string', 'id is a string');
+                    expect(typeof visit.person).toBe('string', 'person is a string');
+                    expect(typeof visit.location).toBe('string', 'location is a string');
+                    expect(typeof visit.completed).toBe('string', 'completed is a string');
+                    expect(typeof visit.completed).toBe('string', 'completed is a string');
+                    expect(visit.causedOwnerChange).toBe(false, 'did not cause an owner change');
+                    expect(visit.missions.length).toBe(2, 'missions is an array of length 2');
+                    expect(visit.missions[0].type).toBe('hasOptions', 'type of first mission');
+                    expect(visit.missions[0].outcome).toBe(true, 'outcome of first mission');
+                    expect(visit.missions[1].type).toBe('whatOptions', 'type of second mission');
+                    expect(visit.missions[1].outcome).toEqual(['fries', 'napoli'], 'outcome of second mission');
                     done();
                 })
             ;
@@ -93,6 +96,7 @@ h.describe('Visit API methods and their influence on locations.', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
+                    expect(res.body.causedOwnerChange).toBe(true, 'visit caused an owner change');
 
                     // TODO: would be best to only request the updated location
                     h.request('GET', h.baseURL + 'location/list')
@@ -102,13 +106,12 @@ h.describe('Visit API methods and their influence on locations.', function() {
                             var dosha = _.first(_.where(res.body, {id: '000000000000000000000006'}));
                             expect(dosha).toBeDefined('returned dosha');
                             expect(dosha.team).toBe('blue', 'owner is now blue');
-                            console.log(dosha);
                             expect(typeof dosha.points.blue).toBe('number', 'has blue points');
                             expect(typeof dosha.points.green).toBe('number', 'has blue points');
                             expect(dosha.points.blue).toBeGreaterThan(dosha.points.green, 'has more blue than green points');
 
                             expect(typeof dosha.currentOwnerStart).toBe('string', 'currentOwnerStart is defined');
-                            expect(new Date() - new Date(dosha.currentOwnerStart)).toBeLessThan(1000, 'currentOwnerStart is less than a second ago');
+                            expect(Date.now() - new Date(dosha.currentOwnerStart)).toBeLessThan(1000, 'currentOwnerStart is less than a second ago');
 
                             done();
                         })
