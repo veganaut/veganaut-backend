@@ -11,6 +11,13 @@ var Schema = mongoose.Schema;
 require('./Visit');
 var Visit = mongoose.model('Visit');
 
+/**
+ * Time in ms between two visits that give a visit bonus: 3 weeks
+ * TODO: This should go in a global config file somewhere
+ * @type {number}
+ */
+var TIME_BETWEEN_TWO_VISIT_BONUS =  3 * 7 * 24 * 60 * 60 * 1000;
+
 var locationSchema = new Schema({
     coordinates: {type: [Number], index: '2d'},
     name: String,
@@ -29,7 +36,10 @@ var locationSchema = new Schema({
     }
 });
 
-
+/**
+ * Retrieves the visits at this location since the previousOwnerStart
+ * @param {function} next
+ */
 locationSchema.methods.populateRecentVisits = function(next) {
     var that = this;
     Visit.find({ location: this.id,  completed: { $gte: that.previousOwnerStart } })
@@ -39,6 +49,38 @@ locationSchema.methods.populateRecentVisits = function(next) {
             return next();
         })
     ;
+};
+
+/**
+ * Calculates when the given person is next allowed to do the visitBonus mission
+ * at this location.
+ * @param {Person} person
+ * @param {function} next
+ */
+locationSchema.methods.calculateNextVisitBonusDate = function(person, next) {
+    var that = this;
+    Visit.findOne({
+        location: this.id,
+        person: person.id,
+        missions: {
+            $elemMatch: { type: 'visitBonus' }
+        }
+    })
+        .sort({ completed: 'desc' })
+        .exec(function(err, visit) {
+            if (err) { return next(err); }
+            that._nextVisitBonusDate = that._nextVisitBonusDate || {};
+            if (!visit) {
+                // If there is no recent visit, one can get the bonus right now
+                that._nextVisitBonusDate[person.id] = new Date();
+            }
+            else {
+                // Some time after the last visitBonus, you get a new visit bonus
+                that._nextVisitBonusDate[person.id] = new Date(visit.completed.getTime() + TIME_BETWEEN_TWO_VISIT_BONUS);
+            }
+            return next();
+        }
+    );
 };
 
 // TODO: move this to a helper somewhere (it's also used in models/Visit.js
@@ -91,15 +133,24 @@ locationSchema.methods.performOwnerChange = function(visit) {
 
 /**
  * Returns this location ready to be sent to the frontend
+ * @param {Person} [person]
  * @returns {{}}
  */
-locationSchema.methods.toApiObject = function () {
+locationSchema.methods.toApiObject = function (person) {
     var apiObj = _.pick(this, ['name', 'coordinates', 'type', 'id', 'currentOwnerStart']);
 
     // Add points information if it's available
     if (typeof this._bestTeam !== 'undefined') {
         apiObj.team = this._bestTeam;
         apiObj.points = this._totalPoints;
+    }
+
+    // Add nextVisitBonusDate if it's available
+    if (typeof person !== 'undefined' &&
+        typeof this._nextVisitBonusDate !== 'undefined' &&
+        typeof this._nextVisitBonusDate[person.id] !== 'undefined')
+    {
+        apiObj.nextVisitBonusDate = this._nextVisitBonusDate[person.id];
     }
 
     return apiObj;

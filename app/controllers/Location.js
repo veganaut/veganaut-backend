@@ -43,13 +43,19 @@ exports.list = function(req, res, next) {
         }
 
         async.each(locations, function(location, cb) {
-            location.populateRecentVisits(function(err) {
-                cb(err);
-            });
-        }, function() {
+            async.series([
+                location.populateRecentVisits.bind(location),
+                function(cb) {
+                    location.calculateNextVisitBonusDate(req.user, cb);
+                }
+            ], cb);
+        }, function(err) {
+            if (err) {
+                return next(err);
+            }
             locations = _.map(locations, function(l) {
                 l.calculatePoints();
-                return l.toApiObject();
+                return l.toApiObject(req.user);
             });
             return res.send(locations);
         });

@@ -4,6 +4,16 @@
 var _ = require('lodash');
 var h = require('../helpers');
 
+// TODO: this seems to complicated to be in a test
+// Helper values for the nextVisitBonusDate
+var afterHowLongAgain = 3 * 7 * 24 * 60 * 60 * 1000; // Three weeks
+var expectedBonusDates = {
+    '3dosha': new Date(),
+    'Reformhaus Ruprecht': new Date((new Date('2014-08-25')).getTime() + afterHowLongAgain),
+    'Kremoby Hollow': new Date((new Date('2014-08-10')).getTime() + afterHowLongAgain),
+    'Tingelkringel': new Date()
+};
+
 h.describe('Visit API methods', function() {
     it('can create a new location', function() {
         h.runAsync(function(done) {
@@ -39,6 +49,17 @@ h.describe('Visit API methods', function() {
                         expect(typeof location.currentOwnerStart).toBe('string', 'currentOwnerStart is a string');
                         expect(isNaN(new Date(location.currentOwnerStart).getTime())).toBe(false,
                             'currentOwnerStart can be parsed as a valid date'
+                        );
+
+                        expect(typeof location.nextVisitBonusDate).toMatch('string', 'nextVisitBonusDate is a string');
+                        var nextVisitBonusDate = new Date(location.nextVisitBonusDate);
+                        expect(isNaN(nextVisitBonusDate.getTime())).toBe(false,
+                            'nextVisitBonusDate can be parsed as a valid date'
+                        );
+                        expect(Math.abs(nextVisitBonusDate - expectedBonusDates[location.name])).toBeLessThan(60000,
+                            'correctly calculated nextVisitBonusDate for ' + location.name +
+                            '\nis:       ' + nextVisitBonusDate +
+                            '\nexpected: ' + expectedBonusDates[location.name]
                         );
 
                         expect(location.team).toMatch(/^(blue|green)$/, 'team is blue or green');
