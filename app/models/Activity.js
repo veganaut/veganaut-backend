@@ -7,7 +7,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var ActivitySchema = new Schema({
+var activitySchema = new Schema({
     name: String,
     className: String,
     timeLimit: {
@@ -17,4 +17,4 @@ var ActivitySchema = new Schema({
     givesVegBytes: Boolean
 });
 
-mongoose.model('Activity', ActivitySchema);
+mongoose.model('Activity', activitySchema);

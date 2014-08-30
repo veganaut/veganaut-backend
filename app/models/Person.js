@@ -24,7 +24,7 @@ function generateNickname() {
     return 'Veganaut-' + ((1000000 * Math.random()).toFixed(0));
 }
 
-var PersonSchema = new Schema({
+var personSchema = new Schema({
     email: {type: String, unique: true, sparse: true},
     password: String,
     nickname: { type: String, default: generateNickname },
@@ -42,7 +42,7 @@ var PersonSchema = new Schema({
     role: {type: String, enum: ['rookie', 'scout', 'veteran'], default: 'rookie'}
 });
 
-PersonSchema.pre('save', function(next) {
+personSchema.pre('save', function(next) {
     var user = this;
 
     if (this.isUser()) {
@@ -65,11 +65,11 @@ PersonSchema.pre('save', function(next) {
     });
 });
 
-PersonSchema.methods.verify = function(candidatePassword, next) {
+personSchema.methods.verify = function(candidatePassword, next) {
     bcrypt.compare(candidatePassword, this.password, next);
 };
 
-PersonSchema.methods.populateActivityLinks = function(next) {
+personSchema.methods.populateActivityLinks = function(next) {
     var that = this;
     ActivityLink.find()
         .or([{source: that.id}, {target: that.id}])
@@ -81,11 +81,11 @@ PersonSchema.methods.populateActivityLinks = function(next) {
         });
 };
 
-PersonSchema.methods.isUser = function() {
+personSchema.methods.isUser = function() {
     return typeof this.password !== 'undefined';
 };
 
-PersonSchema.methods.getType = function() {
+personSchema.methods.getType = function() {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getType';
     }
@@ -99,7 +99,7 @@ PersonSchema.methods.getType = function() {
     }
 };
 
-PersonSchema.methods.isCaptured = function() {
+personSchema.methods.isCaptured = function() {
     return (this.getHits() >= this.getStrength());
 };
 
@@ -112,7 +112,7 @@ PersonSchema.methods.isCaptured = function() {
 // Multiple activity links between the same pair of people give decreasing
 // amounts of strength. The first link has a value of 1, the second
 // MULTIPLE_LINKS_FACTOR, the third MULTIPLE_LINKS_FACTOR**2, etc.
-PersonSchema.methods.getStrength = function() {
+personSchema.methods.getStrength = function() {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getStrength';
     }
@@ -147,7 +147,7 @@ PersonSchema.methods.getStrength = function() {
 //
 // Multiple activity links between the same pair of people give decreasing
 // amounts of hit points, just like for strength.
-PersonSchema.methods.getHits = function() {
+personSchema.methods.getHits = function() {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getHits';
     }
@@ -170,7 +170,7 @@ PersonSchema.methods.getHits = function() {
     return hits;
 };
 
-PersonSchema.methods.toApiObject = function () {
+personSchema.methods.toApiObject = function () {
     return _.assign(
         _.pick(this, 'email', 'nickname', 'fullName', 'gender', 'dateOfBirth', 'phone', 'address', 'team', 'role'),
         {
@@ -183,4 +183,4 @@ PersonSchema.methods.toApiObject = function () {
     );
 };
 
-mongoose.model('Person', PersonSchema);
+mongoose.model('Person', personSchema);

@@ -1,5 +1,6 @@
 /**
  * Mongoose schema for a mission.
+ * This is used as a sub-schema in Visit and not as an independent model
  */
 
 'use strict';
@@ -38,13 +39,13 @@ var POINTS_BY_TYPE = {
     rateOptions:  10
 };
 
-var MissionSchema = new Schema({
+var missionSchema = new Schema({
     type: { type: String, enum: MISSION_TYPES, required: true },
     outcome: { type: Schema.Types.Mixed, required: true },
     points: { type: Schema.Types.Mixed }
 });
 
-MissionSchema.pre('save', function(next) {
+missionSchema.pre('save', function(next) {
     var mission = this;
 
     if (typeof mission.points === 'undefined') {
@@ -60,4 +61,4 @@ MissionSchema.pre('save', function(next) {
     }
 });
 
-mongoose.model('Mission', MissionSchema);
+module.exports = missionSchema;

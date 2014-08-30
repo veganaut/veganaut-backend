@@ -15,7 +15,6 @@ require('./app/models/GraphNode.js');
 require('./app/models/Person.js');
 require('./app/models/Visit.js');
 require('./app/models/Location.js');
-require('./app/models/Mission.js');
 
 // Controllers
 var Person = require('./app/controllers/Person');

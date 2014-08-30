@@ -8,13 +8,12 @@ var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-require('./Mission');
-var Mission = mongoose.model('Mission');
+var missionSchema = require('./missionSchema');
 
-var VisitSchema = new Schema({
+var visitSchema = new Schema({
     person: { type: Schema.Types.ObjectId, ref: 'Person' },
     location: { type: Schema.Types.ObjectId, ref: 'Location' },
-    missions: [Mission.schema], // TODO: is this the right format to make a reference to mission??
+    missions: [missionSchema], // Mission is defined in a sub-schema
     completed: Date
 });
 
@@ -22,8 +21,7 @@ var VisitSchema = new Schema({
  * Sums up the points made in all the missions in this visit
  * @returns {{}}
  */
-VisitSchema.methods.getTotalPoints = function() {
-    // TODO: check that missions have been populated
+visitSchema.methods.getTotalPoints = function() {
     var totalPoints = {};
     _.forEach(this.missions, function(mission) {
         _.forOwn(mission.points, function(points, team) {
@@ -39,7 +37,7 @@ VisitSchema.methods.getTotalPoints = function() {
  * Returns this visit ready to be sent to the frontend
  * @returns {{}}
  */
-VisitSchema.methods.toApiObject = function () {
+visitSchema.methods.toApiObject = function () {
     var missions = _.map(this.missions, function(m) {
         return _.pick(m, ['id', 'type', 'outcome', 'points']);
     });
@@ -52,4 +50,4 @@ VisitSchema.methods.toApiObject = function () {
     );
 };
 
-mongoose.model('Visit', VisitSchema);
+mongoose.model('Visit', visitSchema);

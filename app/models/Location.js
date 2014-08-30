@@ -11,7 +11,7 @@ var Schema = mongoose.Schema;
 require('./Visit');
 var Visit = mongoose.model('Visit');
 
-var LocationSchema = new Schema({
+var locationSchema = new Schema({
     coordinates: {type: [Number], index: '2d'},
     name: String,
     type: {type: String, enum: ['gastronomy', 'retail']},
@@ -30,10 +30,9 @@ var LocationSchema = new Schema({
 });
 
 
-LocationSchema.methods.populateRecentVisits = function(next) {
+locationSchema.methods.populateRecentVisits = function(next) {
     var that = this;
     Visit.find({ location: this.id,  completed: { $gte: that.previousOwnerStart } })
-//        .populate('missions') // TODO: this should be needed, but it isn't. Probably wrong schema definition
         .exec(function(err, visits) {
             if (err) { return next(err); }
             that._recentVisits = visits;
@@ -58,7 +57,7 @@ var addPoints = function() {
  * Calculates the points of each team on this location.
  * Stores it on the location object itself.
  */
-LocationSchema.methods.calculatePoints = function() {
+locationSchema.methods.calculatePoints = function() {
     // TODO: this needs more specific tests
     if (typeof(this._recentVisits) === 'undefined') {
         throw 'Must call populateRecentVisits before calling calculateScores';
@@ -84,7 +83,7 @@ LocationSchema.methods.calculatePoints = function() {
  * Returns this location ready to be sent to the frontend
  * @returns {{}}
  */
-LocationSchema.methods.toApiObject = function () {
+locationSchema.methods.toApiObject = function () {
     var apiObj = _.pick(this, ['name', 'coordinates', 'type', 'id', 'currentOwnerStart']);
 
     // Add points information if it's available
@@ -97,4 +96,4 @@ LocationSchema.methods.toApiObject = function () {
 };
 
 
-mongoose.model('Location', LocationSchema);
+mongoose.model('Location', locationSchema);

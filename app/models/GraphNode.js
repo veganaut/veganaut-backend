@@ -7,7 +7,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var GraphNodeSchema = new Schema({
+var graphNodeSchema = new Schema({
     owner: { type: Schema.Types.ObjectId, ref: 'Person' },
     target: { type: Schema.Types.ObjectId, ref: 'Person' },
 
@@ -15,4 +15,4 @@ var GraphNodeSchema = new Schema({
     coordY: Number
 });
 
-mongoose.model('GraphNode', GraphNodeSchema);
+mongoose.model('GraphNode', graphNodeSchema);

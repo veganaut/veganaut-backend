@@ -14,7 +14,7 @@ var generateReferenceCode = function() {
     return generatePassword(REFERENCE_CODE_LENGTH);
 };
 
-var ActivityLinkSchema = new Schema({
+var activityLinkSchema = new Schema({
     activity: { type: Schema.Types.ObjectId, ref: 'Activity' },
     source: { type: Schema.Types.ObjectId, ref: 'Person' },
     target: { type: Schema.Types.ObjectId, ref: 'Person' },
@@ -24,7 +24,7 @@ var ActivityLinkSchema = new Schema({
     referenceCode: { type: String, default: generateReferenceCode }
 });
 
-ActivityLinkSchema.pre('save', function(next) {
+activityLinkSchema.pre('save', function(next) {
     var that = this;
     var id = {};
     _.each(['source', 'target'], function (key) {
@@ -41,4 +41,4 @@ ActivityLinkSchema.pre('save', function(next) {
 });
 
 
-mongoose.model('ActivityLink', ActivityLinkSchema);
+mongoose.model('ActivityLink', activityLinkSchema);
