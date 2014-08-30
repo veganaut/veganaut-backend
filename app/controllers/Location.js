@@ -44,22 +44,16 @@ exports.list = function(req, res, next) {
             return next(err);
         }
 
-        async.each(locations, function(location, cb) {
-            async.series([
-                location.populateRecentVisits.bind(location),
-                function(cb) {
-                    location.calculateNextVisitBonusDate(req.user, cb);
-                }
-            ], cb);
-        }, function(err) {
-            if (err) {
-                return next(err);
-            }
-            locations = _.map(locations, function(l) {
-                l.calculatePoints();
-                return l.toApiObject(req.user);
+        async.each(locations,
+            function(location, cb) {
+                location.computeNextVisitBonusDate(req.user, cb);
+            },
+            function(err) {
+                if (err) { return next(err); }
+                locations = _.map(locations, function(l) {
+                    return l.toApiObject(req.user);
+                });
+                return res.send(locations);
             });
-            return res.send(locations);
-        });
     });
 };

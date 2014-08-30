@@ -7,7 +7,7 @@ var Location = mongoose.model('Location');
 var Visit = mongoose.model('Visit');
 
 exports.visit = function(req, res, next) {
-    var location, visit, bestTeamBefore;
+    var location, visit;
     var causedOwnerChange = false;
     async.series([
         function(cb) {
@@ -20,43 +20,51 @@ exports.visit = function(req, res, next) {
             });
         },
         function(cb) {
-            // Load the recent visits
-            location.populateRecentVisits(cb);
-        },
-        function(cb) {
-            // Calculate current owner
-            location.calculatePoints();
-            bestTeamBefore = location._bestTeam;
-            return cb();
-        },
-        function(cb) {
-            // Create the new visit and sav it
-            // TODO: pick the wanted data from missions (to make sure that points aren't sent for example)
-            visit = new Visit({person: req.user.id, location: location.id, completed: Date.now(), missions: req.body.missions});
+            // Create the new visit and save it
+
+            // Sanitize missions
+            var missions = _.map(req.body.missions, function(m) {
+                return _.pick(m, ['type', 'outcome']);
+            });
+
+            visit = new Visit({
+                person: req.user.id,
+                location: location.id,
+                completed: Date.now(),
+                missions: missions
+            });
             visit.save(cb);
         },
         function(cb) {
-            // Get all the visits again (including the newly created one)
-            location.populateRecentVisits(cb);
-        },
-        function(cb) {
-            // Calculate the new points
-            location.calculatePoints();
+            // Update the score of the location
+            var points = location.computeCurrentPoints();
+            var availablePoints = location.computeCurrentAvailablePoints();
+            var team = location.team;
+            var teamPoints = points[team];
 
-            // Check if the owner team has changed
-            if (location._bestTeam !== bestTeamBefore) {
-                causedOwnerChange = true;
+            _.each(visit.missions, function(mission) {
+                _.forOwn(mission.points, function(p, t) {
+                    points[t] += p;
+                    availablePoints -= p;
+                });
+            });
 
-                // Owner has changed, save the new info
-                location.performOwnerChange(visit);
-                return location.save(cb);
-            }
-            return cb();
+            _.forOwn(points, function(t) {
+                if (points[t] > teamPoints) {
+                    team = t;
+                    teamPoints = points[t];
+                }
+            });
+            causedOwnerChange = (location.team !== team);
+
+            location.points = points;
+            location.availablePoints = availablePoints;
+            location.team = team;
+            location.updatedAt = Date.now();
+            location.save(cb);
         }
     ], function(err) {
-        if (err) {
-            return next(err);
-        }
+        if (err) { return next(err); }
         else {
             var response = _.assign(visit.toApiObject(), {
                 causedOwnerChange: causedOwnerChange

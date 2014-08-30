@@ -18,38 +18,35 @@ var Visit = mongoose.model('Visit');
  */
 var TIME_BETWEEN_TWO_VISIT_BONUS =  3 * 7 * 24 * 60 * 60 * 1000;
 
+/**
+ * Constants related to point computation
+ */
+
+// How much points decrease [unit: factor per millisecond]. Currently 10% per day.
+var POINTS_DECREASE_FACTOR = Math.log(0.10) / Math.log(24*60*60*1000);
+
+// Maximal available points for a location
+var MAX_AVAILABLE_POINTS = 500;
+
+// How much available points increase over time. Currently 10 per hour.
+var AVAILABLE_POINTS_INCREASE_RATE = 10.0 / (60*60*1000);
+
 var locationSchema = new Schema({
     coordinates: {type: [Number], index: '2d'},
     name: String,
     type: {type: String, enum: ['gastronomy', 'retail']},
-    previousOwnerStart: {
-        type: Date,
-        default: function() {
-            return new Date();
-        }
-    },
-    currentOwnerStart: {
-        type: Date,
-        default: function() {
-            return new Date();
-        }
-    }
-});
 
-/**
- * Retrieves the visits at this location since the previousOwnerStart
- * @param {function} next
- */
-locationSchema.methods.populateRecentVisits = function(next) {
-    var that = this;
-    Visit.find({ location: this.id,  completed: { $gte: that.previousOwnerStart } })
-        .exec(function(err, visits) {
-            if (err) { return next(err); }
-            that._recentVisits = visits;
-            return next();
-        })
-    ;
-};
+    // Maps team names to their points at time updatedAt.
+    points: {type: Schema.Types.Mixed, default: {}},
+
+    // The team that last conquered this place. Used to break ties if teams
+    // have the same number of points.
+    team: String,
+
+    // Points that are available at this location, at time updatedAt.
+    availablePoints: {type: Number, default: AVAILABLE_POINTS_INCREASE_RATE * 24*60*60*1000},
+    updatedAt: {type: Date, default: Date.now}
+});
 
 /**
  * Calculates when the given person is next allowed to do the visitBonus mission
@@ -57,7 +54,7 @@ locationSchema.methods.populateRecentVisits = function(next) {
  * @param {Person} person
  * @param {function} next
  */
-locationSchema.methods.calculateNextVisitBonusDate = function(person, next) {
+locationSchema.methods.computeNextVisitBonusDate = function(person, next) {
     var that = this;
     Visit.findOne({
         location: this.id,
@@ -83,52 +80,42 @@ locationSchema.methods.calculateNextVisitBonusDate = function(person, next) {
     );
 };
 
-// TODO: move this to a helper somewhere (it's also used in models/Visit.js
-var addPoints = function() {
-    var totalPoints = {};
-    _.forEach(arguments, function(arg) {
-        _.forOwn(arg, function(points, team) {
-            totalPoints[team] = totalPoints[team] || 0;
-            totalPoints[team] += points;
-        });
-    });
-    return totalPoints;
-};
-
 /**
- * Calculates the points of each team on this location.
- * Stores it on the location object itself.
+ * Computes the points for this location as of now.
+ * Points are stored in the database as of time updatedAt; whenever we need the
+ * current score, we need to compute the changes since then.
  */
-locationSchema.methods.calculatePoints = function() {
-    // TODO: this needs more specific tests
-    if (typeof(this._recentVisits) === 'undefined') {
-        throw 'Must call populateRecentVisits before calling calculateScores';
-    }
-
+locationSchema.methods.computeCurrentPoints = function() {
     var that = this;
-    that._totalPoints = {};
-    _.each(this._recentVisits, function(visit) {
-        that._totalPoints = addPoints(that._totalPoints, visit.getTotalPoints());
+    var points = {};
+    var elapsed = Date.now() - this.updatedAt.getTime();
+
+    // Ensure the result contains points for every team
+    _.each(['green', 'blue'], function(team) {
+        that.points[team] = that.points[team] || 0;
     });
 
-    var bestPoints = 0;
-    _.each(that._totalPoints, function(points, team) {
-        // TODO: handle equal points correctly (team that had it for longer keeps it)
-        if (points > bestPoints) {
-            bestPoints = points;
-            that._bestTeam = team;
-        }
+    // Points for each team diminish exponentially
+    // TODO: exponential decrease gets too slow after some time... we should
+    // have a minimal rate of decrease.
+    _.forOwn(that.points, function(teamPoints, team) {
+        points[team] = teamPoints * Math.pow(POINTS_DECREASE_FACTOR, elapsed);
     });
+
+    return points;
 };
 
 /**
- * Makes the necessary operations (updating timestamps) when the owner
- * of this location change through the given Visit
- * @param {Visit} visit
+ * Computes the available points for this location as of now.
  */
-locationSchema.methods.performOwnerChange = function(visit) {
-    this.previousOwnerStart = this.currentOwnerStart;
-    this.currentOwnerStart = visit.completed;
+locationSchema.methods.computeCurrentAvailablePoints = function() {
+    var elapsed = Date.now() - this.updatedAt.getTime();
+
+    // Available points increase linearly.
+    var available = this.availablePoints + elapsed * AVAILABLE_POINTS_INCREASE_RATE;
+    available = Math.min(available, MAX_AVAILABLE_POINTS);
+
+    return available;
 };
 
 /**
@@ -137,17 +124,17 @@ locationSchema.methods.performOwnerChange = function(visit) {
  * @returns {{}}
  */
 locationSchema.methods.toApiObject = function (person) {
-    var apiObj = _.pick(this, ['name', 'type', 'id', 'currentOwnerStart']);
+    var apiObj = _.pick(this, ['name', 'type', 'id', 'team', 'availablePoints']);
 
     // Add lat/lng in the format the frontend expects
     apiObj.lat = this.coordinates[0];
     apiObj.lng = this.coordinates[1];
 
-    // Add points information if it's available
-    if (typeof this._bestTeam !== 'undefined') {
-        apiObj.team = this._bestTeam;
-        apiObj.points = this._totalPoints;
-    }
+    // Compute points as of now
+    apiObj.points = this.computeCurrentPoints();
+
+    // Compute availablePoints as of now
+    apiObj.availablePoints = this.computeCurrentAvailablePoints();
 
     // Add nextVisitBonusDate if it's available
     if (typeof person !== 'undefined' &&

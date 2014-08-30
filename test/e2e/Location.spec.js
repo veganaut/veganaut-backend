@@ -45,11 +45,6 @@ h.describe('Visit API methods', function() {
                         expect(typeof location.lat).toBe('number', 'has lat');
                         expect(typeof location.lng).toBe('number', 'has lng');
                         expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
-                        expect(typeof location.currentOwnerStart).toBe('string', 'currentOwnerStart is a string');
-                        expect(isNaN(new Date(location.currentOwnerStart).getTime())).toBe(false,
-                            'currentOwnerStart can be parsed as a valid date'
-                        );
-
                         expect(typeof location.nextVisitBonusDate).toMatch('string', 'nextVisitBonusDate is a string');
                         var nextVisitBonusDate = new Date(location.nextVisitBonusDate);
                         expect(isNaN(nextVisitBonusDate.getTime())).toBe(false,
