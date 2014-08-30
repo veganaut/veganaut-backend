@@ -23,7 +23,7 @@ var TIME_BETWEEN_TWO_VISIT_BONUS =  3 * 7 * 24 * 60 * 60 * 1000;
  */
 
 // How much points decrease [unit: factor per millisecond]. Currently 10% per day.
-var POINTS_DECREASE_FACTOR = Math.log(0.10) / Math.log(24*60*60*1000);
+var POINTS_DECREASE_FACTOR = Math.pow(0.90, 1.0 / (24*60*60*1000));
 
 // Maximal available points for a location
 var MAX_AVAILABLE_POINTS = 500;
@@ -99,7 +99,7 @@ locationSchema.methods.computeCurrentPoints = function() {
     // TODO: exponential decrease gets too slow after some time... we should
     // have a minimal rate of decrease.
     _.forOwn(that.points, function(teamPoints, team) {
-        points[team] = teamPoints * Math.pow(POINTS_DECREASE_FACTOR, elapsed);
+        points[team] = Math.round(teamPoints * Math.pow(POINTS_DECREASE_FACTOR, elapsed));
     });
 
     return points;
@@ -114,8 +114,43 @@ locationSchema.methods.computeCurrentAvailablePoints = function() {
     // Available points increase linearly.
     var available = this.availablePoints + elapsed * AVAILABLE_POINTS_INCREASE_RATE;
     available = Math.min(available, MAX_AVAILABLE_POINTS);
+    available = Math.round(available);
 
     return available;
+};
+
+/**
+ * Callback to notify the location that a new visit has been created. The
+ * notification will then update its score.
+ */
+locationSchema.methods.notifyVisitCreated = function(visit, next) {
+    // Update the score of the location
+    var points = this.computeCurrentPoints();
+    var availablePoints = this.computeCurrentAvailablePoints();
+    var team = this.team;
+    var teamPoints = points[team] || -1;
+
+    _.each(visit.missions, function(mission) {
+        _.forOwn(mission.points, function(p, t) {
+            points[t] += p;
+            availablePoints -= p;
+        });
+    });
+    availablePoints = Math.max(availablePoints, 0);
+
+    _.forOwn(points, function(p, t) {
+        if (p > teamPoints) {
+            team = t;
+            teamPoints = p;
+        }
+    });
+
+    this.points = points;
+    this.markModified('points');
+    this.availablePoints = availablePoints;
+    this.team = team;
+    this.updatedAt = Date.now();
+    this.save(next);
 };
 
 /**

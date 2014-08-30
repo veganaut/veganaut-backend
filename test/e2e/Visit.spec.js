@@ -110,9 +110,6 @@ h.describe('Visit API methods and their influence on locations.', function() {
                             expect(typeof dosha.points.green).toBe('number', 'has blue points');
                             expect(dosha.points.blue).toBeGreaterThan(dosha.points.green, 'has more blue than green points');
 
-                            expect(typeof dosha.currentOwnerStart).toBe('string', 'currentOwnerStart is defined');
-                            expect(Date.now() - new Date(dosha.currentOwnerStart)).toBeLessThan(1000, 'currentOwnerStart is less than a second ago');
-
                             done();
                         })
                     ;

@@ -50,4 +50,21 @@ visitSchema.methods.toApiObject = function () {
     );
 };
 
+/**
+ * When a visit is created, notify the corresponding location. This will
+ * re-compute the location's score.
+ */
+visitSchema.pre('save', function(next) {
+    var that = this;
+    if (!that.isNew) { return next(); }
+
+    require('./Location.js');
+    var Location = mongoose.model('Location');
+
+    Location.findById(that.location, function(err, l) {
+        if (err) { return next(err); }
+        l.notifyVisitCreated(that, next);
+    });
+});
+
 mongoose.model('Visit', visitSchema);

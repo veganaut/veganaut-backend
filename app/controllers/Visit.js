@@ -7,8 +7,7 @@ var Location = mongoose.model('Location');
 var Visit = mongoose.model('Visit');
 
 exports.visit = function(req, res, next) {
-    var location, visit;
-    var causedOwnerChange = false;
+    var location, visit, oldTeam;
     async.series([
         function(cb) {
             Location.findById(req.body.location, function(err, l) {
@@ -16,6 +15,7 @@ exports.visit = function(req, res, next) {
                     err = new Error('Could not find location with id: ' + req.body.location);
                 }
                 location = l;
+                oldTeam = l.team;
                 return cb(err);
             });
         },
@@ -36,40 +36,21 @@ exports.visit = function(req, res, next) {
             visit.save(cb);
         },
         function(cb) {
-            // Update the score of the location
-            var points = location.computeCurrentPoints();
-            var availablePoints = location.computeCurrentAvailablePoints();
-            var team = location.team;
-            var teamPoints = points[team];
+            // Re-load the location (it changed when the visit was saved)
+            Location.findById(location, function(err, l) {
+                if (err) { return cb(err); }
 
-            _.each(visit.missions, function(mission) {
-                _.forOwn(mission.points, function(p, t) {
-                    points[t] += p;
-                    availablePoints -= p;
-                });
+                location = l;
+                return cb();
             });
-
-            _.forOwn(points, function(t) {
-                if (points[t] > teamPoints) {
-                    team = t;
-                    teamPoints = points[t];
-                }
-            });
-            causedOwnerChange = (location.team !== team);
-
-            location.points = points;
-            location.availablePoints = availablePoints;
-            location.team = team;
-            location.updatedAt = Date.now();
-            location.save(cb);
-        }
+        },
     ], function(err) {
         if (err) { return next(err); }
-        else {
-            var response = _.assign(visit.toApiObject(), {
-                causedOwnerChange: causedOwnerChange
-            });
-            return res.send(201, response);
-        }
+
+        var causedOwnerChange = (location.team !== oldTeam);
+        var response = _.assign(visit.toApiObject(), {
+            causedOwnerChange: causedOwnerChange
+        });
+        return res.send(201, response);
     });
 };

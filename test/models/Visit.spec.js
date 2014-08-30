@@ -9,13 +9,26 @@ var h = require('../helpers_');
 
 var mongoose = require('mongoose');
 require('../../app/models/Visit');
+require('../../app/models/Location');
 var Visit = mongoose.model('Visit');
+var Location = mongoose.model('Location');
 
 h.describe('A visit', function() {
     it('can be created and removed', function() {
-        var p = new Visit();
+        var l = new Location({
+            name: 'somewhere'
+        });
+        var p = new Visit({
+            location: l
+        });
         expect(p.id).toBeTruthy();
 
+        h.runAsync(function(done) {
+            l.save(function(err) {
+                expect(err).toBeNull();
+                done();
+            });
+        });
         h.runAsync(function(done) {
             p.save(function(err) {
                 expect(err).toBeNull();
