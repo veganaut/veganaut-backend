@@ -1,6 +1,7 @@
 'use strict';
 /* global it, expect */
 
+var _ = require('lodash');
 var h = require('../helpers');
 var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
 
@@ -10,7 +11,7 @@ fix
     .location('Tingelkringel')
 ;
 
-h.describe('Visit API methods', {fixtures: fix, user: 'alice@example.com'}, function() {
+h.describe('Basic functionality of Visit API methods.', {fixtures: fix, user: 'alice@example.com'}, function() {
     it('can create a new visit', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'visit')
@@ -70,6 +71,48 @@ h.describe('Visit API methods', {fixtures: fix, user: 'alice@example.com'}, func
 
                     expect(res.body.totalPoints).toEqual({blue: 170}, 'returns the summed up total points');
                     done();
+                })
+            ;
+        });
+    });
+});
+
+h.describe('Visit API methods and their influence on locations.', function() {
+    it('location can change owner when new visit is submitted', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'visit')
+                .send({
+                    location: '000000000000000000000006', // Visit dosha
+                    missions: [
+                        {type: 'visitBonus', outcome: true},
+                        {type: 'hasOptions', outcome: true},
+                        {type: 'whatOptions', outcome: ['curry', 'samosa']},
+                        {type: 'buyOptions', outcome: ['samosa']},
+                        {type: 'giveFeedback', outcome: { text: 'Tasty vegan options', didNotDoIt: false}}
+                    ]
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+
+                    // TODO: would be best to only request the updated location
+                    h.request('GET', h.baseURL + 'location/list')
+                        .end(function(res) {
+                            expect(res.statusCode).toBe(200);
+
+                            var dosha = _.first(_.where(res.body, {id: '000000000000000000000006'}));
+                            expect(dosha).toBeDefined('returned dosha');
+                            expect(dosha.team).toBe('blue', 'owner is now blue');
+                            console.log(dosha);
+                            expect(typeof dosha.points.blue).toBe('number', 'has blue points');
+                            expect(typeof dosha.points.green).toBe('number', 'has blue points');
+                            expect(dosha.points.blue).toBeGreaterThan(dosha.points.green, 'has more blue than green points');
+
+                            expect(typeof dosha.currentOwnerStart).toBe('string', 'currentOwnerStart is defined');
+                            expect(new Date() - new Date(dosha.currentOwnerStart)).toBeLessThan(1000, 'currentOwnerStart is less than a second ago');
+
+                            done();
+                        })
+                    ;
                 })
             ;
         });

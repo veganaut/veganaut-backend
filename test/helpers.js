@@ -98,6 +98,7 @@ exports.createSessionFor = createSessionFor;
  * @param how      A function that contains the description
  */
 exports.describe = function(what, options, how) {
+    // TODO: should have a way for the caller to be able to access the fixtures (to retrieve ids and such)
     if (typeof(how) === 'undefined') {
         how = options;
         options = {};

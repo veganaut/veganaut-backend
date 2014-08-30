@@ -12,12 +12,6 @@ require('../../app/models/Visit');
 var Visit = mongoose.model('Visit');
 
 h.describe('A visit', function() {
-    h.beforeAll(function() {
-        h.runAsync(function(done) {
-            mongoose.connect('mongodb://localhost/veganaut', done);
-        });
-    });
-
     it('can be created and removed', function() {
         var p = new Visit();
         expect(p.id).toBeTruthy();
@@ -65,12 +59,6 @@ h.describe('A visit', function() {
                 }
                 done();
             });
-        });
-    });
-
-    h.afterAll(function() {
-        h.runAsync(function(done) {
-            mongoose.disconnect(done);
         });
     });
 });
