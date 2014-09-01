@@ -32,7 +32,7 @@ exports.location = function(req, res, next) {
             if (err) {
                 return next(err);
             }
-            return res.send(location);
+            return res.send(location.toApiObject());
         });
     });
 };
