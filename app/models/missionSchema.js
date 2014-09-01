@@ -55,14 +55,25 @@ missionSchema.pre('save', function(next) {
     Person.findById(visit.person, function(err, person) {
         if (err) { return next(err); }
 
-        _.forOwn(mission.points, function(p, t) {
-            if (p < 0 || p > POINTS_BY_TYPE[mission.type] || p !== Math.round(p)) {
-                return next(new Error('Invalid points for mission of type ' + mission.type + ': ' + p));
-            }
-            if (t !== person.team) {
-                return next(new Error('Mission points attributed to wrong team: ' + t + ' instead of ' + person.team));
-            }
-        });
+        if (typeof mission.points === 'undefined') {
+            // If no points are defined, set the maximum for the given person
+            mission.points = {};
+            mission.points[person.team] = POINTS_BY_TYPE[mission.type];
+        }
+        else if (typeof mission.points !== 'object') {
+            return next(new Error('Mission points must be an object, but found: ' + mission.points));
+        }
+        else {
+            // If points are defined, make sure they are valid
+            _.forOwn(mission.points, function(p, t) {
+                if (p < 0 || p > POINTS_BY_TYPE[mission.type] || p !== Math.round(p)) {
+                    return next(new Error('Invalid points for mission of type ' + mission.type + ': ' + p));
+                }
+                if (t !== person.team) {
+                    return next(new Error('Mission points attributed to wrong team: ' + t + ' instead of ' + person.team));
+                }
+            });
+        }
 
         return next();
     });

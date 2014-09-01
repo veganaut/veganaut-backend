@@ -25,10 +25,7 @@ exports.visit = function(req, res, next) {
             // Sanitize missions
             // TODO: before saving the missions, need to make sure the user is allowed to make the visitBonus mission
             var missions = _.map(req.body.missions, function(m) {
-                var sanitized = _.pick(m, ['type', 'outcome']);
-                sanitized.points = {};
-                sanitized.points[req.user.team] = m.points;
-                return sanitized;
+                return _.pick(m, ['type', 'outcome', 'points']);
             });
 
             visit = new Visit({
@@ -42,14 +39,18 @@ exports.visit = function(req, res, next) {
         function(cb) {
             // Re-load the location (it changed when the visit was saved)
             Location.findById(location, function(err, l) {
-                if (err) { return cb(err); }
+                if (err) {
+                    return cb(err);
+                }
 
                 location = l;
                 return cb();
             });
-        },
+        }
     ], function(err) {
-        if (err) { return next(err); }
+        if (err) {
+            return next(err);
+        }
 
         var causedOwnerChange = (location.team !== oldTeam);
         var response = _.assign(visit.toApiObject(), {

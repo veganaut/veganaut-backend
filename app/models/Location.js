@@ -130,6 +130,7 @@ locationSchema.methods.notifyVisitCreated = function(visit, next) {
     var team = this.team;
     var teamPoints = points[team] || -1;
 
+    // Add up all the points in all the missions and decrease the availablePoints
     _.each(visit.missions, function(mission) {
         _.forOwn(mission.points, function(p, t) {
             points[t] += Math.min(p, availablePoints);
@@ -137,13 +138,16 @@ locationSchema.methods.notifyVisitCreated = function(visit, next) {
         });
     });
 
+    // Check if a new team has the most points
     _.forOwn(points, function(p, t) {
+        // Only if you make more points, do you get to be the new owner
         if (p > teamPoints) {
             team = t;
             teamPoints = p;
         }
     });
 
+    // Save the new state
     this.points = points;
     this.markModified('points');
     this.availablePoints = availablePoints;

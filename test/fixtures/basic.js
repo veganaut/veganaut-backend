@@ -91,6 +91,7 @@ var getFixtures = function() {
         coordinates: [46.957113, 7.452544],
         name: '3dosha',
         type: 'gastronomy',
+        availablePoints: 500,
         previousOwnerStart: '2014-08-20',
         currentOwnerStart: '2014-08-20'
     });

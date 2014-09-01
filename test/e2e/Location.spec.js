@@ -14,7 +14,7 @@ var expectedBonusDates = {
     'Tingelkringel': new Date()
 };
 
-h.describe('Visit API methods', function() {
+h.describe('Location API methods', function() {
     it('can create a new location', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'location')
