@@ -20,12 +20,26 @@ h.describe('Location API methods', function() {
             h.request('POST', h.baseURL + 'location')
                 .send({
                     name: 'Tingelkringel',
-                    lat: 46.951081,
-                    lng: 7.438637,
+                    lat: 46,
+                    lng: 7,
                     type: 'gastronomy'
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
+
+                    var location = res.body;
+                    expect(location.name).toBe('Tingelkringel', 'set correct name');
+                    expect(location.lat).toBe(46, 'set correct lat');
+                    expect(location.lng).toBe(7, 'set correct lng');
+                    expect(location.type).toBe('gastronomy', 'set correct type');
+                    expect(typeof location.id).toBe('string', 'has an id');
+                    expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
+                    expect(location.availablePoints).toBeGreaterThan(0, 'has some availablePoints');
+                    expect(typeof location.nextVisitBonusDate).toMatch('string', 'nextVisitBonusDate is a string');
+                    expect(location.team).toBe('blue', 'team is blue');
+                    expect(typeof location.points).toBe('object', 'points is an object');
+                    expect(location.points.blue).toBeGreaterThan(0, 'has some blue points');
+
                     done();
                 })
             ;

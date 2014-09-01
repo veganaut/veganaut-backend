@@ -37,13 +37,15 @@ visitSchema.methods.getTotalPoints = function() {
  * Returns this visit ready to be sent to the frontend
  * @returns {{}}
  */
-visitSchema.methods.toApiObject = function () {
+visitSchema.methods.toApiObject = function() {
     var missions = _.map(this.missions, function(m) {
         return _.pick(m, ['id', 'type', 'outcome', 'points']);
     });
     return _.assign(
         _.pick(this, ['id', 'person', 'location', 'completed']),
         {
+            // Expose only the location id (need this because it could be populated or not)
+            location: this.location.id || this.location,
             missions: missions,
             totalPoints: this.getTotalPoints()
         }
@@ -56,14 +58,17 @@ visitSchema.methods.toApiObject = function () {
  */
 visitSchema.pre('save', function(next) {
     var that = this;
-    if (!that.isNew) { return next(); }
+    if (!that.isNew) {
+        return next();
+    }
 
-    require('./Location.js');
-    var Location = mongoose.model('Location');
-
-    Location.findById(that.location, function(err, l) {
-        if (err) { return next(err); }
-        l.notifyVisitCreated(that, next);
+    // Populate the location to notify it of the new visit
+    // TODO: should only populate if not already done?
+    that.populate('location', function(err) {
+        if (err) {
+            return next(err);
+        }
+        return that.location.notifyVisitCreated(that, next);
     });
 });
 

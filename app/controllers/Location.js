@@ -12,28 +12,34 @@ exports.location = function(req, res, next) {
         coordinates: [req.body.lat, req.body.lng]
     }));
 
-    // Create first visit at this location with the addLocation mission completed
-    // TODO: this should probably go in the Location Model pre save or something, then one can also change FixtureCreator.location
-    var visit = new Visit({
-        person: req.user.id,
-        location: location.id,
-        completed: new Date(), // TODO: it should set this as default
-        missions: [{
-            type: 'addLocation',
-            outcome: true
-        }]
-    });
-
-    location.save(function(err) {
+    var visit;
+    async.series([
+        location.save.bind(location),
+        function(cb) {
+            // Create first visit at this location with the addLocation mission completed
+            // TODO: this should probably go in the Location Model pre save or something, then one can also change FixtureCreator.location
+            visit = new Visit({
+                person: req.user.id,
+                location: location,
+                completed: new Date(), // TODO: it should set this as default
+                missions: [{
+                    type: 'addLocation',
+                    outcome: true
+                }]
+            });
+            visit.save(cb);
+        },
+        function(cb) {
+            // We take the location instance from the visit, because that one has
+            // the correct points calculated
+            location = visit.location;
+            location.computeNextVisitBonusDate(req.user, cb);
+        }
+    ], function(err) {
         if (err) {
             return next(err);
         }
-        visit.save(function(err) {
-            if (err) {
-                return next(err);
-            }
-            return res.send(location.toApiObject());
-        });
+        return res.send(location.toApiObject(req.user));
     });
 };
 
