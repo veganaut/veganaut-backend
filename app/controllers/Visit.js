@@ -23,6 +23,7 @@ exports.visit = function(req, res, next) {
             // Create the new visit and save it
 
             // Sanitize missions
+            // TODO: before saving the missions, need to make sure the user is allowed to make the visitBonus mission
             var missions = _.map(req.body.missions, function(m) {
                 var sanitized = _.pick(m, ['type', 'outcome']);
                 sanitized.points = {};
