@@ -7,7 +7,7 @@ var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
 
 var fix = new FixtureCreator();
 fix
-    .user('alice', 'blue')
+    .user('alice', 'team1')
     .location('alice', 'Tingelkringel')
 ;
 
@@ -18,8 +18,8 @@ h.describe('Basic functionality of Visit API methods.', {fixtures: fix, user: 'a
                 .send({
                     location: '000000000000000000000003',
                     missions: [
-                        {type: 'hasOptions', outcome: true, points: { blue: 10 } },
-                        {type: 'whatOptions', outcome: ['fries', 'napoli'], points: { blue: 10 } }
+                        {type: 'hasOptions', outcome: true, points: { team1: 10 } },
+                        {type: 'whatOptions', outcome: ['fries', 'napoli'], points: { team1: 10 } }
                     ]
                 })
                 .end(function(res) {
@@ -48,31 +48,31 @@ h.describe('Basic functionality of Visit API methods.', {fixtures: fix, user: 'a
                 .send({
                     location: '000000000000000000000003',
                     missions: [
-                        { type: 'visitBonus', outcome: true, points: { blue: 100 } },
-                        { type: 'hasOptions', outcome: true, points: { blue: 10 } },
-                        { type: 'whatOptions', outcome: ['fries', 'napoli'], points: { blue: 10 } },
-                        { type: 'buyOptions', outcome: ['fries'], points: { blue: 20 } },
-                        { type: 'giveFeedback', outcome: { text: 'Moar sauce', didNotDoIt: false }, points: { blue: 20 } },
-                        { type: 'rateOptions', outcome: { fries: 2, napoli: 6 }, points: { blue: 10 } }
+                        { type: 'visitBonus', outcome: true, points: { team1: 100 } },
+                        { type: 'hasOptions', outcome: true, points: { team1: 10 } },
+                        { type: 'whatOptions', outcome: ['fries', 'napoli'], points: { team1: 10 } },
+                        { type: 'buyOptions', outcome: ['fries'], points: { team1: 20 } },
+                        { type: 'giveFeedback', outcome: { text: 'Moar sauce', didNotDoIt: false }, points: { team1: 20 } },
+                        { type: 'rateOptions', outcome: { fries: 2, napoli: 6 }, points: { team1: 10 } }
                     ]
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.missions.length).toBe(6, 'missions is an array of length 6');
                     expect(res.body.missions[0].type).toBe('visitBonus', 'type of mission 1');
-                    expect(res.body.missions[0].points).toEqual({blue: 100}, 'points of mission 1');
+                    expect(res.body.missions[0].points).toEqual({team1: 100}, 'points of mission 1');
                     expect(res.body.missions[1].type).toBe('hasOptions', 'type of mission 2');
-                    expect(res.body.missions[1].points).toEqual({blue: 10}, 'points of mission 2');
+                    expect(res.body.missions[1].points).toEqual({team1: 10}, 'points of mission 2');
                     expect(res.body.missions[2].type).toBe('whatOptions', 'type of mission 3');
-                    expect(res.body.missions[2].points).toEqual({blue: 10}, 'points of mission 3');
+                    expect(res.body.missions[2].points).toEqual({team1: 10}, 'points of mission 3');
                     expect(res.body.missions[3].type).toBe('buyOptions', 'type of mission 4');
-                    expect(res.body.missions[3].points).toEqual({blue: 20}, 'points of mission 4');
+                    expect(res.body.missions[3].points).toEqual({team1: 20}, 'points of mission 4');
                     expect(res.body.missions[4].type).toBe('giveFeedback', 'type of mission 5');
-                    expect(res.body.missions[4].points).toEqual({blue: 20}, 'points of mission 5');
+                    expect(res.body.missions[4].points).toEqual({team1: 20}, 'points of mission 5');
                     expect(res.body.missions[5].type).toBe('rateOptions', 'type of mission 6');
-                    expect(res.body.missions[5].points).toEqual({blue: 10}, 'points of mission 6');
+                    expect(res.body.missions[5].points).toEqual({team1: 10}, 'points of mission 6');
 
-                    expect(res.body.totalPoints).toEqual({blue: 170}, 'returns the summed up total points');
+                    expect(res.body.totalPoints).toEqual({team1: 170}, 'returns the summed up total points');
                     done();
                 })
             ;
@@ -87,11 +87,11 @@ h.describe('Visit API methods and their influence on locations.', function() {
                 .send({
                     location: '000000000000000000000006', // Visit dosha
                     missions: [
-                        {type: 'visitBonus', outcome: true, points: { blue: 100 } },
-                        {type: 'hasOptions', outcome: true, points: { blue: 10 } },
-                        {type: 'whatOptions', outcome: ['curry', 'samosa'], points: { blue: 10 } },
-                        {type: 'buyOptions', outcome: ['samosa'], points: { blue: 20 } },
-                        {type: 'giveFeedback', outcome: { text: 'Tasty vegan options', didNotDoIt: false}, points: { blue: 20 } }
+                        {type: 'visitBonus', outcome: true, points: { team1: 100 } },
+                        {type: 'hasOptions', outcome: true, points: { team1: 10 } },
+                        {type: 'whatOptions', outcome: ['curry', 'samosa'], points: { team1: 10 } },
+                        {type: 'buyOptions', outcome: ['samosa'], points: { team1: 20 } },
+                        {type: 'giveFeedback', outcome: { text: 'Tasty vegan options', didNotDoIt: false}, points: { team1: 20 } }
                     ]
                 })
                 .end(function(res) {
@@ -105,10 +105,10 @@ h.describe('Visit API methods and their influence on locations.', function() {
 
                             var dosha = _.first(_.where(res.body, {id: '000000000000000000000006'}));
                             expect(dosha).toBeDefined('returned dosha');
-                            expect(dosha.team).toBe('blue', 'owner is now blue');
-                            expect(typeof dosha.points.blue).toBe('number', 'has blue points');
-                            expect(typeof dosha.points.green).toBe('number', 'has blue points');
-                            expect(dosha.points.blue).toBeGreaterThan(dosha.points.green, 'has more blue than green points');
+                            expect(dosha.team).toBe('team1', 'owner is now team1');
+                            expect(typeof dosha.points.team1).toBe('number', 'has team1 points');
+                            expect(typeof dosha.points.team2).toBe('number', 'has team2 points');
+                            expect(dosha.points.team1).toBeGreaterThan(dosha.points.team2, 'has more team1 than team2 points');
 
                             done();
                         })

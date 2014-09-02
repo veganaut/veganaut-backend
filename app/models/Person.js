@@ -9,6 +9,7 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var constants = require('../constants');
 
 require('./ActivityLink');
 var ActivityLink = mongoose.model('ActivityLink');
@@ -38,7 +39,7 @@ var personSchema = new Schema({
     gender: {type: String, enum: ['male', 'female', 'other']},
     locale: {type: String, default: 'en'},
 
-    team: {type: String, enum: ['blue', 'green']},
+    team: {type: String, enum: constants.TEAMS},
     role: {type: String, enum: ['rookie', 'scout', 'veteran'], default: 'rookie'}
 });
 

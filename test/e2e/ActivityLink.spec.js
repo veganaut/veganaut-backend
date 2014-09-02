@@ -19,7 +19,7 @@ h.describe('ActivityLink API methods', function() {
                     expect(res.body.referenceCode).toEqual('OiWCrB');
                     expect(res.body.target).toBe('000000000000000000000004');
                     Person.findById('000000000000000000000004', function (err, dave) {
-                        expect(dave.team).toBe('blue');
+                        expect(dave.team).toBe('team1');
                         done();
                     });
                 })

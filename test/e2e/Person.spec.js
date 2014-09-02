@@ -69,7 +69,7 @@ h.describe('Person API methods', function() {
                     expect(res.body.fullName).toEqual('Carol Curie');
 
                     // make sure the team was not overwritten (TODO: make this test deterministic)
-                    expect(res.body.team).toEqual('blue');
+                    expect(res.body.team).toEqual('team1');
 
                     done();
                 })
@@ -121,7 +121,7 @@ h.describe('Person API methods for logged in user', function() {
                 expect(res.body.email).toEqual('foo@bar.baz');
                 expect(res.body.fullName).toEqual('Alice Alison');
                 expect(res.body.role).toEqual('veteran');
-                expect(res.body.team).toEqual('blue');
+                expect(res.body.team).toEqual('team1');
                 expect(res.body.type).toEqual('user');
                 expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
                 expect(typeof res.body.nickname).toEqual('string', 'should have a nickname');

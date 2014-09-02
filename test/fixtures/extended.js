@@ -10,18 +10,18 @@ var referenceCodes = require('./referenceCodes');
 var getFixtures = function() {
     var fix = new FixtureCreator(referenceCodes.getFixtures());
 
-    // As a mnemonic, we have guys in the green team and girls in the blue
+    // As a mnemonic, we have guys in the team2 team and girls in the team1
     // team.
-    fix.user('george', 'green', 'rookie');
-    fix.user('harry', 'green', 'scout');
-    fix.user('isaac', 'green', 'veteran');
-    fix.user('king', 'green', 'rookie');
-    fix.user('louie', 'green', 'scout');
-    fix.user('mary', 'blue', 'rookie');
-    fix.user('nellie', 'blue', 'scout');
-    fix.user('olivia', 'blue', 'veteran');
-    fix.user('paula', 'blue', 'rookie');
-    fix.user('nova', 'blue', 'rookie');
+    fix.user('george', 'team2', 'rookie');
+    fix.user('harry', 'team2', 'scout');
+    fix.user('isaac', 'team2', 'veteran');
+    fix.user('king', 'team2', 'rookie');
+    fix.user('louie', 'team2', 'scout');
+    fix.user('mary', 'team1', 'rookie');
+    fix.user('nellie', 'team1', 'scout');
+    fix.user('olivia', 'team1', 'veteran');
+    fix.user('paula', 'team1', 'rookie');
+    fix.user('nova', 'team1', 'rookie');
 
     // A few maybes
     fix.maybe('vanessa');

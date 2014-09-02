@@ -14,11 +14,12 @@ var Visit = mongoose.model('Visit');
 
 var getFixtures = function() {
     var fix = activities.getFixtures();
+    // TODO: add users of other teams
     fix.alice = new Person({
         _id: '000000000000000000000001',
         email: 'foo@bar.baz',
         password: 'foobar',
-        team: 'blue',
+        team: 'team1',
         role: 'veteran',
         fullName: 'Alice Alison'
     });
@@ -27,7 +28,7 @@ var getFixtures = function() {
         _id: '000000000000000000000002',
         email: 'im@stoop.id',
         password: 'bestpasswordever',
-        team: 'green',
+        team: 'team2',
         fullName: 'Bob Burton',
         role: 'scout',
         gender: 'male'
@@ -35,7 +36,7 @@ var getFixtures = function() {
 
     fix.carol = new Person({
         _id: '000000000000000000000003',
-        team: 'blue',
+        team: 'team1',
         fullName: 'Carol'
     });
 

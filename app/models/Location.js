@@ -7,6 +7,7 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var constants = require('../constants');
 
 require('./Visit');
 var Visit = mongoose.model('Visit');
@@ -91,7 +92,7 @@ locationSchema.methods.computeCurrentPoints = function() {
     var elapsed = Date.now() - this.updatedAt.getTime();
 
     // Ensure the result contains points for every team
-    _.each(['green', 'blue'], function(team) {
+    _.each(constants.TEAMS, function(team) {
         that.points[team] = that.points[team] || 0;
     });
 

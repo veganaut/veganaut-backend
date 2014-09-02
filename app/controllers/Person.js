@@ -7,6 +7,7 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var async = require('async');
+var constants = require('../constants');
 var Person = mongoose.model('Person');
 
 exports.register = function(req, res, next) {
@@ -55,7 +56,7 @@ exports.register = function(req, res, next) {
     var updatePerson = function(cb) {
         // Assign a random team
         if (typeof person.team === 'undefined') {
-            person.team = (Math.random() < 0.5) ? 'green' : 'blue';
+            person.team = _.sample(constants.TEAMS);
         }
 
         _.assign(person, personData);

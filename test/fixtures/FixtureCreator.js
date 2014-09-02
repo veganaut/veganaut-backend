@@ -5,6 +5,7 @@
 
 var _ = require('lodash');
 var mongoose = require('mongoose');
+var constants = require('../../app/constants');
 var FixtureLoader = require('./FixtureLoader');
 var activities = require('./activities');
 
@@ -50,7 +51,7 @@ var capitalize = function(s) {
 FixtureCreator.prototype.user = function(name, team, role) {
     // Assign random values when they are not provided
     if (typeof team === 'undefined') {
-        team = (Math.random() < 0.5) ? 'blue' : 'green';
+        team = _.sample(constants.TEAMS);
     }
 
     if (typeof role === 'undefined') {

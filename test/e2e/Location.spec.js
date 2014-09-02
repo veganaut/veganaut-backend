@@ -36,9 +36,9 @@ h.describe('Location API methods', function() {
                     expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
                     expect(location.availablePoints).toBeGreaterThan(0, 'has some availablePoints');
                     expect(typeof location.nextVisitBonusDate).toMatch('string', 'nextVisitBonusDate is a string');
-                    expect(location.team).toBe('blue', 'team is blue');
+                    expect(location.team).toBe('team1', 'team is team1');
                     expect(typeof location.points).toBe('object', 'points is an object');
-                    expect(location.points.blue).toBeGreaterThan(0, 'has some blue points');
+                    expect(location.points.team1).toBeGreaterThan(0, 'has some team1 points');
 
                     done();
                 })
@@ -70,7 +70,7 @@ h.describe('Location API methods', function() {
                             '\nexpected: ' + expectedBonusDates[location.name]
                         );
 
-                        expect(location.team).toMatch(/^(blue|green)$/, 'team is blue or green');
+                        expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
                         expect(typeof location.points).toBe('object', 'points is an object');
 
                         // TODO: should we test the exact points?
