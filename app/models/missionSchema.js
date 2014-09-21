@@ -20,6 +20,7 @@ var MISSION_TYPES = [
     'addLocation',
     'visitBonus',
     'hasOptions',
+    'wantVegan',
     'whatOptions',
     'buyOptions',
     'giveFeedback',
@@ -34,6 +35,7 @@ var POINTS_BY_TYPE = {
     addLocation:  10,
     visitBonus:  100, // TODO: make sure visitBonus is not claimed when it wasn't available
     hasOptions:   10,
+    wantVegan:    10,
     whatOptions:  10,
     buyOptions:   20,
     giveFeedback: 20,
