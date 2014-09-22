@@ -24,7 +24,9 @@ var MISSION_TYPES = [
     'whatOptions',
     'buyOptions',
     'giveFeedback',
-    'rateOptions'
+    'rateOptions',
+    'offerQuality',
+    'effortValue'
 ];
 
 /**
@@ -39,7 +41,9 @@ var POINTS_BY_TYPE = {
     whatOptions:  10,
     buyOptions:   20,
     giveFeedback: 20,
-    rateOptions:  10
+    rateOptions:  10,
+    offerQuality: 10,
+    effortValue:  10
 };
 
 var missionSchema = new Schema({
