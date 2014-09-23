@@ -5,10 +5,12 @@
 
 'use strict';
 
+var util = require('util');
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+require('./Product');
 require('./Person');
 var Person = mongoose.model('Person');
 
@@ -23,8 +25,8 @@ var MISSION_TYPES = [
     'wantVegan',
     'whatOptions',
     'buyOptions',
-    'giveFeedback',
     'rateOptions',
+    'giveFeedback',
     'offerQuality',
     'effortValue'
 ];
@@ -40,18 +42,24 @@ var POINTS_BY_TYPE = {
     wantVegan:    10,
     whatOptions:  10,
     buyOptions:   20,
-    giveFeedback: 20,
     rateOptions:  10,
+    giveFeedback: 20,
     offerQuality: 10,
     effortValue:  10
 };
 
-var missionSchema = new Schema({
-    type: { type: String, enum: MISSION_TYPES, required: true },
-    outcome: { type: Schema.Types.Mixed, required: true },
-    points: { type: Schema.Types.Mixed }
-});
+// Define a Mission Schema constructor
+var MissionSchema = function(outcomeDefinition) {
+    outcomeDefinition = outcomeDefinition || { type: Schema.Types.Mixed, required: true };
+    Schema.call(this, {
+        type: { type: String, enum: MISSION_TYPES, required: true },
+        outcome: outcomeDefinition,
+        points: { type: Schema.Types.Mixed }
+    });
+};
+util.inherits(MissionSchema, Schema);
 
+var missionSchema = new MissionSchema();
 missionSchema.pre('save', function(next) {
     var mission = this;
     var visit = mission.parent();
