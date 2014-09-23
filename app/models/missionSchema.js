@@ -50,16 +50,20 @@ var POINTS_BY_TYPE = {
 
 // Define a Mission Schema constructor
 var MissionSchema = function(outcomeDefinition) {
-    outcomeDefinition = outcomeDefinition || { type: Schema.Types.Mixed, required: true };
     Schema.call(this, {
         type: { type: String, enum: MISSION_TYPES, required: true },
-        outcome: outcomeDefinition,
         points: { type: Schema.Types.Mixed }
     });
+
+    if (typeof outcomeDefinition !== 'undefined') {
+        this.add({
+            outcome: outcomeDefinition
+        });
+    }
 };
 util.inherits(MissionSchema, Schema);
 
-var missionSchema = new MissionSchema();
+var missionSchema = new MissionSchema({ type: Schema.Types.Mixed, required: true }); // TODO: this should be removed once the new system works
 missionSchema.pre('save', function(next) {
     var mission = this;
     var visit = mission.parent();
@@ -92,5 +96,97 @@ missionSchema.pre('save', function(next) {
         return next();
     });
 });
+
+// Create Mission model
+var Mission = mongoose.model('Mission', missionSchema);
+
+// And all the discriminators (= specific missions)
+Mission.discriminator('AddLocationMission', new MissionSchema({
+    type: Boolean
+}));
+
+Mission.discriminator('VisitBonusMission', new MissionSchema({
+    type: Boolean
+}));
+
+Mission.discriminator('HasOptionsMission', new MissionSchema({
+    type: String // TODO: what type?
+}));
+
+Mission.discriminator('WantVeganMission', new MissionSchema({
+    type: {
+        expressions: [{
+            type: String,
+            required: true
+        }],
+        others: [{
+            type: String,
+            required: true
+        }]
+    }
+}));
+
+Mission.discriminator('WhatOptionsMission',  new MissionSchema({
+    type: [{
+        product: {
+            type: Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+        },
+        info: {
+            type: String,
+            required: true
+        }
+    }]
+}));
+
+Mission.discriminator('BuyOptionsMission', new MissionSchema({
+    type: [{
+        product: {
+            type: Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+        },
+        info: { // TODO: is this needed?
+            type: String,
+            required: true
+        }
+    }]
+}));
+
+Mission.discriminator('RateOptionsMission', new MissionSchema({
+    type: [{
+        product: {
+            type: Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+        },
+        info: {
+            type: Number,
+            required: true
+        }
+    }]
+}));
+
+Mission.discriminator('GiveFeedbackMission', new MissionSchema({
+    type: {
+        feedback: {
+            type: String,
+            required: true
+        },
+        didNotDoIt: {
+            type: Boolean,
+            required: true
+        }
+    }
+}));
+
+Mission.discriminator('OfferQualityMission', new MissionSchema({
+    type: Number
+}));
+
+Mission.discriminator('EffortValueMission', new MissionSchema({
+    type: Number
+}));
 
 module.exports = missionSchema;
