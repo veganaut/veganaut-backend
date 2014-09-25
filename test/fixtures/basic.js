@@ -11,8 +11,6 @@ var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
 var Location = mongoose.model('Location');
 var Missions = require('../../app/models/Missions');
-var VisitBonusMission = Missions.VisitBonusMission;
-var HasOptionsMission = Missions.HasOptionsMission;
 
 var getFixtures = function() {
     var fix = activities.getFixtures();
@@ -115,100 +113,79 @@ var getFixtures = function() {
         currentOwnerStart: '2014-08-15'
     });
 
-    // TODO: add some more completed missions?!
-    fix.bobVisitedDosha = new HasOptionsMission({
+    fix.bobMission1Dosha = new Missions.HasOptionsMission({
         location: fix.dosha.id,
         person: fix.bob.id,
         completed: '2014-08-20',
         outcome: true
-        //missions: [
-        //    {
-        //        type: 'hasOptions',
-        //        outcome: true
-        //    },
-        //    {
-        //        type: 'whatOptions',
-        //        outcome: ['curry']
-        //    }
-        //]
+    });
+    fix.bobMission2Dosha = new Missions.GiveFeedbackMission({
+        location: fix.dosha.id,
+        person: fix.bob.id,
+        completed: '2014-08-20',
+        outcome: {
+            feeback: 'nice',
+            didNotDoIt: false
+        }
     });
 
-    fix.bobVisitedRuprecht = new HasOptionsMission({
+    fix.bobMission1Ruprecht = new Missions.HasOptionsMission({
         location: fix.ruprecht.id,
         person: fix.bob.id,
         completed: '2014-08-24',
         outcome: true
-        //missions: [
-        //    {
-        //        type: 'whatOptions',
-        //        outcome: ['fries', 'napoli']
-        //    }
-        //]
     });
-    fix.aliceVisitedRuprecht = new VisitBonusMission({
+    fix.bobMission2Ruprecht = new Missions.OfferQualityMission({
+        location: fix.ruprecht.id,
+        person: fix.bob.id,
+        completed: '2014-08-24',
+        outcome: 3
+    });
+    fix.aliceMission1Ruprecht = new Missions.VisitBonusMission({
         location: fix.ruprecht.id,
         person: fix.alice.id,
         completed: '2014-08-25',
         outcome: true
-        //missions: [
-        //    {
-        //        type: 'hasOptions',
-        //        outcome: true
-        //    }
-        //]
+    });
+    fix.aliceMission2Ruprecht = new Missions.HasOptionsMission({
+        location: fix.ruprecht.id,
+        person: fix.alice.id,
+        completed: '2014-08-25',
+        outcome: true
     });
 
-    fix.aliceVisitedHollow = new VisitBonusMission({
+    fix.aliceMission1Hollow = new Missions.VisitBonusMission({
         location: fix.hollow.id,
         person: fix.alice.id,
         completed: '2014-08-10',
         outcome: true
-        //missions: [
-        //    {
-        //        type: 'hasOptions',
-        //        outcome: true
-        //    },
-        //    {
-        //        type: 'whatOptions',
-        //        outcome: ['smoothie', 'cake']
-        //    },
-        //    {
-        //        type: 'giveFeedback',
-        //        outcome: { text: 'Your vegan food is so tasty', didNotDoIt: true }
-        //    }
-        //]
     });
-    fix.bobVisitedHollow = new HasOptionsMission({
+    fix.aliceMission2Hollow = new Missions.HasOptionsMission({
+        location: fix.hollow.id,
+        person: fix.alice.id,
+        completed: '2014-08-10',
+        outcome: true
+    });
+    fix.aliceMission3Hollow = new Missions.GiveFeedbackMission({
+        location: fix.hollow.id,
+        person: fix.alice.id,
+        completed: '2014-08-10',
+        outcome: {
+            text: 'Your vegan food is so tasty',
+            didNotDoIt: true
+        }
+    });
+    fix.bobMission1Hollow = new Missions.HasOptionsMission({
         location: fix.hollow.id,
         person: fix.bob.id,
         completed: '2014-08-12',
         outcome: true
-        //missions: [
-        //    {
-        //        type: 'whatOptions',
-        //        outcome: ['smoothie', 'cookies', 'cake']
-        //    }
-        //]
     });
-    fix.bobVisitedHollowAgain = new VisitBonusMission({
+    fix.bobMission2Hollow = new Missions.VisitBonusMission({
         location: fix.hollow.id,
         person: fix.bob.id,
         completed: '2014-08-15',
         outcome: true
-        //missions: [
-        //    {
-        //        type: 'hasOptions',
-        //        outcome: true
-        //    },
-        //    {
-        //        type: 'whatOptions',
-        //        outcome: ['smoothie', 'cookies', 'cake']
-        //    },
-        //    {
-        //        type: 'buyOptions',
-        //        outcome: ['smoothie', 'cake']
-        //    }
-        //]
     });
 
     return fix;
