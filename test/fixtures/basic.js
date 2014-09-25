@@ -10,7 +10,9 @@ var activities = require('./activities');
 var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
 var Location = mongoose.model('Location');
-var Visit = mongoose.model('Visit');
+var Missions = require('../../app/models/Missions');
+var VisitBonusMission = Missions.VisitBonusMission;
+var HasOptionsMission = Missions.HasOptionsMission;
 
 var getFixtures = function() {
     var fix = activities.getFixtures();
@@ -113,117 +115,100 @@ var getFixtures = function() {
         currentOwnerStart: '2014-08-15'
     });
 
-    fix.bobVisitedDosha = new Visit({
+    // TODO: add some more completed missions?!
+    fix.bobVisitedDosha = new HasOptionsMission({
         location: fix.dosha.id,
         person: fix.bob.id,
         completed: '2014-08-20',
-        missions: [
-            {
-                type: 'visitBonus',
-                outcome: true
-            },
-            {
-                type: 'hasOptions',
-                outcome: true
-            },
-            {
-                type: 'whatOptions',
-                outcome: ['curry']
-            }
-        ]
+        outcome: true
+        //missions: [
+        //    {
+        //        type: 'hasOptions',
+        //        outcome: true
+        //    },
+        //    {
+        //        type: 'whatOptions',
+        //        outcome: ['curry']
+        //    }
+        //]
     });
 
-    fix.bobVisitedRuprecht = new Visit({
+    fix.bobVisitedRuprecht = new HasOptionsMission({
         location: fix.ruprecht.id,
         person: fix.bob.id,
         completed: '2014-08-24',
-        missions: [
-            {
-                type: 'hasOptions',
-                outcome: true
-            },
-            {
-                type: 'whatOptions',
-                outcome: ['fries', 'napoli']
-            }
-        ]
+        outcome: true
+        //missions: [
+        //    {
+        //        type: 'whatOptions',
+        //        outcome: ['fries', 'napoli']
+        //    }
+        //]
     });
-    fix.aliceVisitedRuprecht = new Visit({
+    fix.aliceVisitedRuprecht = new VisitBonusMission({
         location: fix.ruprecht.id,
         person: fix.alice.id,
         completed: '2014-08-25',
-        missions: [
-            {
-                type: 'visitBonus',
-                outcome: true
-            },
-            {
-                type: 'hasOptions',
-                outcome: true
-            }
-        ]
+        outcome: true
+        //missions: [
+        //    {
+        //        type: 'hasOptions',
+        //        outcome: true
+        //    }
+        //]
     });
 
-    fix.aliceVisitedHollow = new Visit({
+    fix.aliceVisitedHollow = new VisitBonusMission({
         location: fix.hollow.id,
         person: fix.alice.id,
         completed: '2014-08-10',
-        missions: [
-            {
-                type: 'visitBonus',
-                outcome: true
-            },
-            {
-                type: 'hasOptions',
-                outcome: true
-            },
-            {
-                type: 'whatOptions',
-                outcome: ['smoothie', 'cake']
-            },
-            {
-                type: 'giveFeedback',
-                outcome: { text: 'Your vegan food is so tasty', didNotDoIt: true }
-            }
-        ]
+        outcome: true
+        //missions: [
+        //    {
+        //        type: 'hasOptions',
+        //        outcome: true
+        //    },
+        //    {
+        //        type: 'whatOptions',
+        //        outcome: ['smoothie', 'cake']
+        //    },
+        //    {
+        //        type: 'giveFeedback',
+        //        outcome: { text: 'Your vegan food is so tasty', didNotDoIt: true }
+        //    }
+        //]
     });
-    fix.bobVisitedHollow = new Visit({
+    fix.bobVisitedHollow = new HasOptionsMission({
         location: fix.hollow.id,
         person: fix.bob.id,
         completed: '2014-08-12',
-        missions: [
-            {
-                type: 'hasOptions',
-                outcome: true
-            },
-            {
-                type: 'whatOptions',
-                outcome: ['smoothie', 'cookies', 'cake']
-            }
-        ]
+        outcome: true
+        //missions: [
+        //    {
+        //        type: 'whatOptions',
+        //        outcome: ['smoothie', 'cookies', 'cake']
+        //    }
+        //]
     });
-    fix.bobVisitedHollowAgain = new Visit({
+    fix.bobVisitedHollowAgain = new VisitBonusMission({
         location: fix.hollow.id,
         person: fix.bob.id,
         completed: '2014-08-15',
-        missions: [
-            {
-                type: 'visitBonus',
-                outcome: true
-            },
-            {
-                type: 'hasOptions',
-                outcome: true
-            },
-            {
-                type: 'whatOptions',
-                outcome: ['smoothie', 'cookies', 'cake']
-            },
-            {
-                type: 'buyOptions',
-                outcome: ['smoothie', 'cake']
-            }
-        ]
+        outcome: true
+        //missions: [
+        //    {
+        //        type: 'hasOptions',
+        //        outcome: true
+        //    },
+        //    {
+        //        type: 'whatOptions',
+        //        outcome: ['smoothie', 'cookies', 'cake']
+        //    },
+        //    {
+        //        type: 'buyOptions',
+        //        outcome: ['smoothie', 'cake']
+        //    }
+        //]
     });
 
     return fix;

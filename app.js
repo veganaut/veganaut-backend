@@ -13,7 +13,7 @@ require('./app/models/Activity.js');
 require('./app/models/ActivityLink.js');
 require('./app/models/GraphNode.js');
 require('./app/models/Person.js');
-require('./app/models/Visit.js');
+require('./app/models/Missions.js');
 require('./app/models/Location.js');
 
 // Controllers
@@ -23,7 +23,7 @@ var Session = require('./app/controllers/Session');
 var Activity = require('./app/controllers/Activity');
 var ActivityLink = require('./app/controllers/ActivityLink');
 var Match = require('./app/controllers/Match');
-var Visit = require('./app/controllers/Visit');
+var Missions = require('./app/controllers/Missions');
 var Location = require('./app/controllers/Location');
 
 var app = express();
@@ -94,9 +94,9 @@ app.put('/person/me', cors(), Session.restrict, Person.updateMe);
 app.options('/match', cors());
 app.get('/match', cors(), Match.current);
 
-// Visit
-app.options('/visit', cors());
-app.post('/visit', cors(), Session.restrict, Visit.visit);
+// Mission
+app.options('/mission', cors());
+app.post('/mission', cors(), Session.restrict, Missions.submit);
 
 // Location
 app.options('/location', cors());

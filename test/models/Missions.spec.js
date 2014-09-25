@@ -12,7 +12,10 @@ var VisitBonusMission = Missions.VisitBonusMission;
 
 h.describe('A VisitBonusMission', function() {
     it('can be created and removed', function() {
-        var m = new VisitBonusMission({});
+        var m = new VisitBonusMission({
+            person: '000000000000000000000001',
+            location: '000000000000000000000006'
+        });
         expect(m.id).toBeTruthy();
 
         h.runAsync(function(done) {
@@ -27,11 +30,9 @@ h.describe('A VisitBonusMission', function() {
                 expect(err).toBeNull();
                 expect(mission instanceof VisitBonusMission).toBe(true, 'found the created mission');
                 expect(mission.points).toBeDefined('points is defined');
-                expect(mission.points.team1).toBe(0, 'points for team1 is 0');
-                expect(mission.points.team2).toBe(0, 'points for team2 is 0');
-                expect(mission.points.team3).toBe(0, 'points for team3 is 0');
-                expect(mission.points.team4).toBe(0, 'points for team4 is 0');
-                expect(mission.points.team5).toBe(0, 'points for team5 is 0');
+                expect(mission.points.team1).toBe(100, 'points for team1 are 100');
+                expect(mission.person.toString()).toBe('000000000000000000000001', 'got correct person');
+                expect(mission.location.toString()).toBe('000000000000000000000006', 'got correct location');
                 done();
             });
         });

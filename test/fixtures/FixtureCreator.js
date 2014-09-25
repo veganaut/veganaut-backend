@@ -8,11 +8,11 @@ var mongoose = require('mongoose');
 var constants = require('../../app/constants');
 var FixtureLoader = require('./FixtureLoader');
 var activities = require('./activities');
+var Missions = require('../../app/models/Missions');
 
 var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
 var Location = mongoose.model('Location');
-var Visit = mongoose.model('Visit');
 
 /**
  * FixtureCreator constructor. Helper for creating fixtures.
@@ -134,14 +134,11 @@ FixtureCreator.prototype.location = function (user, name, coordinates, type) {
         type: type
     });
 
-    this._fixtures[name + 'FirstVisit'] = new Visit({
+    this._fixtures[name + 'FirstMission'] = new Missions.AddLocationMission({
         person: this._fixtures[user].id,
         location: this._fixtures[name],
         completed: new Date(),
-        missions: [{
-            type: 'addLocation',
-            outcome: true
-        }]
+        outcome: true
     });
 };
 

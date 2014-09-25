@@ -13,13 +13,12 @@ require('../../app/models/ActivityLink');
 require('../../app/models/GraphNode');
 require('../../app/models/Location');
 require('../../app/models/Person');
-require('../../app/models/Visit');
 var Activity = mongoose.model('Activity');
 var ActivityLink = mongoose.model('ActivityLink');
 var GraphNode = mongoose.model('GraphNode');
 var Location = mongoose.model('Location');
 var Person = mongoose.model('Person');
-var Visit = mongoose.model('Visit');
+var Mission = mongoose.model('Mission');
 
 
 var load = function(fixtures, done) {
@@ -30,7 +29,7 @@ var load = function(fixtures, done) {
         GraphNode.remove.bind(GraphNode),
         Person.remove.bind(Person),
         Location.remove.bind(Location),
-        Visit.remove.bind(Visit),
+        Mission.remove.bind(Mission),
     ];
 
     // Add all the fixtures

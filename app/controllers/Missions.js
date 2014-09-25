@@ -4,10 +4,10 @@ var _ = require('lodash');
 var mongoose = require('mongoose');
 var async = require('async');
 var Location = mongoose.model('Location');
-var Visit = mongoose.model('Visit');
+var Missions = require('../../app/models/Missions');
 
-exports.visit = function(req, res, next) {
-    var location, visit, oldTeam;
+exports.submit = function(req, res, next) {
+    var location, mission, oldTeam;
     async.series([
         function(cb) {
             Location.findById(req.body.location, function(err, l) {
@@ -20,24 +20,26 @@ exports.visit = function(req, res, next) {
             });
         },
         function(cb) {
-            // Create the new visit and save it
+            // Find the mission model to use
+            var MissionModel = Missions.getModelForIdentifier(req.body.type);
+            if (typeof MissionModel === 'undefined') {
+                return cb(new Error('Could not find mission of type: ' + req.body.type));
+            }
 
-            // Sanitize missions
-            // TODO: before saving the missions, need to make sure the user is allowed to make the visitBonus mission
-            var missions = _.map(req.body.missions, function(m) {
-                return _.pick(m, ['type', 'outcome', 'points']);
-            });
-
-            visit = new Visit({
-                person: req.user.id,
-                location: location.id,
-                completed: Date.now(),
-                missions: missions
-            });
-            visit.save(cb);
+            // Create the new mission and save it
+            // TODO: before saving the visitBonus mission, make sure the user is allowed to complete it
+            mission = new MissionModel(_.assign(
+                _.pick(req.body, ['location', 'outcome', 'points']),
+                {
+                    person: req.user.id,
+                    location: location.id,
+                    completed: Date.now()
+                }
+            ));
+            mission.save(cb);
         },
         function(cb) {
-            // Re-load the location (it changed when the visit was saved)
+            // Re-load the location (it changed when the mission was saved)
             Location.findById(location, function(err, l) {
                 if (err) {
                     return cb(err);
@@ -53,7 +55,7 @@ exports.visit = function(req, res, next) {
         }
 
         var causedOwnerChange = (location.team !== oldTeam);
-        var response = _.assign(visit.toApiObject(), {
+        var response = _.assign(mission.toApiObject(), {
             causedOwnerChange: causedOwnerChange
         });
         return res.send(201, response);

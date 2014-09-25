@@ -8,12 +8,10 @@ var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var constants = require('../constants');
-
-require('./Visit');
-var Visit = mongoose.model('Visit');
+var Missions = require('../../app/models/Missions');
 
 /**
- * Time in ms between two visits that give a visit bonus: 3 weeks
+ * Time in ms between two visitBonus missions: 3 weeks
  * TODO: This should go in a global config file somewhere
  * @type {number}
  */
@@ -57,24 +55,23 @@ var locationSchema = new Schema({
  */
 locationSchema.methods.computeNextVisitBonusDate = function(person, next) {
     var that = this;
-    Visit.findOne({
+    Missions.VisitBonusMission.findOne({
         location: this.id,
-        person: person.id,
-        missions: {
-            $elemMatch: { type: 'visitBonus' }
-        }
+        person: person.id
     })
         .sort({ completed: 'desc' })
-        .exec(function(err, visit) {
-            if (err) { return next(err); }
+        .exec(function(err, mission) {
+            if (err) {
+                return next(err);
+            }
             that._nextVisitBonusDate = that._nextVisitBonusDate || {};
-            if (!visit) {
-                // If there is no recent visit, one can get the bonus right now
+            if (!mission) {
+                // If there is no recent mission, one can get the bonus right now
                 that._nextVisitBonusDate[person.id] = new Date();
             }
             else {
-                // Some time after the last visitBonus, you get a new visit bonus
-                that._nextVisitBonusDate[person.id] = new Date(visit.completed.getTime() + TIME_BETWEEN_TWO_VISIT_BONUS);
+                // Some time after the last visitBonus, you get a new bonus
+                that._nextVisitBonusDate[person.id] = new Date(mission.completed.getTime() + TIME_BETWEEN_TWO_VISIT_BONUS);
             }
             return next();
         }
@@ -121,22 +118,20 @@ locationSchema.methods.computeCurrentAvailablePoints = function() {
 };
 
 /**
- * Callback to notify the location that a new visit has been created. The
+ * Callback to notify the location that a new mission has been completed. The
  * notification will then update its score.
  */
-locationSchema.methods.notifyVisitCreated = function(visit, next) {
+locationSchema.methods.notifyMissionCompleted = function(mission, next) {
     // Update the score of the location
     var points = this.computeCurrentPoints();
     var availablePoints = this.computeCurrentAvailablePoints();
     var team = this.team;
     var teamPoints = points[team] || -1;
 
-    // Add up all the points in all the missions and decrease the availablePoints
-    _.each(visit.missions, function(mission) {
-        _.forOwn(mission.points, function(p, t) {
-            points[t] += Math.min(p, availablePoints);
-            availablePoints -= Math.min(p, availablePoints);
-        });
+    // Add up all the new points and decrease the availablePoints
+    _.forOwn(mission.points.toObject(), function(p, t) {
+        points[t] += Math.min(p, availablePoints);
+        availablePoints -= Math.min(p, availablePoints);
     });
 
     // Check if a new team has the most points

@@ -5,34 +5,31 @@ var async = require('async');
 
 var mongoose = require('mongoose');
 var Location = mongoose.model('Location');
-var Visit = mongoose.model('Visit');
+var Missions = require('../../app/models/Missions');
 
 exports.location = function(req, res, next) {
     var location = new Location(_.assign(_.pick(req.body, 'name', 'type'), {
         coordinates: [req.body.lat, req.body.lng]
     }));
 
-    var visit;
+    var mission;
     async.series([
         location.save.bind(location),
         function(cb) {
-            // Create first visit at this location with the addLocation mission completed
+            // Create the completed addLocation mission
             // TODO: this should probably go in the Location Model pre save or something, then one can also change FixtureCreator.location
-            visit = new Visit({
+            mission = new Missions.AddLocationMission({
                 person: req.user.id,
                 location: location,
-                completed: new Date(), // TODO: it should set this as default
-                missions: [{
-                    type: 'addLocation',
-                    outcome: true
-                }]
+                completed: new Date(),
+                outcome: true
             });
-            visit.save(cb);
+            mission.save(cb);
         },
         function(cb) {
-            // We take the location instance from the visit, because that one has
+            // We take the location instance from the mission, because that one has
             // the correct points calculated
-            location = visit.location;
+            location = mission.location;
             location.computeNextVisitBonusDate(req.user, cb);
         }
     ], function(err) {
