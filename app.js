@@ -103,6 +103,8 @@ app.options('/location', cors());
 app.post('/location', cors(), Session.restrict, Location.location);
 app.options('/location/list', cors());
 app.get('/location/list', cors(), Session.restrict, Location.list);
+app.options('/location/:locationId', cors());
+app.get('/location/:locationId', cors(), Location.get);
 
 // Handle errors and if no one responded to the request
 app.use(function(err, req, res, next) {

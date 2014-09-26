@@ -135,6 +135,7 @@ missionSchema.methods.getIdentifier = function() {
 /**
  * Returns this mission ready to be sent to the frontend
  * @returns {{}}
+ * TODO: this should be toJSON instead, it's called automatically
  */
 missionSchema.methods.toApiObject = function() {
     // TODO: how to handle the different outcomes: need to sanitize them

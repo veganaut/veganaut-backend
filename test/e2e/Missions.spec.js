@@ -1,7 +1,6 @@
 'use strict';
 /* global it, expect */
 
-var _ = require('lodash');
 var h = require('../helpers_');
 var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
 
@@ -298,12 +297,12 @@ h.describe('Mission API methods and their influence on locations.', function() {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.causedOwnerChange).toBe(true, 'mission caused an owner change');
 
-                    // TODO: would be best to only request the updated location
-                    h.request('GET', h.baseURL + 'location/list')
+                    // Check how the location looks now
+                    h.request('GET', h.baseURL + 'location/000000000000000000000006')
                         .end(function(res) {
                             expect(res.statusCode).toBe(200);
 
-                            var dosha = _.first(_.where(res.body, {id: '000000000000000000000006'}));
+                            var dosha = res.body;
                             expect(dosha).toBeDefined('returned dosha');
                             expect(dosha.team).toBe('team1', 'owner is now team1');
                             expect(typeof dosha.points.team1).toBe('number', 'has team1 points');

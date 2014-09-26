@@ -171,6 +171,12 @@ personSchema.methods.getHits = function() {
     return hits;
 };
 
+/**
+ * Returns this person ready to be sent to the frontend
+ * @returns {{}}
+ * @returns {Object}
+ * TODO: this should be toJSON instead, it's called automatically
+ */
 personSchema.methods.toApiObject = function () {
     return _.assign(
         _.pick(this, 'email', 'nickname', 'fullName', 'gender', 'dateOfBirth', 'phone', 'address', 'team', 'role'),

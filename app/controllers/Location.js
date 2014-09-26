@@ -5,7 +5,8 @@ var async = require('async');
 
 var mongoose = require('mongoose');
 var Location = mongoose.model('Location');
-var Missions = require('../../app/models/Missions');
+var Missions = require('../models/Missions');
+var Product = require('../models/Product');
 
 exports.location = function(req, res, next) {
     var location = new Location(_.assign(_.pick(req.body, 'name', 'type'), {
@@ -40,7 +41,6 @@ exports.location = function(req, res, next) {
     });
 };
 
-
 exports.list = function(req, res, next) {
     Location.find(function(err, locations) {
         if (err) {
@@ -58,5 +58,53 @@ exports.list = function(req, res, next) {
                 });
                 return res.send(locations);
             });
+    });
+};
+
+/**
+ * Returns an individual Location with the id given in
+ * req.params.locationId
+ * @param req
+ * @param res
+ * @param next
+ */
+exports.get = function(req, res, next) {
+    var locationId = req.params.locationId;
+    var location, products = [];
+
+    async.series([
+        // Find the location
+        function(cb) {
+            Location.findById(locationId, function(err, l) {
+                if (!err && !l) {
+                    res.status(404);
+                    err = new Error('Could not find location with id: ' + locationId);
+                }
+                location = l;
+                cb(err);
+            });
+        },
+
+        // Compute visit bonus date
+        function(cb) {
+            location.computeNextVisitBonusDate(req.user, cb);
+        },
+
+        // Find all products
+        function(cb) {
+            Product.find({location: location.id}, function(err, p) {
+                if (p) {
+                    products = p;
+                }
+                cb(err);
+            });
+        }
+    ], function(err) {
+        if (err) {
+            return next(err);
+        }
+        var returnObj = location.toApiObject(req.user);
+        returnObj.products = products;
+        return res.send(returnObj);
     });
 };

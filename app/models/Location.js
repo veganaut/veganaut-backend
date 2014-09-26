@@ -156,6 +156,7 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
  * Returns this location ready to be sent to the frontend
  * @param {Person} [person]
  * @returns {{}}
+ * TODO: this should be toJSON instead, it's called automatically (although we have an argument here...)
  */
 locationSchema.methods.toApiObject = function (person) {
     var apiObj = _.pick(this, ['name', 'type', 'id', 'team', 'availablePoints']);
