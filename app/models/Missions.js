@@ -21,20 +21,24 @@ var Person = mongoose.model('Person');
  * @type {{}}
  */
 var POINTS_BY_TYPE = {
-    AddLocationMission: 10,
-    VisitBonusMission: 100, // TODO: make sure visitBonus is not claimed when it wasn't available
-    HasOptionsMission: 10,
-    WantVeganMission: 10,
-    WhatOptionsMission: 10,
-    BuyOptionsMission: 20,
-    RateOptionsMission: 10,
+    AddLocationMission:  10, // TODO; make sure one cannot submit this mission explicitly
+    VisitBonusMission:  100, // TODO: make sure visitBonus is not claimed when it wasn't available
+    HasOptionsMission:   10,
+    WantVeganMission:    10,
+    WhatOptionsMission:  10,
+    BuyOptionsMission:   20,
+    RateOptionsMission:  10,
     GiveFeedbackMission: 20,
     OfferQualityMission: 10,
-    EffortValueMission: 10
+    EffortValueMission:  10
 };
 
-// Define a Mission Schema constructor
-var MissionSchema = function(outcomeDefinition) {
+/**
+ * Constructs a new mission schema
+ * @param outcomeType Mongoose type description for the outcome
+ * @constructor
+ */
+var MissionSchema = function(outcomeType) {
     // Prepare the points schema
     var points = {};
     _.each(constants.TEAMS, function(team) {
@@ -52,9 +56,12 @@ var MissionSchema = function(outcomeDefinition) {
     });
 
     // Add the outcome if given
-    if (typeof outcomeDefinition !== 'undefined') {
+    if (typeof outcomeType !== 'undefined') {
         this.add({
-            outcome: outcomeDefinition
+            outcome: {
+                type: outcomeType,
+                required: true
+            }
         });
     }
 };
@@ -130,7 +137,7 @@ missionSchema.methods.getIdentifier = function() {
  * @returns {{}}
  */
 missionSchema.methods.toApiObject = function() {
-    // TODO: how to handle the different outcomes
+    // TODO: how to handle the different outcomes: need to sanitize them
     return _.assign(
         _.pick(this, ['id', 'completed', 'outcome', 'points']),
         {
@@ -150,21 +157,22 @@ var Mission = mongoose.model('Mission', missionSchema);
 var allMissions = {};
 
 // And all the discriminators (= specific missions)
-allMissions.AddLocationMission = Mission.discriminator('AddLocationMission', new MissionSchema({
-    type: Boolean
-}));
+allMissions.AddLocationMission = Mission.discriminator('AddLocationMission', new MissionSchema(
+    Boolean
+));
 
 
-allMissions.VisitBonusMission = Mission.discriminator('VisitBonusMission', new MissionSchema({
-    type: Boolean
-}));
+allMissions.VisitBonusMission = Mission.discriminator('VisitBonusMission', new MissionSchema(
+    Boolean
+));
 
-allMissions.HasOptionsMission = Mission.discriminator('HasOptionsMission', new MissionSchema({
-    type: Boolean // TODO: what type?
-}));
+allMissions.HasOptionsMission = Mission.discriminator('HasOptionsMission', new MissionSchema(
+    Boolean // TODO: what type, should probably be an Enum
+));
 
-allMissions.WantVeganMission = Mission.discriminator('WantVeganMission', new MissionSchema({
-    type: {
+allMissions.WantVeganMission = Mission.discriminator('WantVeganMission', new MissionSchema(
+    // TODO: this doesn't validate correctly, accepts anything as outcome
+    {
         expressions: [{
             type: String,
             required: true
@@ -174,52 +182,49 @@ allMissions.WantVeganMission = Mission.discriminator('WantVeganMission', new Mis
             required: true
         }]
     }
-}));
+));
 
-allMissions.WhatOptionsMission = Mission.discriminator('WhatOptionsMission', new MissionSchema({
-    type: [{
+allMissions.WhatOptionsMission = Mission.discriminator('WhatOptionsMission', new MissionSchema(
+    [{
         product: {
             type: Schema.Types.ObjectId,
             ref: 'Product',
             required: true
         },
         info: {
-            type: String,
+            type: String, // TODO: what possible values? Should be an Enum
             required: true
         }
     }]
-}));
+));
 
-allMissions.BuyOptionsMission = Mission.discriminator('BuyOptionsMission', new MissionSchema({
-    type: [{
+allMissions.BuyOptionsMission = Mission.discriminator('BuyOptionsMission', new MissionSchema(
+    [{
         product: {
             type: Schema.Types.ObjectId,
             ref: 'Product',
             required: true
-        },
-        info: { // TODO: is this needed?
-            type: String,
-            required: true
         }
     }]
-}));
+));
 
-allMissions.RateOptionsMission = Mission.discriminator('RateOptionsMission', new MissionSchema({
-    type: [{
+allMissions.RateOptionsMission = Mission.discriminator('RateOptionsMission', new MissionSchema(
+    [{
         product: {
             type: Schema.Types.ObjectId,
             ref: 'Product',
             required: true
         },
         info: {
-            type: Number,
+            type: Number, // TODO: validate more exactly
             required: true
         }
     }]
-}));
+));
 
-allMissions.GiveFeedbackMission = Mission.discriminator('GiveFeedbackMission', new MissionSchema({
-    type: {
+allMissions.GiveFeedbackMission = Mission.discriminator('GiveFeedbackMission', new MissionSchema(
+    // TODO: this doesn't validate correctly, accepts anything as outcome
+    {
         feedback: {
             type: String,
             required: true
@@ -229,16 +234,17 @@ allMissions.GiveFeedbackMission = Mission.discriminator('GiveFeedbackMission', n
             required: true
         }
     }
-}));
+));
 
-allMissions.OfferQualityMission = Mission.discriminator('OfferQualityMission', new MissionSchema({
-    type: Number
-}));
+allMissions.OfferQualityMission = Mission.discriminator('OfferQualityMission', new MissionSchema(
+    Number // TODO: validate more exactly
+));
 
-allMissions.EffortValueMission = Mission.discriminator('EffortValueMission', new MissionSchema({
-    type: Number
-}));
+allMissions.EffortValueMission = Mission.discriminator('EffortValueMission', new MissionSchema(
+    Number // TODO: validate more exactly
+));
 
+// TODO: where should this helper methods go?
 /**
  * Returns the mission model with the given identifier
  * (used by the frontend)
@@ -254,6 +260,20 @@ allMissions.getModelForIdentifier = function(identifier) {
         MissionModel = allMissions[name];
     }
     return MissionModel;
+};
+
+/**
+ * Returns whether the given mission model is a mission
+ * that acts on Products
+ * @param {Mission} MissionModel
+ * @returns {boolean}
+ */
+allMissions.isProductMission = function(MissionModel) {
+    return (
+        MissionModel === allMissions.WhatOptionsMission ||
+        MissionModel === allMissions.BuyOptionsMission ||
+        MissionModel === allMissions.RateOptionsMission
+    );
 };
 
 module.exports = allMissions;

@@ -39,7 +39,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         });
     });
 
-    it('returns correct points for visitBonus mission', function() {
+    it('can submit visitBonus mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
@@ -58,7 +58,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         });
     });
 
-    it('returns correct points for hasOptions mission', function() {
+    it('can submit hasOptions mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
@@ -77,22 +77,21 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         });
     });
 
-    it('returns correct points for giveFeedback mission', function() {
+    it('can submit wantVegan mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
                     location: '000000000000000000000003',
-                    type: 'giveFeedback',
-                    // TODO: seems to accept any kind of outcome
+                    type: 'wantVegan',
                     outcome: {
-                        feedback: 'Moar sauce',
-                        didNotDoIt: false
+                        expressions: ['vegan', 'noMeat'],
+                        others: ['ganz vegetarisch']
                     },
                     points: { team1: 10 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    expect(res.body.type).toBe('giveFeedback', 'type of mission');
+                    expect(res.body.type).toBe('wantVegan', 'type of mission');
                     expect(res.body.points).toEqual({team1: 10}, 'points of mission');
                     done();
                 })
@@ -100,7 +99,189 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         });
     });
 
-    // TODO: write tests for all other missions
+    it('can submit whatOptions mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'whatOptions',
+                    outcome: [
+                        {
+                            product: {
+                                name: 'Curry'
+                            },
+                            info: 'available'
+                        },
+                        {
+                            product: {
+                                name: 'Smoothie'
+                            },
+                            info: 'available'
+                        }
+                    ],
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('whatOptions', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('can submit buyOptions mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'buyOptions',
+                    outcome: [
+                        {
+                            product: {
+                                name: 'Curry'
+                            }
+                        },
+                        {
+                            product: {
+                                name: 'Smoothie'
+                            }
+                        }
+                    ],
+                    points: { team1: 20 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('buyOptions', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('can submit rateOptions mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'rateOptions',
+                    outcome: [
+                        {
+                            product: {
+                                name: 'Curry'
+                            },
+                            info: 5
+                        },
+                        {
+                            product: {
+                                name: 'Smoothie'
+                            },
+                            info: 4
+                        }
+                    ],
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('rateOptions', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('can submit giveFeedback mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'giveFeedback',
+                    outcome: {
+                        feedback: 'Moar sauce',
+                        didNotDoIt: false
+                    },
+                    points: { team1: 20 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('giveFeedback', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('can submit offerQuality mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'offerQuality',
+                    outcome: 4,
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('offerQuality', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('can submit offerQuality mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'effortValue',
+                    outcome: 1,
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('effortValue', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+                    done();
+                })
+            ;
+        });
+    });
+});
+
+h.describe('Products missions can refer to existing products.', function() {
+    it('can submit rateOptions mission with an existing product', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000006',
+                    type: 'rateOptions',
+                    outcome: [
+                        {
+                            product: '000000000000000000000101',
+                            info: 1
+                        },
+                        {
+                            product: '000000000000000000000102',
+                            info: 2
+                        }
+                    ],
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('rateOptions', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+                    done();
+                })
+            ;
+        });
+    });
 });
 
 h.describe('Mission API methods and their influence on locations.', function() {

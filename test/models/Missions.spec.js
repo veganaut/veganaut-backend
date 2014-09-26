@@ -14,7 +14,8 @@ h.describe('A VisitBonusMission', function() {
     it('can be created and removed', function() {
         var m = new VisitBonusMission({
             person: '000000000000000000000001',
-            location: '000000000000000000000006'
+            location: '000000000000000000000006',
+            outcome: true
         });
         expect(m.id).toBeTruthy();
 

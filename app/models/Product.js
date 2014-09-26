@@ -9,7 +9,11 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var productSchema = new Schema({
-    name: { type: String, required: true }
+    location: {type: Schema.Types.ObjectId, ref: 'Location', required: true},
+    name: { type: String, required: true },
+    description: { type: String }
 });
 
-mongoose.model('Product', productSchema);
+var Product = mongoose.model('Product', productSchema);
+
+module.exports = Product;

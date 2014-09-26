@@ -11,6 +11,7 @@ var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
 var Location = mongoose.model('Location');
 var Missions = require('../../app/models/Missions');
+var Product = require('../../app/models/Product');
 
 var getFixtures = function() {
     var fix = activities.getFixtures();
@@ -111,6 +112,18 @@ var getFixtures = function() {
         type: 'gastronomy',
         previousOwnerStart: '2014-08-10',
         currentOwnerStart: '2014-08-15'
+    });
+
+    fix.doshaCurry = new Product({
+        _id: '000000000000000000000101',
+        location: fix.dosha.id,
+        name: 'curry'
+    });
+
+    fix.doshaSamosa = new Product({
+        _id: '000000000000000000000102',
+        location: fix.dosha.id,
+        name: 'samosa'
     });
 
     fix.bobMission1Dosha = new Missions.HasOptionsMission({
