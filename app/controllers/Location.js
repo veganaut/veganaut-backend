@@ -49,7 +49,12 @@ exports.list = function(req, res, next) {
 
         async.each(locations,
             function(location, cb) {
-                location.computeNextVisitBonusDate(req.user, cb);
+                if (typeof req.user !== 'undefined') {
+                    location.computeNextVisitBonusDate(req.user, cb);
+                }
+                else {
+                    cb();
+                }
             },
             function(err) {
                 if (err) { return next(err); }
@@ -87,7 +92,12 @@ exports.get = function(req, res, next) {
 
         // Compute visit bonus date
         function(cb) {
-            location.computeNextVisitBonusDate(req.user, cb);
+            if (typeof req.user !== 'undefined') {
+                location.computeNextVisitBonusDate(req.user, cb);
+            }
+            else {
+                cb();
+            }
         },
 
         // Find all products

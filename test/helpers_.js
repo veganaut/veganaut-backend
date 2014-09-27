@@ -132,6 +132,8 @@ exports.describe = function(what, options, how) {
                         if (err) { console.log(err); }
                         fixtures.setupFixtures(function(err) {
                             if (err) { console.log(err); }
+                            // Make sure session is not set
+                            exports.sessionId = undefined;
                             if (options.user) {
                                 createSessionFor(options.user, function(err, sid) {
                                     if (err) { console.log(err); }

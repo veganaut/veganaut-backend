@@ -128,27 +128,55 @@ h.describe('Location API methods as logged in user alice', function() {
 });
 
 
-//h.describe('Location API methods anonymous user', { user: '' }, function() {
-//    it('can list locations', function() {
-//        h.runAsync(function(done) {
-//            h.request('GET', h.baseURL + 'location/list')
-//                .end(function(res) {
-//                    expect(res.statusCode).toBe(200);
-//                    expect(typeof res.body).toBe('object', 'returns an array of locations');
-//                    expect(res.body.length).toBe(3, 'has 3 locations');
-//
-//                    _.each(res.body, function(location) {
-//                        expect(typeof location.name).toBe('string', 'has a name');
-//                        expect(typeof location.lat).toBe('number', 'has lat');
-//                        expect(typeof location.lng).toBe('number', 'has lng');
-//                        expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
-//
-//                        expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
-//                        expect(typeof location.points).toBe('object', 'points is an object');
-//                    });
-//                    done();
-//                })
-//            ;
-//        });
-//    });
-//});
+h.describe('Location API methods anonymous user', { user: '' }, function() {
+    it('can list locations', function() {
+       h.runAsync(function(done) {
+           h.request('GET', h.baseURL + 'location/list')
+               .end(function(res) {
+                   expect(res.statusCode).toBe(200);
+                   expect(typeof res.body).toBe('object', 'returns an array of locations');
+                   expect(res.body.length).toBe(3, 'has 3 locations');
+
+                   _.each(res.body, function(location) {
+                       expect(typeof location.name).toBe('string', 'has a name');
+                       expect(typeof location.lat).toBe('number', 'has lat');
+                       expect(typeof location.lng).toBe('number', 'has lng');
+                       expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
+
+                       expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
+                       expect(typeof location.points).toBe('object', 'points is an object');
+                   });
+                   done();
+               })
+           ;
+       });
+    });
+
+    it('can get an individual location', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'location/000000000000000000000006')
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    var location = res.body;
+                    expect(typeof location).toBe('object', 'response is an object');
+                    expect(location.id).toBe('000000000000000000000006', 'correct location id');
+                    expect(location.name).toBe('3dosha', 'correct name');
+                    expect(typeof location.type).toBe('string', 'got a type');
+                    expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
+                    expect(typeof location.team).toBe('string', 'team is a string');
+                    expect(typeof location.points).toBe('object', 'points is an object');
+                    expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
+                    expect(typeof location.products).toBe('object', 'got an array of products');
+                    expect(location.products.length).toBeGreaterThan(0, 'got some products');
+
+                    _.each(location.products, function(product) {
+                        expect(typeof product.name).toBe('string', 'has a name');
+                        expect(typeof product.id).toBe('string', 'has an id');
+                    });
+
+                    done();
+                })
+            ;
+        });
+    });
+});
