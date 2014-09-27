@@ -18,19 +18,20 @@ var Person = mongoose.model('Person');
 
 /**
  * Map of mission types to the number of points it gives
+ * TODO: there is an identical list in the frontend, share this code!
  * @type {{}}
  */
 var POINTS_BY_TYPE = {
     AddLocationMission:  10, // TODO; make sure one cannot submit this mission explicitly
-    VisitBonusMission:  100, // TODO: make sure visitBonus is not claimed when it wasn't available
+    VisitBonusMission:   50, // TODO: make sure visitBonus is not claimed when it wasn't available
     HasOptionsMission:   10,
     WantVeganMission:    10,
     WhatOptionsMission:  10,
     BuyOptionsMission:   20,
     RateOptionsMission:  10,
-    GiveFeedbackMission: 20,
-    OfferQualityMission: 10,
-    EffortValueMission:  10
+    GiveFeedbackMission: 10,
+    OfferQualityMission: 20,
+    EffortValueMission:  20
 };
 
 /**
