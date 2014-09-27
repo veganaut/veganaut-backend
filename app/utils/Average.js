@@ -34,7 +34,11 @@ var Average = function(name, schema) {
 
     // A getter to compute the average
     schema.virtual(that.virtualName).get(function() {
-        return this[that.propertyName].total / this[that.propertyName].count;
+        var average = this[that.propertyName].total / this[that.propertyName].count;
+        if (isNaN(average)) {
+            average = 0;
+        }
+        return average;
     });
 
     // A method to add a value
