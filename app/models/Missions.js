@@ -171,7 +171,7 @@ allMissions.VisitBonusMission = Mission.discriminator('VisitBonusMission', new M
 allMissions.HasOptionsMission = Mission.discriminator('HasOptionsMission', new MissionSchema(
     {
         type: String,
-        enum: ['no', 'ratherNo', 'maybe', 'ratherYes', 'yes']
+        enum: ['no', 'ratherNo', 'noClue', 'ratherYes', 'yes']
     }
 ));
 
@@ -245,7 +245,7 @@ allMissions.OfferQualityMission = Mission.discriminator('OfferQualityMission', n
 allMissions.EffortValueMission = Mission.discriminator('EffortValueMission', new MissionSchema(
     {
         type: String,
-        enum: ['no', 'maybe', 'yes']
+        enum: ['no', 'yes']
     }
 ));
 
