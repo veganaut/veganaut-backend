@@ -285,7 +285,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         });
     });
 
-    it('cannot submit bogus wantVegan mission', function() {
+    it('cannot submit bogus wantVegan mission: validate inner outcome object', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
@@ -294,6 +294,23 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     outcome: [
                         { expression: 'bogus', expressionType: 'bogusValue' }
                     ],
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(500);
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('cannot submit a bogus offerQuality mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'offerQuality',
+                    outcome: 100,  // That's way too large for a 1-5 rating
                     points: { team1: 10 }
                 })
                 .end(function(res) {
