@@ -12,7 +12,6 @@ h.describe('GeoIP', function() {
                     expect(typeof res.body).toBe('object', 'returns object');
 
                     // No further testing because geoip can't handle 127.0.0.1 (localhost)
-                    console.log('Foo', res.body);
 
                     done();
                 })
