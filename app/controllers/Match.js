@@ -4,7 +4,7 @@ var _ = require('lodash');
 var async = require('async');
 var mongoose = require('mongoose');
 var Person = mongoose.model('Person');
-var constants = require('../constants');
+var constants = require('../utils/constants');
 
 // Values used in scores computation
 var SCORE_FACTOR_CAPTURED = -1.0;

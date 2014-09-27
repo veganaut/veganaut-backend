@@ -9,7 +9,7 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var constants = require('../constants');
+var constants = require('../utils/constants');
 
 require('./ActivityLink');
 var ActivityLink = mongoose.model('ActivityLink');

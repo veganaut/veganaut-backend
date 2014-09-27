@@ -2,6 +2,8 @@
  * Defining various constants configuring Veganaut
  */
 
+'use strict';
+
 var constants = {};
 
 /**

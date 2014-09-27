@@ -10,7 +10,7 @@ var util = require('util');
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var constants = require('../constants');
+var constants = require('../utils/constants');
 
 require('./Product');
 require('./Person');

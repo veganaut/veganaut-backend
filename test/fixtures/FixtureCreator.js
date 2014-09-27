@@ -5,7 +5,7 @@
 
 var _ = require('lodash');
 var mongoose = require('mongoose');
-var constants = require('../../app/constants');
+var constants = require('../../app/utils/constants');
 var FixtureLoader = require('./FixtureLoader');
 var activities = require('./activities');
 var Missions = require('../../app/models/Missions');

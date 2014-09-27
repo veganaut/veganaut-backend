@@ -7,7 +7,7 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var constants = require('../constants');
+var constants = require('../utils/constants');
 var Missions = require('../../app/models/Missions');
 
 /**

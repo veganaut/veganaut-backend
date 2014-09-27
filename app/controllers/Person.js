@@ -7,7 +7,7 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var async = require('async');
-var constants = require('../constants');
+var constants = require('../utils/constants');
 var Person = mongoose.model('Person');
 
 exports.register = function(req, res, next) {
