@@ -130,23 +130,20 @@ var getFixtures = function() {
         location: fix.dosha.id,
         person: fix.bob.id,
         completed: '2014-08-20',
-        outcome: true
+        outcome: 'yes'
     });
     fix.bobMission2Dosha = new Missions.GiveFeedbackMission({
         location: fix.dosha.id,
         person: fix.bob.id,
         completed: '2014-08-20',
-        outcome: {
-            feeback: 'nice',
-            didNotDoIt: false
-        }
+        outcome: 'nice'
     });
 
     fix.bobMission1Ruprecht = new Missions.HasOptionsMission({
         location: fix.ruprecht.id,
         person: fix.bob.id,
         completed: '2014-08-24',
-        outcome: true
+        outcome: 'yes'
     });
     fix.bobMission2Ruprecht = new Missions.OfferQualityMission({
         location: fix.ruprecht.id,
@@ -164,7 +161,7 @@ var getFixtures = function() {
         location: fix.ruprecht.id,
         person: fix.alice.id,
         completed: '2014-08-25',
-        outcome: true
+        outcome: 'yes'
     });
 
     fix.aliceMission1Hollow = new Missions.VisitBonusMission({
@@ -177,22 +174,19 @@ var getFixtures = function() {
         location: fix.hollow.id,
         person: fix.alice.id,
         completed: '2014-08-10',
-        outcome: true
+        outcome: 'yes'
     });
     fix.aliceMission3Hollow = new Missions.GiveFeedbackMission({
         location: fix.hollow.id,
         person: fix.alice.id,
         completed: '2014-08-10',
-        outcome: {
-            text: 'Your vegan food is so tasty',
-            didNotDoIt: true
-        }
+        outcome: 'Your vegan food is so tasty'
     });
     fix.bobMission1Hollow = new Missions.HasOptionsMission({
         location: fix.hollow.id,
         person: fix.bob.id,
         completed: '2014-08-12',
-        outcome: true
+        outcome: 'yes'
     });
     fix.bobMission2Hollow = new Missions.VisitBonusMission({
         location: fix.hollow.id,
