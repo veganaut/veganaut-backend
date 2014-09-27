@@ -20,6 +20,7 @@
         "jasmine-node": "1.13.1",
         "jasmine-before-all": "0.1.0",
         "superagent": "0.16.0",
-        "jshint": "2.4.1"
+        "jshint": "2.4.1",
+        "supervisor": "^0.6.0"
     }
 }
