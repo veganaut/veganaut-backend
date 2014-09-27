@@ -119,7 +119,7 @@ locationSchema.methods.computeCurrentAvailablePoints = function() {
 
 /**
  * Callback to notify the location that a new mission has been completed. The
- * notification will then update its score.
+ * location will then update its score.
  */
 locationSchema.methods.notifyMissionCompleted = function(mission, next) {
     // Update the score of the location

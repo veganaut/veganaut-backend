@@ -55,13 +55,14 @@ var MissionSchema = function(outcomeType) {
         completed: {type: Date}
     });
 
-    // Add the outcome if given
+    // Add the outcome (unless we're in the base schema, which doesn't have it)
     if (typeof outcomeType !== 'undefined') {
+        if (_.isPlainObject(outcomeType) === false) {
+            outcomeType = { type: outcomeType };
+        }
+        _.assign(outcomeType, { required: true });
         this.add({
-            outcome: {
-                type: outcomeType,
-                required: true
-            }
+            outcome: outcomeType
         });
     }
 };
@@ -168,21 +169,24 @@ allMissions.VisitBonusMission = Mission.discriminator('VisitBonusMission', new M
 ));
 
 allMissions.HasOptionsMission = Mission.discriminator('HasOptionsMission', new MissionSchema(
-    Boolean // TODO: what type, should probably be an Enum
+    {
+        type: String,
+        enum: ['no', 'ratherNo', 'maybe', 'ratherYes', 'yes']
+    }
 ));
 
 allMissions.WantVeganMission = Mission.discriminator('WantVeganMission', new MissionSchema(
-    // TODO: this doesn't validate correctly, accepts anything as outcome
-    {
-        expressions: [{
+    [{
+        expression: {
             type: String,
             required: true
-        }],
-        others: [{
+        },
+        expressionType: {
             type: String,
-            required: true
-        }]
-    }
+            required: true,
+            enum: ['builtin', 'custom']
+        }
+    }]
 ));
 
 allMissions.WhatOptionsMission = Mission.discriminator('WhatOptionsMission', new MissionSchema(
@@ -193,8 +197,9 @@ allMissions.WhatOptionsMission = Mission.discriminator('WhatOptionsMission', new
             required: true
         },
         info: {
-            type: String, // TODO: what possible values? Should be an Enum
-            required: true
+            type: String,
+            required: true,
+            enum: ['unavailable', 'temporarilyUnavailable', 'available']
         }
     }]
 ));
@@ -217,32 +222,31 @@ allMissions.RateOptionsMission = Mission.discriminator('RateOptionsMission', new
             required: true
         },
         info: {
-            type: Number, // TODO: validate more exactly
+            type: Number,
+            min: 1.0,
+            max: 5.0,
             required: true
         }
     }]
 ));
 
 allMissions.GiveFeedbackMission = Mission.discriminator('GiveFeedbackMission', new MissionSchema(
-    // TODO: this doesn't validate correctly, accepts anything as outcome
-    {
-        feedback: {
-            type: String,
-            required: true
-        },
-        didNotDoIt: {
-            type: Boolean,
-            required: true
-        }
-    }
+    String
 ));
 
 allMissions.OfferQualityMission = Mission.discriminator('OfferQualityMission', new MissionSchema(
-    Number // TODO: validate more exactly
+    {
+        type: Number,
+        min: 1.0,
+        max: 5.0
+    }
 ));
 
 allMissions.EffortValueMission = Mission.discriminator('EffortValueMission', new MissionSchema(
-    Number // TODO: validate more exactly
+    {
+        type: String,
+        enum: ['no', 'maybe', 'yes']
+    }
 ));
 
 // TODO: where should this helper methods go?

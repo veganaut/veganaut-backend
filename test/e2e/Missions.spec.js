@@ -17,7 +17,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                 .send({
                     location: '000000000000000000000003',
                     type: 'hasOptions',
-                    outcome: true,
+                    outcome: 'yes',
                     points: { team1: 10 }
                 })
                 .end(function(res) {
@@ -31,7 +31,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     expect(typeof mission.points).toBe('object', 'points is an object');
                     expect(mission.type).toBe('hasOptions', 'type is hasOptions');
                     expect(mission.causedOwnerChange).toBe(false, 'did not cause an owner change');
-                    expect(mission.outcome).toBe(true, 'outcome of the mission');
+                    expect(mission.outcome).toBe('yes', 'outcome of the mission');
                     done();
                 })
             ;
@@ -63,7 +63,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                 .send({
                     location: '000000000000000000000003',
                     type: 'hasOptions',
-                    outcome: true,
+                    outcome: 'yes',
                     points: { team1: 10 }
                 })
                 .end(function(res) {
@@ -82,10 +82,11 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                 .send({
                     location: '000000000000000000000003',
                     type: 'wantVegan',
-                    outcome: {
-                        expressions: ['vegan', 'noMeat'],
-                        others: ['ganz vegetarisch']
-                    },
+                    outcome: [
+                        { expression: 'vegan', expressionType: 'builtin' },
+                        { expression: 'noMeat', expressionType: 'builtin' },
+                        { expression: 'ganz vegetarisch', expressionType: 'custom' }
+                    ],
                     points: { team1: 10 }
                 })
                 .end(function(res) {
@@ -198,10 +199,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                 .send({
                     location: '000000000000000000000003',
                     type: 'giveFeedback',
-                    outcome: {
-                        feedback: 'Moar sauce',
-                        didNotDoIt: false
-                    },
+                    outcome: 'Moar sauce',
                     points: { team1: 20 }
                 })
                 .end(function(res) {
@@ -233,13 +231,13 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         });
     });
 
-    it('can submit offerQuality mission', function() {
+    it('can submit effortValue mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
                     location: '000000000000000000000003',
                     type: 'effortValue',
-                    outcome: 1,
+                    outcome: 'no',
                     points: { team1: 10 }
                 })
                 .end(function(res) {
@@ -251,6 +249,79 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
             ;
         });
     });
+
+    // Test validation with a few invalid submissions
+    it('cannot submit bogus visitBonus mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'visitBonus',
+                    // missing outcome
+                    points: { team1: 100 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(500);
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('cannot submit bogus wantVegan mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'wantVegan',
+                    outcome: { bogusValue: 'this is not an array' },
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(500);
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('cannot submit bogus wantVegan mission: validate inner outcome object', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'wantVegan',
+                    outcome: [
+                        { expression: 'bogus', expressionType: 'bogusValue' }
+                    ],
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(500);
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('cannot submit a bogus offerQuality mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'offerQuality',
+                    outcome: 100,  // That's way too large for a 1-5 rating
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(500);
+                    done();
+                })
+            ;
+        });
+    });
+
+
 });
 
 h.describe('Products missions can refer to existing products.', function() {
