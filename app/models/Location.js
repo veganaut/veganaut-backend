@@ -8,7 +8,8 @@ var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
-var Missions = require('../../app/models/Missions');
+var Average = require('../utils/Average');
+var Missions = require('./Missions');
 
 /**
  * Time in ms between two visitBonus missions: 3 weeks
@@ -30,6 +31,12 @@ var MAX_AVAILABLE_POINTS = 500;
 // How much available points increase over time. Currently 10 per hour.
 var AVAILABLE_POINTS_INCREASE_RATE = 10.0 / (60*60*1000);
 
+// Numeric values for various effort ratings
+var EFFORT_VALUES = {
+    yes: 1.0,
+    no: -1.0
+};
+
 var locationSchema = new Schema({
     coordinates: {type: [Number], index: '2d'},
     name: String,
@@ -46,6 +53,10 @@ var locationSchema = new Schema({
     availablePoints: {type: Number, default: AVAILABLE_POINTS_INCREASE_RATE * 24*60*60*1000},
     updatedAt: {type: Date, default: Date.now}
 });
+
+// Locations keep track of average quality and effort
+new Average('quality', locationSchema);
+new Average('effort', locationSchema);
 
 /**
  * Calculates when the given person is next allowed to do the visitBonus mission
@@ -142,6 +153,16 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
             teamPoints = p;
         }
     });
+
+    // For offerQuality missions, the average quality changes
+    if (mission instanceof Missions.OfferQualityMission) {
+        this.addQuality(mission.outcome);
+    }
+
+    // For effortValue missions, the average effort changes
+    if (mission instanceof Missions.EffortValueMission) {
+        this.addEffort(EFFORT_VALUES[mission.outcome]);
+    }
 
     // Save the new state
     this.points = points;
