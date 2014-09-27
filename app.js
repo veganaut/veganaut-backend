@@ -25,6 +25,7 @@ var ActivityLink = require('./app/controllers/ActivityLink');
 var Match = require('./app/controllers/Match');
 var Missions = require('./app/controllers/Missions');
 var Location = require('./app/controllers/Location');
+var GeoIP = require('./app/controllers/GeoIP');
 
 var app = express();
 
@@ -105,6 +106,10 @@ app.options('/location/list', cors());
 app.get('/location/list', cors(), Location.list);
 app.options('/location/:locationId', cors());
 app.get('/location/:locationId', cors(), Location.get);
+
+// GeoIP
+app.options('/geoip', cors());
+app.get('/geoip', cors(), GeoIP.get);
 
 // Handle errors and if no one responded to the request
 app.use(function(err, req, res, next) {
