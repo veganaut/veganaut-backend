@@ -14,7 +14,7 @@ var expectedBonusDates = {
     'Tingelkringel': new Date()
 };
 
-h.describe('Location API methods', function() {
+h.describe('Location API methods as logged in user alice', function() {
     it('can create a new location', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'location')
@@ -126,3 +126,29 @@ h.describe('Location API methods', function() {
         });
     });
 });
+
+
+//h.describe('Location API methods anonymous user', { user: '' }, function() {
+//    it('can list locations', function() {
+//        h.runAsync(function(done) {
+//            h.request('GET', h.baseURL + 'location/list')
+//                .end(function(res) {
+//                    expect(res.statusCode).toBe(200);
+//                    expect(typeof res.body).toBe('object', 'returns an array of locations');
+//                    expect(res.body.length).toBe(3, 'has 3 locations');
+//
+//                    _.each(res.body, function(location) {
+//                        expect(typeof location.name).toBe('string', 'has a name');
+//                        expect(typeof location.lat).toBe('number', 'has lat');
+//                        expect(typeof location.lng).toBe('number', 'has lng');
+//                        expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
+//
+//                        expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
+//                        expect(typeof location.points).toBe('object', 'points is an object');
+//                    });
+//                    done();
+//                })
+//            ;
+//        });
+//    });
+//});

@@ -102,7 +102,7 @@ app.post('/mission', cors(), Session.restrict, Missions.submit);
 app.options('/location', cors());
 app.post('/location', cors(), Session.restrict, Location.location);
 app.options('/location/list', cors());
-app.get('/location/list', cors(), Session.restrict, Location.list);
+app.get('/location/list', cors(), Location.list);
 app.options('/location/:locationId', cors());
 app.get('/location/:locationId', cors(), Location.get);
 
