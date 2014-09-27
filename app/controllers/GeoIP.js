@@ -6,7 +6,7 @@
  * @param res
  * @param next
  */
-exports.get = function(req, res, next) {
+exports.get = function(req, res) {
     var geoip = require('geoip-lite');
 
     var ip = req.connection.remoteAddress;
