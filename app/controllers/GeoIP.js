@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var geoip = require('geoip-lite');
 
 /**
@@ -17,14 +18,7 @@ exports.get = function(req, res) {
         geo.lng = geo.ll[1];
     }
 
-    return res.send(geo);
+    return res.send(_.pick(geo, [
+        'country', 'region', 'lat','lng'
+    ]));
 };
-
-
-
-
-
-
-
-
-
