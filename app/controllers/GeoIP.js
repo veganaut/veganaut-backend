@@ -9,9 +9,10 @@ var geoip = require('geoip-lite');
  * @param res
  */
 exports.get = function(req, res) {
-    var ip = req.connection.remoteAddress;
+    // Get client ip. Trust proxies, shouldn't be a problem for this use case
+    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     var geo = geoip.lookup(ip) || {};
-    
+
     // Add separate fields for latitude and longitude
     if (typeof geo.ll === 'object') {
         geo.lat = geo.ll[0];
