@@ -1,6 +1,7 @@
 'use strict';
 /* global it, expect */
 
+var _ = require('lodash');
 var h = require('../helpers_');
 var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
 
@@ -45,12 +46,12 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     location: '000000000000000000000003',
                     type: 'visitBonus',
                     outcome: true,
-                    points: { team1: 100 }
+                    points: { team1: 50 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('visitBonus', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 100}, 'points of mission');
+                    expect(res.body.points).toEqual({team1: 50}, 'points of mission');
                     done();
                 })
             ;
@@ -125,6 +126,10 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('whatOptions', 'type of mission');
                     expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+                    _.each(res.body.outcome, function(o) {
+                        expect(typeof o.info).toBe('string', 'product info is a string');
+                        expect(typeof o.product).toBe('string', 'product (id) is an string');
+                    });
                     done();
                 })
             ;
@@ -200,12 +205,12 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     location: '000000000000000000000003',
                     type: 'giveFeedback',
                     outcome: 'Moar sauce',
-                    points: { team1: 20 }
+                    points: { team1: 10 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('giveFeedback', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
+                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
                     done();
                 })
             ;
@@ -219,12 +224,12 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     location: '000000000000000000000003',
                     type: 'offerQuality',
                     outcome: 4,
-                    points: { team1: 10 }
+                    points: { team1: 20 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('offerQuality', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
                     done();
                 })
             ;
@@ -238,12 +243,12 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     location: '000000000000000000000003',
                     type: 'effortValue',
                     outcome: 'no',
-                    points: { team1: 10 }
+                    points: { team1: 20 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('effortValue', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
                     done();
                 })
             ;
@@ -362,7 +367,7 @@ h.describe('Mission API methods and their influence on locations.', function() {
                     location: '000000000000000000000006', // Mission in dosha
                     type: 'visitBonus',
                     outcome: true,
-                    points: { team1: 100 }
+                    points: { team1: 50 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
