@@ -31,7 +31,7 @@ h.describe('A VisitBonusMission', function() {
                 expect(err).toBeNull();
                 expect(mission instanceof VisitBonusMission).toBe(true, 'found the created mission');
                 expect(mission.points).toBeDefined('points is defined');
-                expect(mission.points.team1).toBe(100, 'points for team1 are 100');
+                expect(mission.points.team1).toBe(50, 'points for team1 are 50');
                 expect(mission.person.toString()).toBe('000000000000000000000001', 'got correct person');
                 expect(mission.location.toString()).toBe('000000000000000000000006', 'got correct location');
                 done();
