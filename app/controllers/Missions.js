@@ -35,6 +35,8 @@ exports.submit = function(req, res, next) {
             });
         },
 
+        // TODO: before saving, make sure the user is allowed to complete it
+
         // Create Products if the mission was about products
         function(cb) {
             if (Missions.isProductMission(MissionModel) && _.isArray(outcome)) {
@@ -61,7 +63,6 @@ exports.submit = function(req, res, next) {
 
         // Create the new mission and save it
         function(cb) {
-            // TODO: before saving the visitBonus mission, make sure the user is allowed to complete it
             mission = new MissionModel(_.assign(
                 _.pick(req.body, ['location', 'points']),
                 {

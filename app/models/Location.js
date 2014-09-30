@@ -11,17 +11,9 @@ var constants = require('../utils/constants');
 var Average = require('../utils/Average');
 var Missions = require('./Missions');
 
-/**
- * Time in ms between two visitBonus missions: 3 weeks
- * TODO: This should go in a global config file somewhere
- * @type {number}
- */
-var TIME_BETWEEN_TWO_VISIT_BONUS =  3 * 7 * 24 * 60 * 60 * 1000;
-
-/**
+/*
  * Constants related to point computation
  */
-
 // How much points decrease [unit: factor per millisecond]. Currently 10% per day.
 var POINTS_DECREASE_FACTOR = Math.pow(0.90, 1.0 / (24*60*60*1000));
 
@@ -58,35 +50,41 @@ var locationSchema = new Schema({
 new Average('quality', locationSchema);
 new Average('effort', locationSchema);
 
+
 /**
- * Calculates when the given person is next allowed to do the visitBonus mission
- * at this location.
+ * Loads the last time the person completed a mission of every type.
  * @param {Person} person
  * @param {function} next
  */
-locationSchema.methods.computeNextVisitBonusDate = function(person, next) {
+locationSchema.methods.computeLastMissionDates = function(person, next) {
     var that = this;
-    Missions.VisitBonusMission.findOne({
-        location: this.id,
-        person: person.id
-    })
-        .sort({ completed: 'desc' })
-        .exec(function(err, mission) {
-            if (err) {
-                return next(err);
-            }
-            that._nextVisitBonusDate = that._nextVisitBonusDate || {};
-            if (!mission) {
-                // If there is no recent mission, one can get the bonus right now
-                that._nextVisitBonusDate[person.id] = new Date();
-            }
-            else {
-                // Some time after the last visitBonus, you get a new bonus
-                that._nextVisitBonusDate[person.id] = new Date(mission.completed.getTime() + TIME_BETWEEN_TWO_VISIT_BONUS);
-            }
-            return next();
+    // Load the most recent mission of every type
+    Missions.Mission.aggregate([
+        // TODO: add $match to only get missions at most as old as the longest mission cool down period
+        { $match: {
+            location: this._id,
+            person: person._id
+        }},
+        { $group: {
+            _id: '$__t',
+            date: { $max: '$completed' }
+        }}
+    ]).exec(function(err, results) {
+        if (err) {
+            return next(err);
         }
-    );
+
+        // Map the results as mission identifier to last date
+        var mapped = {};
+        _.each(results, function(result) {
+            mapped[Missions.getIdentifierForModelName(result._id)] = result.date;
+        });
+
+        // Save the dates
+        that._lastMissionDates = that._lastMissionDates || {};
+        that._lastMissionDates[person.id] = mapped;
+        return next();
+    });
 };
 
 /**
@@ -197,10 +195,10 @@ locationSchema.methods.toApiObject = function (person) {
 
     // Add nextVisitBonusDate if it's available
     if (typeof person !== 'undefined' &&
-        typeof this._nextVisitBonusDate !== 'undefined' &&
-        typeof this._nextVisitBonusDate[person.id] !== 'undefined')
+        typeof this._lastMissionDates !== 'undefined' &&
+        typeof this._lastMissionDates[person.id] !== 'undefined')
     {
-        apiObj.nextVisitBonusDate = this._nextVisitBonusDate[person.id];
+        apiObj.lastMissionDates = this._lastMissionDates[person.id];
     }
 
     return apiObj;

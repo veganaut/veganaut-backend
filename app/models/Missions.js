@@ -22,8 +22,8 @@ var Person = mongoose.model('Person');
  * @type {{}}
  */
 var POINTS_BY_TYPE = {
-    AddLocationMission:  10, // TODO; make sure one cannot submit this mission explicitly
-    VisitBonusMission:   50, // TODO: make sure visitBonus is not claimed when it wasn't available
+    AddLocationMission:  10, // TODO: make sure one cannot submit this mission explicitly
+    VisitBonusMission:   50,
     HasOptionsMission:   10,
     WantVeganMission:    10,
     WhatOptionsMission:  10,
@@ -33,6 +33,9 @@ var POINTS_BY_TYPE = {
     OfferQualityMission: 20,
     EffortValueMission:  20
 };
+
+// Object to hold all the missions that will be exported
+var allMissions = {};
 
 /**
  * Constructs a new mission schema
@@ -128,10 +131,7 @@ missionSchema.methods.getType = function() {
  * @returns {string}
  */
 missionSchema.methods.getIdentifier = function() {
-    var type = this.getType();
-    return type.charAt(0).toLowerCase() + type.substr(
-        1, type.length - 1 - 'Mission'.length
-    );
+    return allMissions.getIdentifierForModelName(this.getType());
 };
 
 /**
@@ -157,7 +157,7 @@ missionSchema.methods.toApiObject = function() {
 var Mission = mongoose.model('Mission', missionSchema);
 
 // Object to hold all the missions that will be exported
-var allMissions = {};
+allMissions.Mission = Mission;
 
 // And all the discriminators (= specific missions)
 allMissions.AddLocationMission = Mission.discriminator('AddLocationMission', new MissionSchema(
@@ -266,6 +266,18 @@ allMissions.getModelForIdentifier = function(identifier) {
         MissionModel = allMissions[name];
     }
     return MissionModel;
+};
+
+/**
+ * Returns the Identifier for the given mission model name (type)
+ *
+ * @param {string} modelName
+ * @returns {string}
+ */
+allMissions.getIdentifierForModelName = function(modelName) {
+    return modelName.charAt(0).toLowerCase() + modelName.substr(
+        1, modelName.length - 1 - 'Mission'.length
+    );
 };
 
 /**

@@ -31,7 +31,7 @@ exports.location = function(req, res, next) {
             // We take the location instance from the mission, because that one has
             // the correct points calculated
             location = mission.location;
-            location.computeNextVisitBonusDate(req.user, cb);
+            location.computeLastMissionDates(req.user, cb);
         }
     ], function(err) {
         if (err) {
@@ -50,7 +50,8 @@ exports.list = function(req, res, next) {
         async.each(locations,
             function(location, cb) {
                 if (typeof req.user !== 'undefined') {
-                    location.computeNextVisitBonusDate(req.user, cb);
+                    // TODO: we don't really have to do this here, only in the .get method
+                    location.computeLastMissionDates(req.user, cb);
                 }
                 else {
                     cb();
@@ -93,7 +94,7 @@ exports.get = function(req, res, next) {
         // Compute visit bonus date
         function(cb) {
             if (typeof req.user !== 'undefined') {
-                location.computeNextVisitBonusDate(req.user, cb);
+                location.computeLastMissionDates(req.user, cb);
             }
             else {
                 cb();

@@ -4,15 +4,6 @@
 var _ = require('lodash');
 var h = require('../helpers_');
 
-// TODO: this seems to complicated to be in a test
-// Helper values for the nextVisitBonusDate
-var afterHowLongAgain = 3 * 7 * 24 * 60 * 60 * 1000; // Three weeks
-var expectedBonusDates = {
-    '3dosha': new Date(),
-    'Reformhaus Ruprecht': new Date((new Date('2014-08-25')).getTime() + afterHowLongAgain),
-    'Kremoby Hollow': new Date((new Date('2014-08-10')).getTime() + afterHowLongAgain),
-    'Tingelkringel': new Date()
-};
 
 h.describe('Location API methods as logged in user alice', function() {
     it('can create a new location', function() {
@@ -35,7 +26,7 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.id).toBe('string', 'has an id');
                     expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
                     expect(location.availablePoints).toBeGreaterThan(0, 'has some availablePoints');
-                    expect(typeof location.nextVisitBonusDate).toMatch('string', 'nextVisitBonusDate is a string');
+                    expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
                     expect(location.team).toBe('team1', 'team is team1');
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(location.points.team1).toBeGreaterThan(0, 'has some team1 points');
@@ -60,16 +51,7 @@ h.describe('Location API methods as logged in user alice', function() {
                         expect(typeof location.lat).toBe('number', 'has lat');
                         expect(typeof location.lng).toBe('number', 'has lng');
                         expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
-                        expect(typeof location.nextVisitBonusDate).toMatch('string', 'nextVisitBonusDate is a string');
-                        var nextVisitBonusDate = new Date(location.nextVisitBonusDate);
-                        expect(isNaN(nextVisitBonusDate.getTime())).toBe(false,
-                            'nextVisitBonusDate can be parsed as a valid date'
-                        );
-                        expect(Math.abs(nextVisitBonusDate - expectedBonusDates[location.name])).toBeLessThan(60000,
-                            'correctly calculated nextVisitBonusDate for ' + location.name +
-                            '\nis:       ' + nextVisitBonusDate +
-                            '\nexpected: ' + expectedBonusDates[location.name]
-                        );
+                        expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
 
                         expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
                         expect(typeof location.points).toBe('object', 'points is an object');
@@ -82,7 +64,7 @@ h.describe('Location API methods as logged in user alice', function() {
         });
     });
 
-    it('can get an individual location', function() {
+    it('can get an individual location with products', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/000000000000000000000006')
                 .end(function(res) {
@@ -93,11 +75,8 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.name).toBe('3dosha', 'correct name');
                     expect(typeof location.type).toBe('string', 'got a type');
                     expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
-                    expect(typeof location.nextVisitBonusDate).toMatch('string', 'nextVisitBonusDate is a string');
-                    var nextVisitBonusDate = new Date(location.nextVisitBonusDate);
-                    expect(isNaN(nextVisitBonusDate.getTime())).toBe(false,
-                        'nextVisitBonusDate can be parsed as a valid date'
-                    );
+                    expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
+                    expect(Object.keys(location.lastMissionDates).length).toMatch(0, 'has no lastMissionDates set');
                     expect(typeof location.team).toBe('string', 'team is a string');
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
@@ -109,6 +88,44 @@ h.describe('Location API methods as logged in user alice', function() {
                         expect(typeof product.name).toBe('string', 'has a name');
                         expect(typeof product.id).toBe('string', 'has an id');
                     });
+
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('can get an individual location with correct lastMissionDates', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'location/000000000000000000000007')
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    var location = res.body;
+                    expect(typeof location).toBe('object', 'response is an object');
+                    expect(location.id).toBe('000000000000000000000007', 'correct location id');
+                    expect(location.name).toBe('Reformhaus Ruprecht', 'correct name');
+                    expect(typeof location.type).toBe('string', 'got a type');
+                    expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
+                    expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
+                    expect(Object.keys(location.lastMissionDates).length).toMatch(2, 'has  lastMissionDates set');
+                    expect(typeof location.lastMissionDates.visitBonus).toMatch('string', 'got a last visitBonus date');
+                    expect(typeof location.lastMissionDates.hasOptions).toMatch('string', 'got a last hasOptions date');
+
+                    var visitBonus = new Date(location.lastMissionDates.visitBonus);
+                    expect(isNaN(visitBonus.getTime())).toBe(false,
+                        'nextVisitBonusDate can be parsed as a valid date'
+                    );
+                    var hasOptions = new Date(location.lastMissionDates.hasOptions);
+                    expect(isNaN(hasOptions.getTime())).toBe(false,
+                        'nextVisitBonusDate can be parsed as a valid date'
+                    );
+
+                    expect(typeof location.team).toBe('string', 'team is a string');
+                    expect(typeof location.points).toBe('object', 'points is an object');
+                    expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
+                    expect(typeof location.products).toBe('object', 'got an array of products');
+                    expect(typeof location.quality).toBe('number', 'quality is an number');
+                    expect(location.products.length).toBe(0, 'got products array');
 
                     done();
                 })
@@ -144,7 +161,7 @@ h.describe('Location API methods anonymous user', { user: '' }, function() {
                     expect(typeof location.lat).toBe('number', 'has lat');
                     expect(typeof location.lng).toBe('number', 'has lng');
                     expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
-
+                    expect(typeof location.lastMissionDates).toMatch('undefined', 'no lastMissionDates set');
                     expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(typeof location.quality).toBe('number', 'quality is an number');
@@ -169,6 +186,7 @@ h.describe('Location API methods anonymous user', { user: '' }, function() {
                     expect(typeof location.team).toBe('string', 'team is a string');
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
+                    expect(typeof location.lastMissionDates).toMatch('undefined', 'no lastMissionDates set');
                     expect(typeof location.products).toBe('object', 'got an array of products');
                     expect(location.products.length).toBeGreaterThan(0, 'got some products');
 
