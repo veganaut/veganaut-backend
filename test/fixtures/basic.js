@@ -93,25 +93,19 @@ var getFixtures = function() {
         coordinates: [46.957113, 7.452544],
         name: '3dosha',
         type: 'gastronomy',
-        availablePoints: 500,
-        previousOwnerStart: '2014-08-20',
-        currentOwnerStart: '2014-08-20'
+        availablePoints: 500
     });
     fix.ruprecht = new Location({
         _id: '000000000000000000000007',
         coordinates: [46.946757, 7.441016],
         name: 'Reformhaus Ruprecht',
-        type: 'retail',
-        previousOwnerStart: '2014-08-24',
-        currentOwnerStart: '2014-08-25'
+        type: 'retail'
     });
     fix.hollow = new Location({
         _id: '000000000000000000000008',
         coordinates: [46.953880, 7.446611],
         name: 'Kremoby Hollow',
-        type: 'gastronomy',
-        previousOwnerStart: '2014-08-10',
-        currentOwnerStart: '2014-08-15'
+        type: 'gastronomy'
     });
 
     fix.doshaCurry = new Product({

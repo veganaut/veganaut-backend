@@ -17,15 +17,16 @@ require('./app/models/Missions.js');
 require('./app/models/Location.js');
 
 // Controllers
-var Person = require('./app/controllers/Person');
-var Graph = require('./app/controllers/Graph');
-var Session = require('./app/controllers/Session');
 var Activity = require('./app/controllers/Activity');
 var ActivityLink = require('./app/controllers/ActivityLink');
+var GeoIP = require('./app/controllers/GeoIP');
+var Graph = require('./app/controllers/Graph');
+var Location = require('./app/controllers/Location');
 var Match = require('./app/controllers/Match');
 var Missions = require('./app/controllers/Missions');
-var Location = require('./app/controllers/Location');
-var GeoIP = require('./app/controllers/GeoIP');
+var Person = require('./app/controllers/Person');
+var Score = require('./app/controllers/Score');
+var Session = require('./app/controllers/Session');
 
 var app = express();
 
@@ -106,6 +107,10 @@ app.options('/location/list', cors());
 app.get('/location/list', cors(), Location.list);
 app.options('/location/:locationId', cors());
 app.get('/location/:locationId', cors(), Location.get);
+
+// Score
+app.options('/score', cors());
+app.get('/score', cors(), Session.restrict, Score.stats);
 
 // GeoIP
 app.options('/geoip', cors());
