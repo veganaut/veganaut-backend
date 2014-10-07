@@ -26,6 +26,8 @@ var AVAILABLE_POINTS_INCREASE_RATE = 10.0 / (60*60*1000);
 // Numeric values for various effort ratings
 var EFFORT_VALUES = {
     yes: 1.0,
+    ratherYes: 0.5,
+    ratherNo: 0.5,
     no: -1.0
 };
 

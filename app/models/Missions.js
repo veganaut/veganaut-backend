@@ -246,7 +246,7 @@ allMissions.OfferQualityMission = Mission.discriminator('OfferQualityMission', n
 allMissions.EffortValueMission = Mission.discriminator('EffortValueMission', new MissionSchema(
     {
         type: String,
-        enum: ['no', 'yes']
+        enum: ['no', 'ratherNo', 'ratherYes', 'yes']
     }
 ));
 
