@@ -128,8 +128,6 @@ exports.stats = function(req, res, next) {
             return next(err);
         }
 
-        console.log(results[2].people.missions);
-
         res.send(_.merge.apply(_, results));
     });
 };

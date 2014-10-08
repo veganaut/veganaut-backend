@@ -92,8 +92,7 @@ var getFixtures = function() {
         _id: '000000000000000000000006',
         coordinates: [46.957113, 7.452544],
         name: '3dosha',
-        type: 'gastronomy',
-        availablePoints: 500
+        type: 'gastronomy'
     });
     fix.ruprecht = new Location({
         _id: '000000000000000000000007',

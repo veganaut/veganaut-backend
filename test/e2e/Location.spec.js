@@ -24,8 +24,6 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.lng).toBe(7, 'set correct lng');
                     expect(location.type).toBe('gastronomy', 'set correct type');
                     expect(typeof location.id).toBe('string', 'has an id');
-                    expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
-                    expect(location.availablePoints).toBeGreaterThan(0, 'has some availablePoints');
                     expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
                     expect(location.team).toBe('team1', 'team is team1');
                     expect(typeof location.points).toBe('object', 'points is an object');
@@ -74,7 +72,6 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.id).toBe('000000000000000000000006', 'correct location id');
                     expect(location.name).toBe('3dosha', 'correct name');
                     expect(typeof location.type).toBe('string', 'got a type');
-                    expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
                     expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
                     expect(Object.keys(location.lastMissionDates).length).toMatch(0, 'has no lastMissionDates set');
                     expect(typeof location.team).toBe('string', 'team is a string');
@@ -105,7 +102,6 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.id).toBe('000000000000000000000007', 'correct location id');
                     expect(location.name).toBe('Reformhaus Ruprecht', 'correct name');
                     expect(typeof location.type).toBe('string', 'got a type');
-                    expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
                     expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
                     expect(Object.keys(location.lastMissionDates).length).toMatch(2, 'has  lastMissionDates set');
                     expect(typeof location.lastMissionDates.visitBonus).toMatch('string', 'got a last visitBonus date');
@@ -182,7 +178,6 @@ h.describe('Location API methods anonymous user', { user: '' }, function() {
                     expect(location.id).toBe('000000000000000000000006', 'correct location id');
                     expect(location.name).toBe('3dosha', 'correct name');
                     expect(typeof location.type).toBe('string', 'got a type');
-                    expect(typeof location.availablePoints).toBe('number', 'availablePoints is a number');
                     expect(typeof location.team).toBe('string', 'team is a string');
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');

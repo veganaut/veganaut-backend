@@ -17,12 +17,6 @@ var Missions = require('./Missions');
 // How much points decrease [unit: factor per millisecond]. Currently 10% per day.
 var POINTS_DECREASE_FACTOR = Math.pow(0.90, 1.0 / (24*60*60*1000));
 
-// Maximal available points for a location
-var MAX_AVAILABLE_POINTS = 500;
-
-// How much available points increase over time. Currently 10 per hour.
-var AVAILABLE_POINTS_INCREASE_RATE = 10.0 / (60*60*1000);
-
 // Numeric values for various effort ratings
 var EFFORT_VALUES = {
     yes: 1.0,
@@ -43,8 +37,7 @@ var locationSchema = new Schema({
     // have the same number of points.
     team: String,
 
-    // Points that are available at this location, at time updatedAt.
-    availablePoints: {type: Number, default: AVAILABLE_POINTS_INCREASE_RATE * 24*60*60*1000},
+    // When the points were last calculated and stored
     updatedAt: {type: Date, default: Date.now}
 });
 
@@ -115,34 +108,18 @@ locationSchema.methods.computeCurrentPoints = function() {
 };
 
 /**
- * Computes the available points for this location as of now.
- */
-locationSchema.methods.computeCurrentAvailablePoints = function() {
-    var elapsed = Date.now() - this.updatedAt.getTime();
-
-    // Available points increase linearly.
-    var available = this.availablePoints + elapsed * AVAILABLE_POINTS_INCREASE_RATE;
-    available = Math.min(available, MAX_AVAILABLE_POINTS);
-    available = Math.round(available);
-
-    return available;
-};
-
-/**
  * Callback to notify the location that a new mission has been completed. The
  * location will then update its score.
  */
 locationSchema.methods.notifyMissionCompleted = function(mission, next) {
     // Update the score of the location
     var points = this.computeCurrentPoints();
-    var availablePoints = this.computeCurrentAvailablePoints();
     var team = this.team;
     var teamPoints = points[team] || -1;
 
-    // Add up all the new points and decrease the availablePoints
+    // Add up all the new points
     _.forOwn(mission.points.toObject(), function(p, t) {
-        points[t] += Math.min(p, availablePoints);
-        availablePoints -= Math.min(p, availablePoints);
+        points[t] += p;
     });
 
     // Check if a new team has the most points
@@ -167,7 +144,6 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
     // Save the new state
     this.points = points;
     this.markModified('points');
-    this.availablePoints = availablePoints;
     this.team = team;
     this.updatedAt = Date.now();
     this.save(next);
@@ -180,7 +156,7 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
  * TODO: this should be toJSON instead, it's called automatically (although we have an argument here...)
  */
 locationSchema.methods.toApiObject = function (person) {
-    var apiObj = _.pick(this, ['name', 'type', 'id', 'team', 'availablePoints']);
+    var apiObj = _.pick(this, ['name', 'type', 'id', 'team']);
 
     // Add lat/lng in the format the frontend expects
     apiObj.lat = this.coordinates[0];
@@ -188,9 +164,6 @@ locationSchema.methods.toApiObject = function (person) {
 
     // Compute points as of now
     apiObj.points = this.computeCurrentPoints();
-
-    // Compute availablePoints as of now
-    apiObj.availablePoints = this.computeCurrentAvailablePoints();
 
     // Add the quality
     apiObj.quality = this.quality.average;
