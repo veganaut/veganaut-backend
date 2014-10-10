@@ -76,7 +76,9 @@ exports.list = function(req, res, next) {
  */
 exports.get = function(req, res, next) {
     var locationId = req.params.locationId;
-    var location, products = [];
+    var location;
+    var products = [];
+    var ratings = {};
 
     async.series([
         // Find the location
@@ -109,13 +111,44 @@ exports.get = function(req, res, next) {
                 }
                 cb(err);
             });
+        },
+
+        // Get product ratings
+        function(cb) {
+            Missions.RateOptionsMission.find({location: location.id}, 'outcome', function(err, missions) {
+                if (err) {
+                    return cb(err);
+                }
+                _.each(missions, function(mission) {
+                    _.each(mission.outcome, function(rate) {
+                        ratings[rate.product] = ratings[rate.product] || {
+                            total: 0,
+                            num: 0
+                        };
+                        ratings[rate.product].total += rate.info;
+                        ratings[rate.product].num += 1;
+                    });
+                });
+                cb();
+            });
         }
     ], function(err) {
         if (err) {
             return next(err);
         }
         var returnObj = location.toApiObject(req.user);
-        returnObj.products = products;
+
+        // Add the products and rating
+        returnObj.products = [];
+        _.each(products, function(p) {
+            var productJson = p.toJSON();
+            if (ratings[p.id]) {
+                var rating = ratings[p.id];
+                productJson.rating = (rating.total / rating.num);
+            }
+            returnObj.products.push(productJson);
+        });
+
         return res.send(returnObj);
     });
 };

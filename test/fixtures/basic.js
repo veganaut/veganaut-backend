@@ -125,11 +125,20 @@ var getFixtures = function() {
         completed: '2014-08-20',
         outcome: 'yes'
     });
-    fix.bobMission2Dosha = new Missions.GiveFeedbackMission({
+    fix.bobMission2Dosha = new Missions.RateOptionsMission({
         location: fix.dosha.id,
         person: fix.bob.id,
         completed: '2014-08-20',
-        outcome: 'nice'
+        outcome: [
+            {
+                product: fix.doshaCurry.id,
+                info: 4
+            },
+            {
+                product: fix.doshaSamosa.id,
+                info: 3
+            }
+        ]
     });
 
     fix.bobMission1Ruprecht = new Missions.HasOptionsMission({

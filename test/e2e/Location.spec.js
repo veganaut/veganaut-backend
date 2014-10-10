@@ -188,6 +188,7 @@ h.describe('Location API methods anonymous user', { user: '' }, function() {
                     _.each(location.products, function(product) {
                         expect(typeof product.name).toBe('string', 'has a name');
                         expect(typeof product.id).toBe('string', 'has an id');
+                        expect(typeof product.rating).toBe('number', 'has a rating');
                     });
 
                     done();
