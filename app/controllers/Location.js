@@ -115,6 +115,7 @@ exports.get = function(req, res, next) {
 
         // Get product ratings
         function(cb) {
+            // TODO: the average should be calculated on write, not on read
             Missions.RateOptionsMission.find({location: location.id}, 'outcome', function(err, missions) {
                 if (err) {
                     return cb(err);
@@ -144,7 +145,10 @@ exports.get = function(req, res, next) {
             var productJson = p.toJSON();
             if (ratings[p.id]) {
                 var rating = ratings[p.id];
-                productJson.rating = (rating.total / rating.num);
+                productJson.rating = {
+                    average: rating.total / rating.num,
+                    numRatings: rating.num
+                };
             }
             returnObj.products.push(productJson);
         });
