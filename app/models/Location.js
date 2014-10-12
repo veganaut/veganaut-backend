@@ -166,7 +166,10 @@ locationSchema.methods.toApiObject = function (person) {
     apiObj.points = this.computeCurrentPoints();
 
     // Add the quality
-    apiObj.quality = this.quality.average;
+    apiObj.quality = {
+        average: this.quality.average,
+        numRatings: this.quality.count
+    };
 
     // Add nextVisitBonusDate if it's available
     if (typeof person !== 'undefined' &&

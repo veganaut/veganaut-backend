@@ -28,7 +28,9 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.team).toBe('team1', 'team is team1');
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(location.points.team1).toBeGreaterThan(0, 'has some team1 points');
-                    expect(location.quality).toBe(0, 'quality is at 0 by default');
+                    expect(typeof location.quality).toBe('object', 'has a quality');
+                    expect(location.quality.average).toBe(0, 'quality is at 0 by default');
+                    expect(location.quality.numRatings).toBe(0, 'quality numRatings is at 0 by default');
 
                     done();
                 })
@@ -53,8 +55,9 @@ h.describe('Location API methods as logged in user alice', function() {
 
                         expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
                         expect(typeof location.points).toBe('object', 'points is an object');
-                        // TODO: should we test the exact points?
-                        expect(typeof location.quality).toBe('number', 'quality is an number');
+                        expect(typeof location.quality).toBe('object', 'has a quality');
+                        expect(typeof location.quality.average).toBe('number', 'has a quality average');
+                        expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
                     });
                     done();
                 })
@@ -78,7 +81,9 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
                     expect(typeof location.products).toBe('object', 'got an array of products');
-                    expect(typeof location.quality).toBe('number', 'quality is an number');
+                    expect(typeof location.quality).toBe('object', 'has a quality');
+                    expect(typeof location.quality.average).toBe('number', 'has a quality average');
+                    expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
                     expect(location.products.length).toBeGreaterThan(0, 'got some products');
 
                     _.each(location.products, function(product) {
@@ -120,7 +125,9 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
                     expect(typeof location.products).toBe('object', 'got an array of products');
-                    expect(typeof location.quality).toBe('number', 'quality is an number');
+                    expect(typeof location.quality).toBe('object', 'has a quality');
+                    expect(typeof location.quality.average).toBe('number', 'has a quality average');
+                    expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
                     expect(location.products.length).toBe(0, 'got products array');
 
                     done();
@@ -160,7 +167,9 @@ h.describe('Location API methods anonymous user', { user: '' }, function() {
                     expect(typeof location.lastMissionDates).toMatch('undefined', 'no lastMissionDates set');
                     expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
                     expect(typeof location.points).toBe('object', 'points is an object');
-                    expect(typeof location.quality).toBe('number', 'quality is an number');
+                    expect(typeof location.quality).toBe('object', 'has a quality');
+                    expect(typeof location.quality.average).toBe('number', 'has a quality average');
+                    expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
                 });
                 done();
             })
@@ -182,6 +191,9 @@ h.describe('Location API methods anonymous user', { user: '' }, function() {
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
                     expect(typeof location.lastMissionDates).toMatch('undefined', 'no lastMissionDates set');
+                    expect(typeof location.quality).toBe('object', 'has a quality');
+                    expect(typeof location.quality.average).toBe('number', 'has a quality average');
+                    expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
                     expect(typeof location.products).toBe('object', 'got an array of products');
                     expect(location.products.length).toBeGreaterThan(0, 'got some products');
 
