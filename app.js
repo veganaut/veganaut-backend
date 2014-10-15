@@ -59,6 +59,7 @@ app.get('/', function(req, res) {
     res.send({ status: 'OK' });
 });
 
+// TODO: add e2e tests that unauthenticated users can't access methods they shouldn't
 
 // Graph
 app.options('/graph/me', cors());
@@ -107,6 +108,7 @@ app.options('/location/list', cors());
 app.get('/location/list', cors(), Location.list);
 app.options('/location/:locationId', cors());
 app.get('/location/:locationId', cors(), Location.get);
+app.put('/location/:locationId', cors(), Session.restrict, Location.update);
 
 // Score
 app.options('/score', cors());

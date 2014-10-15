@@ -28,6 +28,8 @@ var EFFORT_VALUES = {
 var locationSchema = new Schema({
     coordinates: {type: [Number], index: '2d'},
     name: String,
+    description: String,
+    link: String,
     type: {type: String, enum: ['gastronomy', 'retail']},
 
     // Maps team names to their points at time updatedAt.
@@ -156,7 +158,7 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
  * TODO: this should be toJSON instead, it's called automatically (although we have an argument here...)
  */
 locationSchema.methods.toApiObject = function (person) {
-    var apiObj = _.pick(this, ['name', 'type', 'id', 'team']);
+    var apiObj = _.pick(this, ['name', 'description', 'link', 'type', 'id', 'team']);
 
     // Add lat/lng in the format the frontend expects
     apiObj.lat = this.coordinates[0];

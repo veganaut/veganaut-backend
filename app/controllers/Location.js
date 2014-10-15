@@ -9,9 +9,12 @@ var Missions = require('../models/Missions');
 var Product = require('../models/Product');
 
 exports.location = function(req, res, next) {
-    var location = new Location(_.assign(_.pick(req.body, 'name', 'type'), {
-        coordinates: [req.body.lat, req.body.lng]
-    }));
+    var location = new Location(_.assign(
+        _.pick(req.body, 'name', 'description', 'link', 'type'),
+        {
+            coordinates: [req.body.lat, req.body.lng]
+        }
+    ));
 
     var mission;
     async.series([
@@ -63,8 +66,96 @@ exports.list = function(req, res, next) {
                     return l.toApiObject(req.user);
                 });
                 return res.send(locations);
-            });
+            }
+        );
     });
+};
+
+
+// TODO: this is so ugly I'm gonna die. How does one handle this async callback mess while staying sane?
+
+var findLocation = function(obj, cb) {
+    var locationId = obj.req.params.locationId;
+    Location.findById(locationId, function(err, location) {
+        if (!err && !location) {
+            obj.res.status(404);
+            err = new Error('Could not find location with id: ' + locationId);
+        }
+
+        obj.location = location;
+        cb(err, obj);
+    });
+};
+
+var updateLocation = function(obj, cb) {
+    _.merge(obj.location, _.pick(obj.req.body, ['name', 'description', 'link']));
+    obj.location.save(function(err) {
+        cb(err, obj);
+    });
+};
+
+var computeVisitBonusDate = function(obj, cb) {
+    if (typeof obj.req.user !== 'undefined') {
+        obj.location.computeLastMissionDates(obj.req.user, function(err) {
+            cb(err, obj);
+        });
+    }
+    else {
+        cb(null, obj);
+    }
+};
+
+var findProducts = function(obj, cb) {
+    obj.products = [];
+    Product.find({location: obj.location.id}, function(err, p) {
+        if (p) {
+            obj.products = p;
+        }
+        cb(err, obj);
+    });
+};
+
+var getProductRatings = function(obj, cb) {
+    // TODO: the average should be calculated on write, not on read
+    obj.ratings = {};
+    Missions.RateOptionsMission.find({location: obj.location.id}, 'outcome', function(err, missions) {
+        if (!err) {
+            _.each(missions, function(mission) {
+                _.each(mission.outcome, function(rate) {
+                    obj.ratings[rate.product] = obj.ratings[rate.product] || {
+                        total: 0,
+                        num: 0
+                    };
+                    obj.ratings[rate.product].total += rate.info;
+                    obj.ratings[rate.product].num += 1;
+                });
+            });
+        }
+        cb(err, obj);
+    });
+};
+
+var handleSingleLocationResult = function(err, obj) {
+    if (err) {
+        return obj.next(err);
+    }
+    var returnObj = obj.location.toApiObject(obj.req.user);
+
+    // Add the products and rating
+    returnObj.products = [];
+    _.each(obj.products, function(p) {
+        var productJson = p.toJSON();
+        if (obj.ratings[p.id]) {
+            var rating = obj.ratings[p.id];
+            productJson.rating = {
+                average: rating.total / rating.num,
+                numRatings: rating.num
+            };
+        }
+        returnObj.products.push(productJson);
+    });
+
+    return obj.res.send(returnObj);
 };
 
 /**
@@ -75,84 +166,44 @@ exports.list = function(req, res, next) {
  * @param next
  */
 exports.get = function(req, res, next) {
-    var locationId = req.params.locationId;
-    var location;
-    var products = [];
-    var ratings = {};
+    // This is called 'obj' because it's just nothing really. Need to find a better
+    // way to compose these async methods. TODO: Probably just need to switch to promises
+    var obj = {
+        req: req,
+        res: res,
+        next: next
+    };
 
-    async.series([
-        // Find the location
+    async.waterfall([
         function(cb) {
-            Location.findById(locationId, function(err, l) {
-                if (!err && !l) {
-                    res.status(404);
-                    err = new Error('Could not find location with id: ' + locationId);
-                }
-                location = l;
-                cb(err);
-            });
+            findLocation(obj, cb);
         },
+        computeVisitBonusDate,
+        findProducts,
+        getProductRatings
+    ], handleSingleLocationResult);
+};
 
-        // Compute visit bonus date
+/**
+ * Updates the location with id req.params.locationId
+ * @param req
+ * @param res
+ * @param next
+ */
+exports.update = function(req, res, next) {
+    var obj = {
+        req: req,
+        res: res,
+        next: next
+    };
+
+    async.waterfall([
         function(cb) {
-            if (typeof req.user !== 'undefined') {
-                location.computeLastMissionDates(req.user, cb);
-            }
-            else {
-                cb();
-            }
+            findLocation(obj, cb);
         },
-
-        // Find all products
-        function(cb) {
-            Product.find({location: location.id}, function(err, p) {
-                if (p) {
-                    products = p;
-                }
-                cb(err);
-            });
-        },
-
-        // Get product ratings
-        function(cb) {
-            // TODO: the average should be calculated on write, not on read
-            Missions.RateOptionsMission.find({location: location.id}, 'outcome', function(err, missions) {
-                if (err) {
-                    return cb(err);
-                }
-                _.each(missions, function(mission) {
-                    _.each(mission.outcome, function(rate) {
-                        ratings[rate.product] = ratings[rate.product] || {
-                            total: 0,
-                            num: 0
-                        };
-                        ratings[rate.product].total += rate.info;
-                        ratings[rate.product].num += 1;
-                    });
-                });
-                cb();
-            });
-        }
-    ], function(err) {
-        if (err) {
-            return next(err);
-        }
-        var returnObj = location.toApiObject(req.user);
-
-        // Add the products and rating
-        returnObj.products = [];
-        _.each(products, function(p) {
-            var productJson = p.toJSON();
-            if (ratings[p.id]) {
-                var rating = ratings[p.id];
-                productJson.rating = {
-                    average: rating.total / rating.num,
-                    numRatings: rating.num
-                };
-            }
-            returnObj.products.push(productJson);
-        });
-
-        return res.send(returnObj);
-    });
+        updateLocation,
+        computeVisitBonusDate,
+        findProducts,
+        getProductRatings
+    ], handleSingleLocationResult);
 };

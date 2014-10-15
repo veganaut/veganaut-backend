@@ -11,6 +11,8 @@ h.describe('Location API methods as logged in user alice', function() {
             h.request('POST', h.baseURL + 'location')
                 .send({
                     name: 'Tingelkringel',
+                    description: 'Bagels',
+                    link: 'http://example.com',
                     lat: 46,
                     lng: 7,
                     type: 'gastronomy'
@@ -20,6 +22,8 @@ h.describe('Location API methods as logged in user alice', function() {
 
                     var location = res.body;
                     expect(location.name).toBe('Tingelkringel', 'set correct name');
+                    expect(location.description).toBe('Bagels', 'set correct description');
+                    expect(location.link).toBe('http://example.com', 'set correct link');
                     expect(location.lat).toBe(46, 'set correct lat');
                     expect(location.lng).toBe(7, 'set correct lng');
                     expect(location.type).toBe('gastronomy', 'set correct type');
@@ -142,6 +146,28 @@ h.describe('Location API methods as logged in user alice', function() {
                 .end(function(res) {
                     expect(res.statusCode).toBe(404);
                     expect(typeof res.body.error).toBe('string', 'got an error message');
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('can update certain properties of an existing location', function() {
+        h.runAsync(function(done) {
+            h.request('PUT', h.baseURL + 'location/000000000000000000000006')
+                .send({
+                    name: '3-Dosha',
+                    description: 'Ayurvedic Cuisine',
+                    link: 'http://example.ch'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    var location = res.body;
+                    expect(typeof location).toBe('object', 'response is an object');
+                    expect(location.id).toBe('000000000000000000000006', 'correct location id');
+                    expect(location.name).toBe('3-Dosha', 'correct name');
+                    expect(location.description).toBe('Ayurvedic Cuisine', 'correct description');
+                    expect(location.link).toBe('http://example.ch', 'correct link');
                     done();
                 })
             ;
