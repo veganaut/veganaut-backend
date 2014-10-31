@@ -9,7 +9,7 @@ exports.list = function(req, res) {
         .find()
         .exec(function(err, activities) {
             if (err) {
-                return res.send(500, {error: err});
+                return res.status(500).send({error: err});
             }
 
             // Set all the properties we want to return

@@ -9,10 +9,10 @@
 
 var _ = require('lodash');
 
-/** An express server */
-exports.server = require('../app');
-exports.port = 3001;
-exports.baseURL = 'http://localhost:' + exports.port + '/';
+// Get the app
+var app = require('../app');
+var port = 3001;
+exports.baseURL = 'http://localhost:' + port + '/';
 
 // Export beforeAll and afterAll
 require('jasmine-before-all');
@@ -124,11 +124,12 @@ exports.describe = function(what, options, how) {
 
     var wrapper = function() {
         // Start a server and initialize fixtures
+        var server;
         beforeAll(function () {
             runAsync(function(done) {
                 mongoose.connect('mongodb://localhost/veganaut', function(err) {
                     if (err) { console.log(err); }
-                    exports.server.listen(exports.port, function(err) {
+                    server = app.listen(port, function(err) {
                         if (err) { console.log(err); }
                         fixtures.setupFixtures(function(err) {
                             if (err) { console.log(err); }
@@ -156,7 +157,7 @@ exports.describe = function(what, options, how) {
         // Tear down the server
         afterAll(function() {
             runAsync(function(done) {
-                exports.server.close(function(err) {
+                server.close(function(err) {
                     if (err) { console.log(err); }
                     mongoose.disconnect(function(err) {
                         if (err) { console.log(err); }

@@ -204,7 +204,7 @@ exports.link = function(req, res, next) {
             return next(err);
         }
         else {
-            return res.send(201, _.pick(activityLink, 'referenceCode'));
+            return res.status(201).send(_.pick(activityLink, 'referenceCode'));
         }
     });
 };

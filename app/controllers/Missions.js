@@ -96,6 +96,6 @@ exports.submit = function(req, res, next) {
         var response = _.assign(mission.toApiObject(), {
             causedOwnerChange: causedOwnerChange
         });
-        return res.send(201, response);
+        return res.status(201).send(response);
     });
 };

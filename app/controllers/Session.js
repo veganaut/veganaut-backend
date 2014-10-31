@@ -15,7 +15,7 @@ var Person = mongoose.model('Person');
 var sessionStore = {};
 
 exports.createSessionFor = function(user) {
-    var sessionId = uuid.v4();
+    var sessionId = uuid.v4(); // TODO: this is not secure: use password-generator
     sessionStore[sessionId] = user;
     return sessionId;
 };
@@ -77,7 +77,7 @@ exports.addUserToRequest = function(req, res, next) {
  */
 exports.restrict = function(req, res, next) {
     if (typeof req.user === 'undefined') {
-        return res.send(401,{ status: 'Error',
+        return res.status(401).send({ status: 'Error',
             message: 'Access denied!'
         });
     }
@@ -94,7 +94,7 @@ exports.create = function (req, res) {
     // Email or password missing:
     if (!req.body.email || !req.body.password) {
         // no user or password given
-        res.send(400,{ status: 'Bad Request',
+        res.status(400).send({ status: 'Bad Request',
             message: 'Email && Password are required'
         });
         return;
@@ -109,7 +109,7 @@ exports.create = function (req, res) {
             }
             else {
                 // TODO: should probably not always send the error message to the user
-                return res.send(403, { error: err.message });
+                return res.status(403).send({ error: err.message });
             }
         });
     }
