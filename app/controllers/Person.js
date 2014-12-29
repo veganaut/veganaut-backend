@@ -104,3 +104,31 @@ exports.updateMe = function (req, res, next) {
         return exports.getMe(req, res, next);
     });
 };
+exports.isValidToken = function(req, res, next) {
+
+    Person.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+        if (!user) {
+            res.status(404);
+            return next(new Error('Invalid token'));
+        }  return res.status(200).send();
+
+    });
+
+
+};
+exports.resetPassword = function(req, res, next) {
+    var personData = _.pick(req.body, 'token', 'password');
+    Person.findOne({ resetPasswordToken: personData.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+        if (!user) {
+            res.status(404);
+            return next(new Error('Invalid token!'));
+        }
+
+        user.password = personData.password;
+
+        user.save(function(err) {
+            next(err);
+        });
+        return res.status(200).send();
+    });
+};

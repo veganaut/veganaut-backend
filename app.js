@@ -24,6 +24,7 @@ var Missions = require('./app/controllers/Missions');
 var Person = require('./app/controllers/Person');
 var Score = require('./app/controllers/Score');
 var Session = require('./app/controllers/Session');
+var PasswordResetEmail = require('./app/controllers/PasswordResetEmail');
 
 // Create the app
 var app = express();
@@ -82,8 +83,12 @@ app.get('/activityLink/mine/open', cors(), Session.restrict, ActivityLink.openLi
 app.options('/person', cors());
 app.post('/person', cors(), Person.register);
 app.options('/person/me', cors());
+app.options('person/validToken/:token', cors());
+app.options('/reset', cors());
 app.get('/person/me', cors(), Session.restrict, Person.getMe);
 app.put('/person/me', cors(), Session.restrict, Person.updateMe);
+app.get('/person/validToken/:token', cors(), Person.isValidToken);
+app.post('/reset', cors(), Person.resetPassword);
 
 // Match
 app.options('/match', cors());
@@ -109,6 +114,9 @@ app.get('/score', cors(), Session.restrict, Score.stats);
 // GeoIP
 app.options('/geoip', cors());
 app.get('/geoip', cors(), GeoIP.get);
+
+app.options('/passwordresetemail', cors());
+app.post('/passwordresetemail', cors(), PasswordResetEmail.send);
 
 // Handle errors and if no one responded to the request
 app.use(function(err, req, res, next) {
