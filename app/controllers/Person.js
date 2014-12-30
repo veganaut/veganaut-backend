@@ -26,7 +26,9 @@ exports.register = function(req, res, next) {
     var getOrCreatePerson = function(cb) {
         if (typeof personData.id === 'string') {
             Person.findById(personData.id, function(err, existingPerson) {
-                if (err) { return cb(err); }
+                if (err) {
+                    return cb(err);
+                }
 
                 // Check if the given id points to an existing person
                 if (!existingPerson) {
@@ -46,7 +48,8 @@ exports.register = function(req, res, next) {
                 person = existingPerson;
                 return cb();
             });
-        } else {
+        }
+        else {
             // No person id given, create completely new user
             person = new Person();
             return cb();
@@ -66,7 +69,9 @@ exports.register = function(req, res, next) {
     async.series([
         getOrCreatePerson,
         updatePerson,
-        function (cb) {person.populateActivityLinks(cb);}
+        function(cb) {
+            person.populateActivityLinks(cb);
+        }
     ], function(err) {
         if (err) {
             // Send a 400 status if the email address is already used
@@ -80,8 +85,8 @@ exports.register = function(req, res, next) {
     });
 };
 
-exports.getMe = function (req, res, next) {
-    req.user.populateActivityLinks(function (err) {
+exports.getMe = function(req, res, next) {
+    req.user.populateActivityLinks(function(err) {
         if (err) {
             return next(err);
         }
@@ -89,7 +94,7 @@ exports.getMe = function (req, res, next) {
     });
 };
 
-exports.updateMe = function (req, res, next) {
+exports.updateMe = function(req, res, next) {
     // Get the values that can be updated and set them on the user
     var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname');
     _.assign(req.user, personData);
@@ -104,21 +109,26 @@ exports.updateMe = function (req, res, next) {
         return exports.getMe(req, res, next);
     });
 };
-exports.isValidToken = function(req, res, next) {
 
-    Person.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+exports.isValidToken = function(req, res, next) {
+    Person.findOne({
+        resetPasswordToken: req.params.token,
+        resetPasswordExpires: {$gt: Date.now()}
+    }, function(err, user) {
         if (!user) {
             res.status(404);
             return next(new Error('Invalid token'));
-        }  return res.status(200).send();
-
+        }
+        return res.status(200).send({});
     });
-
-
 };
+
 exports.resetPassword = function(req, res, next) {
     var personData = _.pick(req.body, 'token', 'password');
-    Person.findOne({ resetPasswordToken: personData.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+    Person.findOne({
+        resetPasswordToken: personData.token,
+        resetPasswordExpires: {$gt: Date.now()}
+    }, function(err, user) {
         if (!user) {
             res.status(404);
             return next(new Error('Invalid token!'));
@@ -127,8 +137,10 @@ exports.resetPassword = function(req, res, next) {
         user.password = personData.password;
 
         user.save(function(err) {
-            next(err);
+            if (err) {
+                return next(err);
+            }
+            return res.status(200).send({});
         });
-        return res.status(200).send();
     });
 };

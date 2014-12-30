@@ -4,6 +4,7 @@ var async = require('async');
 var crypto = require('crypto');
 var mongoose = require('mongoose');
 var nodemailer = require('nodemailer');
+var config = require('../config.js');
 
 var Person = mongoose.model('Person');
 
@@ -14,6 +15,13 @@ var Person = mongoose.model('Person');
  * @type {number}
  */
 var TOKEN_VALIDITY_PERIOD = 24 * 360000;
+
+/**
+ * Frontend URL to which to append the reset token to
+ * get the full reset URL
+ * @type {string}
+ */
+var RESET_BASE_URL = config.frontendUrl + '/reset/';
 
 exports.send = function (req, res, next) {
 
@@ -40,20 +48,18 @@ exports.send = function (req, res, next) {
             });
         },
         function (token, user, done) {
-            //TODO: not contacting MX servers directly, likely to be seen as spam by the mail servers...
-            var smtpTransport = nodemailer.createTransport();
-            //TODO: the way to get the frontend URL is ugly
+            var transporter = nodemailer.createTransport(config.email.transporter);
+            // TODO: how to do translations in the backend?
             var mailOptions = {
                 to: user.email,
-                from: 'noreply@veganaut.net',
+                from: config.email.from,
                 subject: 'veganaut.net Password Reset',
                 text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
                 'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
-                'http://' + req.headers.host.replace('3000', '8000') + '/reset/' + token + '\n\n' +
+                RESET_BASE_URL + token + '\n\n' +
                 'If you did not request this, please ignore this email and your password will remain unchanged.\n'
             };
-            smtpTransport.sendMail(mailOptions, function (err) {
-                //req.flash('info', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
+            transporter.sendMail(mailOptions, function (err) {
                 done(err, 'done');
             });
         }
