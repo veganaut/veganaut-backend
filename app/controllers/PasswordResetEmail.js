@@ -9,6 +9,12 @@ var Person = mongoose.model('Person');
 
 //see http://sahatyalkabov.com/how-to-implement-password-reset-in-nodejs/
 
+/**
+ * Period for which a reset token is valid: 24 hours
+ * @type {number}
+ */
+var TOKEN_VALIDITY_PERIOD = 24 * 360000;
+
 exports.send = function (req, res, next) {
 
     async.waterfall([
@@ -26,7 +32,7 @@ exports.send = function (req, res, next) {
                 }
 
                 user.resetPasswordToken = token;
-                user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+                user.resetPasswordExpires = Date.now() + TOKEN_VALIDITY_PERIOD;
 
                 user.save(function (err) {
                     done(err, token, user);
