@@ -158,7 +158,7 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
  * TODO: this should be toJSON instead, it's called automatically (although we have an argument here...)
  */
 locationSchema.methods.toApiObject = function (person) {
-    var apiObj = _.pick(this, ['name', 'description', 'link', 'type', 'id', 'team']);
+    var apiObj = _.pick(this, ['name', 'description', 'link', 'type', 'id', 'team', 'updatedAt']);
 
     // Add lat/lng in the format the frontend expects
     apiObj.lat = this.coordinates[0];

@@ -57,6 +57,12 @@ h.describe('Location API methods as logged in user alice', function() {
                         expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
                         expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
 
+                        expect(typeof location.updatedAt).toMatch('string', 'updatedAt is a string');
+                        var updatedAt = new Date(location.updatedAt);
+                        expect(isNaN(updatedAt.getTime())).toBe(false,
+                            'updatedAt can be parsed as a valid date'
+                        );
+
                         expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
                         expect(typeof location.points).toBe('object', 'points is an object');
                         expect(typeof location.quality).toBe('object', 'has a quality');
@@ -81,6 +87,11 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.type).toBe('string', 'got a type');
                     expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
                     expect(Object.keys(location.lastMissionDates).length).toMatch(0, 'has no lastMissionDates set');
+                    expect(typeof location.updatedAt).toMatch('string', 'updatedAt is a string');
+                    var updatedAt = new Date(location.updatedAt);
+                    expect(isNaN(updatedAt.getTime())).toBe(false,
+                        'updatedAt can be parsed as a valid date'
+                    );
                     expect(typeof location.team).toBe('string', 'team is a string');
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
