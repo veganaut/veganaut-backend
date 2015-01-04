@@ -133,6 +133,7 @@ exports.isValidToken = function (req, res, next) {
 };
 
 exports.resetPassword = function (req, res, next) {
+
     var personData = _.pick(req.body, 'token', 'password');
 
     var shasum = crypto.createHash('sha1');
@@ -151,8 +152,8 @@ exports.resetPassword = function (req, res, next) {
         user.password = personData.password;
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
-        user.save(function (err) {
-            next(err);
+        user.save(function () {
+            return res.status(200).send();
         });
     });
 };
