@@ -49,7 +49,8 @@ exports.register = function (req, res, next) {
                 person = existingPerson;
                 return cb();
             });
-        } else {
+        }
+        else {
             // No person id given, create completely new user
             person = new Person();
             return cb();
@@ -85,8 +86,8 @@ exports.register = function (req, res, next) {
     });
 };
 
-exports.getMe = function (req, res, next) {
-    req.user.populateActivityLinks(function (err) {
+exports.getMe = function(req, res, next) {
+    req.user.populateActivityLinks(function(err) {
         if (err) {
             return next(err);
         }
@@ -94,7 +95,7 @@ exports.getMe = function (req, res, next) {
     });
 };
 
-exports.updateMe = function (req, res, next) {
+exports.updateMe = function(req, res, next) {
     // Get the values that can be updated and set them on the user
     var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname');
     _.assign(req.user, personData);
@@ -109,6 +110,7 @@ exports.updateMe = function (req, res, next) {
         return exports.getMe(req, res, next);
     });
 };
+
 exports.isValidToken = function (req, res, next) {
 
     var shasum = crypto.createHash('sha1');
@@ -119,6 +121,7 @@ exports.isValidToken = function (req, res, next) {
         resetPasswordToken: hash,
         resetPasswordExpires: {$gt: Date.now()}
     }, function (err, user) {
+
         if (!user) {
             res.status(404);
             return next(new Error('Invalid token'));
@@ -151,8 +154,5 @@ exports.resetPassword = function (req, res, next) {
         user.save(function (err) {
             next(err);
         });
-        return res.status(200).send();
     });
-
-
 };

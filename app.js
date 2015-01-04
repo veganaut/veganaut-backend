@@ -83,8 +83,13 @@ app.get('/activityLink/mine/open', cors(), Session.restrict, ActivityLink.openLi
 app.options('/person', cors());
 app.post('/person', cors(), Person.register);
 app.options('/person/me', cors());
+<<<<<<< HEAD
 app.options('person/isValidToken/:token', cors());
 app.options('/person/reset', cors());
+=======
+app.options('/person/validToken/:token', cors());
+app.options('/reset', cors());
+>>>>>>> c31377931d878f44e580c0ce3303fc05b7fe1209
 app.get('/person/me', cors(), Session.restrict, Person.getMe);
 app.put('/person/me', cors(), Session.restrict, Person.updateMe);
 app.get('/person/isValidToken/:token', cors(), Person.isValidToken);
@@ -115,8 +120,8 @@ app.get('/score', cors(), Session.restrict, Score.stats);
 app.options('/geoip', cors());
 app.get('/geoip', cors(), GeoIP.get);
 
-app.options('/passwordresetemail', cors());
-app.post('/passwordresetemail', cors(), PasswordResetEmail.send);
+app.options('/passwordResetEmail', cors());
+app.post('/passwordResetEmail', cors(), PasswordResetEmail.send);
 
 // Handle errors and if no one responded to the request
 app.use(function(err, req, res, next) {
