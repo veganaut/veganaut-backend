@@ -43,7 +43,7 @@ exports.send = function (req, res, next) {
             });
         },
         function (token, user, done) {
-            var transporter = nodemailer.createTransport();
+            var transporter = nodemailer.createTransport(config.email.transporter);
             // TODO: how to do translations in the backend?
             var mailOptions = {
                 to: user.email,
