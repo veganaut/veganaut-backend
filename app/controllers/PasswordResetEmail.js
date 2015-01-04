@@ -1,9 +1,9 @@
 'use strict';
 
 var async = require('async');
-var crypto = require('crypto');
 var mongoose = require('mongoose');
 var nodemailer = require('nodemailer');
+var generatePassword = require('password-generator');
 
 var Person = mongoose.model('Person');
 
@@ -13,12 +13,7 @@ exports.send = function (req, res, next) {
 
     async.waterfall([
         function (done) {
-            crypto.randomBytes(20, function (err, buf) {
-                var token = buf.toString('hex');
-                done(err, token);
-            });
-        },
-        function (token, done) {
+            var token = generatePassword(40, false);
             Person.findOne({email: req.body.email}, function (err, user) {
                 if (!user) {
                     res.status(404);

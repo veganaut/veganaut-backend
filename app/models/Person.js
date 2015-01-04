@@ -8,6 +8,7 @@
 
 var _ = require('lodash');
 var mongoose = require('mongoose');
+var async = require('async');
 var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
 
@@ -16,6 +17,7 @@ var ActivityLink = mongoose.model('ActivityLink');
 
 var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
+var crypto = require('crypto');
 
 // Constants used in strength and hits computation
 var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10, nonUser: 0.5};
@@ -28,7 +30,7 @@ function generateNickname() {
 var personSchema = new Schema({
     email: {type: String, unique: true, sparse: true},
     password: String,
-    nickname: { type: String, default: generateNickname },
+    nickname: {type: String, default: generateNickname},
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
@@ -46,7 +48,7 @@ var personSchema = new Schema({
     role: {type: String, enum: ['rookie', 'scout', 'veteran'], default: 'rookie'}
 });
 
-personSchema.pre('save', function(next) {
+personSchema.pre('save', function (next) {
     var user = this;
 
     if (this.isUser()) {
@@ -57,39 +59,67 @@ personSchema.pre('save', function(next) {
         });
     }
 
-    // only hash the password if it has been modified (or is new)
-    if (!user.isModified('password')) { return next(); }
+    async.series([
+        function (cb) {
+            // only hash the password if it has been modified (or is new)
+            if (user.isModified('password')) {
+                bcrypt.hash(user.password, BCRYPT_WORK_FACTOR, function (err, hash) {
+                    if (err) {
+                        return next(err);
+                    }
 
-    bcrypt.hash(user.password, BCRYPT_WORK_FACTOR, function(err, hash) {
-        if (err) { return next(err); }
+                    // override the cleartext password with the hashed one
+                    user.password = hash;
+                    cb();
+                });
+            } else {
+                cb();
+            }
+        },
+        function () {
+            if (user.isModified('resetPasswordToken')) {
+                if (user.resetPasswordToken) {
+                    var shasum = crypto.createHash('sha1');
+                    shasum.update(user.resetPasswordToken);
+                    // override the cleartext token with the hashed one
+                    user.resetPasswordToken = shasum.digest('hex');
+                }
+                next();
+            }
+            else {
+                return next();
+            }
+        }
+    ])
+    ;
 
-        // override the cleartext password with the hashed one
-        user.password = hash;
-        next();
-    });
-});
+})
+;
 
-personSchema.methods.verify = function(candidatePassword, next) {
+personSchema.methods.verify = function (candidatePassword, next) {
     bcrypt.compare(candidatePassword, this.password, next);
 };
 
-personSchema.methods.populateActivityLinks = function(next) {
+
+personSchema.methods.populateActivityLinks = function (next) {
     var that = this;
     ActivityLink.find()
         .or([{source: that.id}, {target: that.id}])
         .populate('source target')
-        .exec(function(err, activityLinks) {
-            if (err) { return next(err); }
+        .exec(function (err, activityLinks) {
+            if (err) {
+                return next(err);
+            }
             that._activityLinks = activityLinks;
             return next(null);
         });
 };
 
-personSchema.methods.isUser = function() {
+personSchema.methods.isUser = function () {
     return typeof this.password !== 'undefined';
 };
 
-personSchema.methods.getType = function() {
+personSchema.methods.getType = function () {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getType';
     }
@@ -103,7 +133,7 @@ personSchema.methods.getType = function() {
     }
 };
 
-personSchema.methods.isCaptured = function() {
+personSchema.methods.isCaptured = function () {
     return (this.getHits() >= this.getStrength());
 };
 
@@ -116,7 +146,7 @@ personSchema.methods.isCaptured = function() {
 // Multiple activity links between the same pair of people give decreasing
 // amounts of strength. The first link has a value of 1, the second
 // MULTIPLE_LINKS_FACTOR, the third MULTIPLE_LINKS_FACTOR**2, etc.
-personSchema.methods.getStrength = function() {
+personSchema.methods.getStrength = function () {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getStrength';
     }
@@ -127,7 +157,7 @@ personSchema.methods.getStrength = function() {
     var strength = INNATE_STRENGTH[innateStrengthType];
     var successfulActivityLinks = _.filter(that._activityLinks, 'success');
     var nLinksByOther = {};
-    _.forEach(successfulActivityLinks, function(al) {
+    _.forEach(successfulActivityLinks, function (al) {
         var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
         nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
         var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);
@@ -151,7 +181,7 @@ personSchema.methods.getStrength = function() {
 //
 // Multiple activity links between the same pair of people give decreasing
 // amounts of hit points, just like for strength.
-personSchema.methods.getHits = function() {
+personSchema.methods.getHits = function () {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getHits';
     }
@@ -161,7 +191,7 @@ personSchema.methods.getHits = function() {
     var hits = 0;
     var successfulActivityLinks = _.filter(that._activityLinks, 'success');
     var nLinksByOther = {};
-    _.forEach(successfulActivityLinks, function(al) {
+    _.forEach(successfulActivityLinks, function (al) {
         var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
         nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
         var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);
@@ -184,10 +214,10 @@ personSchema.methods.toApiObject = function () {
     return _.assign(
         _.pick(this, 'email', 'nickname', 'fullName', 'gender', 'dateOfBirth', 'phone', 'address', 'team', 'role'),
         {
-            id:         this.id,
-            type:       this.getType(),
-            strength:   this.getStrength(),
-            hits:       this.getHits(),
+            id: this.id,
+            type: this.getType(),
+            strength: this.getStrength(),
+            hits: this.getHits(),
             isCaptured: this.isCaptured()
         }
     );

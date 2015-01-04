@@ -9,8 +9,9 @@ var mongoose = require('mongoose');
 var async = require('async');
 var constants = require('../utils/constants');
 var Person = mongoose.model('Person');
+var crypto = require('crypto');
 
-exports.register = function(req, res, next) {
+exports.register = function (req, res, next) {
     // TODO: This needs to work as follows:
     // - If the user already entered a reference code, (s)he has a session. In
     //   this case, we take the user from the session, and update it.
@@ -23,10 +24,12 @@ exports.register = function(req, res, next) {
     var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'id');
     var person;
 
-    var getOrCreatePerson = function(cb) {
+    var getOrCreatePerson = function (cb) {
         if (typeof personData.id === 'string') {
-            Person.findById(personData.id, function(err, existingPerson) {
-                if (err) { return cb(err); }
+            Person.findById(personData.id, function (err, existingPerson) {
+                if (err) {
+                    return cb(err);
+                }
 
                 // Check if the given id points to an existing person
                 if (!existingPerson) {
@@ -53,7 +56,7 @@ exports.register = function(req, res, next) {
         }
     };
 
-    var updatePerson = function(cb) {
+    var updatePerson = function (cb) {
         // Assign a random team
         if (typeof person.team === 'undefined') {
             person.team = _.sample(constants.TEAMS);
@@ -66,8 +69,10 @@ exports.register = function(req, res, next) {
     async.series([
         getOrCreatePerson,
         updatePerson,
-        function (cb) {person.populateActivityLinks(cb);}
-    ], function(err) {
+        function (cb) {
+            person.populateActivityLinks(cb);
+        }
+    ], function (err) {
         if (err) {
             // Send a 400 status if the email address is already used
             if (err.name === 'MongoError' && err.code === 11000) {
@@ -95,7 +100,7 @@ exports.updateMe = function (req, res, next) {
     _.assign(req.user, personData);
 
     // Save the user
-    req.user.save(function(err) {
+    req.user.save(function (err) {
         if (err) {
             return next(err);
         }
@@ -104,31 +109,50 @@ exports.updateMe = function (req, res, next) {
         return exports.getMe(req, res, next);
     });
 };
-exports.isValidToken = function(req, res, next) {
+exports.isValidToken = function (req, res, next) {
 
-    Person.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+    var shasum = crypto.createHash('sha1');
+    shasum.update(req.params.token);
+    var hash = shasum.digest('hex');
+
+    Person.findOne({
+        resetPasswordToken: hash,
+        resetPasswordExpires: {$gt: Date.now()}
+    }, function (err, user) {
         if (!user) {
             res.status(404);
             return next(new Error('Invalid token'));
-        }  return res.status(200).send();
+        }
+        return res.status(200).send();
 
     });
 
-
 };
-exports.resetPassword = function(req, res, next) {
+
+exports.resetPassword = function (req, res, next) {
     var personData = _.pick(req.body, 'token', 'password');
-    Person.findOne({ resetPasswordToken: personData.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+
+    var shasum = crypto.createHash('sha1');
+    shasum.update(personData.token);
+    var hash = shasum.digest('hex');
+
+    Person.findOne({
+        resetPasswordToken: hash,
+        resetPasswordExpires: {$gt: Date.now()}
+    }, function (err, user) {
         if (!user) {
             res.status(404);
             return next(new Error('Invalid token!'));
         }
 
         user.password = personData.password;
-
-        user.save(function(err) {
+        user.resetPasswordToken = null;
+        user.resetPasswordExpires = null;
+        user.save(function (err) {
             next(err);
         });
         return res.status(200).send();
     });
+
+
 };
