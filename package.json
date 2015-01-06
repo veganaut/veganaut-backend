@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "postinstall": "if [ ! -f app/config.js ]; then cp app/config-example.js app/config.js; fi",
     "start": "node app.js",
     "test": "./node_modules/.bin/jasmine-node --captureExceptions test"
   },
