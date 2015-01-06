@@ -126,7 +126,7 @@ exports.isValidToken = function (req, res, next) {
             res.status(404);
             return next(new Error('Invalid token'));
         }
-        return res.status(200).send();
+        return res.status(200).send({});
 
     });
 
@@ -149,11 +149,12 @@ exports.resetPassword = function (req, res, next) {
             return next(new Error('Invalid token!'));
         }
 
+        // Update the password and invalidate the reset token
         user.password = personData.password;
-        user.resetPasswordToken = null;
-        user.resetPasswordExpires = null;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
         user.save(function () {
-            return res.status(200).send();
+            return res.status(200).send({});
         });
     });
 };
