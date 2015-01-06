@@ -13,6 +13,7 @@ h.describe('Person API methods', function() {
                     email: 'doge@mac.dog',
                     fullName: 'Doge MacDog',
                     nickname: 'Doger',
+                    locale: 'de',
                     password: 'wow. such secure. so protect.'
                 })
                 .end(function(res) {
@@ -23,6 +24,7 @@ h.describe('Person API methods', function() {
                     expect(res.body.fullName).toEqual('Doge MacDog');
                     expect(res.body.nickname).toEqual('Doger');
                     expect(res.body.role).toEqual('rookie', 'should set "rookie" role as default');
+                    expect(res.body.locale).toEqual('de', 'has correct locale');
 
                     // Make sure password is not returned
                     expect(typeof res.body.password).toEqual('undefined');
@@ -123,6 +125,7 @@ h.describe('Person API methods for logged in user', function() {
                 expect(res.body.role).toEqual('veteran');
                 expect(res.body.team).toEqual('team1');
                 expect(res.body.type).toEqual('user');
+                expect(res.body.locale).toEqual('en');
                 expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
                 expect(typeof res.body.nickname).toEqual('string', 'should have a nickname');
                 expect(typeof res.body.strength).toEqual('number', 'should have a strength');
@@ -141,6 +144,7 @@ h.describe('Person API methods for logged in user', function() {
                     email: 'alice@bar.baz',
                     fullName: 'Alice Alisonja',
                     nickname: 'Al',
+                    locale: 'de',
                     password: 'even better password'
                 })
                 .end(function(res) {
@@ -150,6 +154,7 @@ h.describe('Person API methods for logged in user', function() {
                     expect(res.body.email).toEqual('alice@bar.baz');
                     expect(res.body.fullName).toEqual('Alice Alisonja');
                     expect(res.body.nickname).toEqual('Al');
+                    expect(res.body.locale).toEqual('de');
                     expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
 
                     done();

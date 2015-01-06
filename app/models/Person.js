@@ -42,17 +42,17 @@ var personSchema = new Schema({
     phone: String,
     address: String,
     gender: {type: String, enum: ['male', 'female', 'other']},
-    locale: {type: String, default: 'en'},
+    locale: {type: String, default: 'en', enum: ['en', 'de']},
 
     team: {type: String, enum: constants.TEAMS},
     role: {type: String, enum: ['rookie', 'scout', 'veteran'], default: 'rookie'}
 });
 
-personSchema.pre('save', function (next) {
+personSchema.pre('save', function(next) {
     var user = this;
 
     if (this.isUser()) {
-        _.each(['fullName', 'role', 'email', 'team'], function (key) {
+        _.each(['fullName', 'role', 'email', 'team'], function(key) {
             if (typeof user[key] === 'undefined') {
                 return next(new Error('Required field ' + key + ' missing for Person of type user.'));
             }
@@ -60,10 +60,10 @@ personSchema.pre('save', function (next) {
     }
 
     async.series([
-        function (cb) {
+        function(cb) {
             // only hash the password if it has been modified (or is new)
             if (user.isModified('password')) {
-                bcrypt.hash(user.password, BCRYPT_WORK_FACTOR, function (err, hash) {
+                bcrypt.hash(user.password, BCRYPT_WORK_FACTOR, function(err, hash) {
                     if (err) {
                         return next(err);
                     }
@@ -72,11 +72,12 @@ personSchema.pre('save', function (next) {
                     user.password = hash;
                     cb();
                 });
-            } else {
+            }
+            else {
                 cb();
             }
         },
-        function () {
+        function() {
             if (user.isModified('resetPasswordToken')) {
                 if (user.resetPasswordToken) {
                     var shasum = crypto.createHash('sha1');
@@ -96,17 +97,17 @@ personSchema.pre('save', function (next) {
 })
 ;
 
-personSchema.methods.verify = function (candidatePassword, next) {
+personSchema.methods.verify = function(candidatePassword, next) {
     bcrypt.compare(candidatePassword, this.password, next);
 };
 
 
-personSchema.methods.populateActivityLinks = function (next) {
+personSchema.methods.populateActivityLinks = function(next) {
     var that = this;
     ActivityLink.find()
         .or([{source: that.id}, {target: that.id}])
         .populate('source target')
-        .exec(function (err, activityLinks) {
+        .exec(function(err, activityLinks) {
             if (err) {
                 return next(err);
             }
@@ -115,25 +116,27 @@ personSchema.methods.populateActivityLinks = function (next) {
         });
 };
 
-personSchema.methods.isUser = function () {
+personSchema.methods.isUser = function() {
     return typeof this.password !== 'undefined';
 };
 
-personSchema.methods.getType = function () {
+personSchema.methods.getType = function() {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getType';
     }
 
     if (this.isUser()) {
         return 'user';
-    } else if (_.some(this._activityLinks, 'success')) {
+    }
+    else if (_.some(this._activityLinks, 'success')) {
         return 'baby';
-    } else {
+    }
+    else {
         return 'maybe';
     }
 };
 
-personSchema.methods.isCaptured = function () {
+personSchema.methods.isCaptured = function() {
     return (this.getHits() >= this.getStrength());
 };
 
@@ -146,7 +149,7 @@ personSchema.methods.isCaptured = function () {
 // Multiple activity links between the same pair of people give decreasing
 // amounts of strength. The first link has a value of 1, the second
 // MULTIPLE_LINKS_FACTOR, the third MULTIPLE_LINKS_FACTOR**2, etc.
-personSchema.methods.getStrength = function () {
+personSchema.methods.getStrength = function() {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getStrength';
     }
@@ -157,14 +160,15 @@ personSchema.methods.getStrength = function () {
     var strength = INNATE_STRENGTH[innateStrengthType];
     var successfulActivityLinks = _.filter(that._activityLinks, 'success');
     var nLinksByOther = {};
-    _.forEach(successfulActivityLinks, function (al) {
+    _.forEach(successfulActivityLinks, function(al) {
         var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
         nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
         var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);
 
         if (al.source.id === that.id) {
             strength += activityLinkValue;
-        } else {
+        }
+        else {
             if (al.source.team === that.team) {
                 strength += activityLinkValue;
             }
@@ -181,7 +185,7 @@ personSchema.methods.getStrength = function () {
 //
 // Multiple activity links between the same pair of people give decreasing
 // amounts of hit points, just like for strength.
-personSchema.methods.getHits = function () {
+personSchema.methods.getHits = function() {
     if (typeof(this._activityLinks) === 'undefined') {
         throw 'Must call populateActivityLinks before calling getHits';
     }
@@ -191,7 +195,7 @@ personSchema.methods.getHits = function () {
     var hits = 0;
     var successfulActivityLinks = _.filter(that._activityLinks, 'success');
     var nLinksByOther = {};
-    _.forEach(successfulActivityLinks, function (al) {
+    _.forEach(successfulActivityLinks, function(al) {
         var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
         nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
         var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);
@@ -210,9 +214,12 @@ personSchema.methods.getHits = function () {
  * @returns {Object}
  * TODO: this should be toJSON instead, it's called automatically
  */
-personSchema.methods.toApiObject = function () {
+personSchema.methods.toApiObject = function() {
     return _.assign(
-        _.pick(this, 'email', 'nickname', 'fullName', 'gender', 'dateOfBirth', 'phone', 'address', 'team', 'role'),
+        _.pick(this,
+            'email', 'nickname', 'fullName', 'gender', 'locale',
+            'dateOfBirth', 'phone', 'address', 'team', 'role'
+        ),
         {
             id: this.id,
             type: this.getType(),

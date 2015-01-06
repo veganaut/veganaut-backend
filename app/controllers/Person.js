@@ -21,7 +21,7 @@ exports.register = function (req, res, next) {
 
 
     // Pick the posted data
-    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'id');
+    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'id', 'locale');
     var person;
 
     var getOrCreatePerson = function (cb) {
@@ -97,7 +97,7 @@ exports.getMe = function(req, res, next) {
 
 exports.updateMe = function(req, res, next) {
     // Get the values that can be updated and set them on the user
-    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname');
+    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'locale');
     _.assign(req.user, personData);
 
     // Save the user
