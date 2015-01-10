@@ -209,25 +209,26 @@ personSchema.methods.getHits = function() {
 };
 
 /**
- * Returns this person ready to be sent to the frontend
- * @returns {{}}
- * @returns {Object}
- * TODO: this should be toJSON instead, it's called automatically
+ * toJSON transform method is automatically called when converting a person
+ * to JSON (as before sending it over the API)
+ * @type {{transform: Function}}
  */
-personSchema.methods.toApiObject = function() {
-    return _.assign(
-        _.pick(this,
-            'email', 'nickname', 'fullName', 'gender', 'locale',
+personSchema.options.toJSON = {
+    transform: function(doc) {
+        var ret = _.pick(doc,
+            'id', 'email', 'nickname', 'fullName', 'gender', 'locale',
             'dateOfBirth', 'phone', 'address', 'team', 'role'
-        ),
-        {
-            id: this.id,
-            type: this.getType(),
-            strength: this.getStrength(),
-            hits: this.getHits(),
-            isCaptured: this.isCaptured()
+        );
+        if (doc._activityLinks) {
+            ret = _.assign(ret, {
+                type: doc.getType(),
+                strength: doc.getStrength(),
+                hits: doc.getHits(),
+                isCaptured: doc.isCaptured()
+            });
         }
-    );
+        return ret;
+    }
 };
 
 mongoose.model('Person', personSchema);

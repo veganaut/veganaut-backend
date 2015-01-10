@@ -28,7 +28,6 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     expect(typeof mission.person).toBe('string', 'person is a string');
                     expect(typeof mission.location).toBe('string', 'location is a string');
                     expect(typeof mission.completed).toBe('string', 'completed is a string');
-                    expect(typeof mission.completed).toBe('string', 'completed is a string');
                     expect(typeof mission.points).toBe('object', 'points is an object');
                     expect(mission.type).toBe('hasOptions', 'type is hasOptions');
                     expect(mission.causedOwnerChange).toBe(false, 'did not cause an owner change');

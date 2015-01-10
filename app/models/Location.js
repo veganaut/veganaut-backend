@@ -4,6 +4,7 @@
 
 'use strict';
 
+var util = require('util');
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
@@ -50,6 +51,9 @@ new Average('effort', locationSchema);
 
 /**
  * Loads the last time the person completed a mission of every type.
+ * This is stored in a private variable. If this method is called
+ * multiple times with different people, only the mission dates
+ * for the last person are stored.
  * @param {Person} person
  * @param {function} next
  */
@@ -78,8 +82,7 @@ locationSchema.methods.computeLastMissionDates = function(person, next) {
         });
 
         // Save the dates
-        that._lastMissionDates = that._lastMissionDates || {};
-        that._lastMissionDates[person.id] = mapped;
+        that._lastMissionDates = mapped;
         return next();
     });
 };
@@ -152,36 +155,36 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
 };
 
 /**
- * Returns this location ready to be sent to the frontend
- * @param {Person} [person]
- * @returns {{}}
- * TODO: this should be toJSON instead, it's called automatically (although we have an argument here...)
+ * toJSON transform method is automatically called when converting a location
+ * to JSON (as before sending it over the API)
+ * @type {{transform: Function}}
  */
-locationSchema.methods.toApiObject = function (person) {
-    var apiObj = _.pick(this, ['name', 'description', 'link', 'type', 'id', 'team', 'updatedAt']);
+locationSchema.options.toJSON = {
+    transform: function(doc) {
+        var ret = _.pick(doc, ['name', 'description', 'link', 'type', 'id', 'team', 'updatedAt']);
 
-    // Add lat/lng in the format the frontend expects
-    apiObj.lat = this.coordinates[0];
-    apiObj.lng = this.coordinates[1];
+        // Add lat/lng in the format the frontend expects
+        if (util.isArray(doc.coordinates)) {
+            ret.lat = doc.coordinates[0];
+            ret.lng = doc.coordinates[1];
+        }
 
-    // Compute points as of now
-    apiObj.points = this.computeCurrentPoints();
+        // Compute points as of now
+        ret.points = doc.computeCurrentPoints();
 
-    // Add the quality
-    apiObj.quality = {
-        average: this.quality.average,
-        numRatings: this.quality.count
-    };
+        // Add the quality
+        ret.quality = {
+            average: doc.quality.average,
+            numRatings: doc.quality.count
+        };
 
-    // Add nextVisitBonusDate if it's available
-    if (typeof person !== 'undefined' &&
-        typeof this._lastMissionDates !== 'undefined' &&
-        typeof this._lastMissionDates[person.id] !== 'undefined')
-    {
-        apiObj.lastMissionDates = this._lastMissionDates[person.id];
+        // Add nextVisitBonusDate if it's available
+        if (typeof doc._lastMissionDates !== 'undefined') {
+            ret.lastMissionDates = doc._lastMissionDates;
+        }
+
+        return ret;
     }
-
-    return apiObj;
 };
 
 

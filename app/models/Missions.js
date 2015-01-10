@@ -135,22 +135,26 @@ missionSchema.methods.getIdentifier = function() {
 };
 
 /**
- * Returns this mission ready to be sent to the frontend
- * @returns {{}}
- * TODO: this should be toJSON instead, it's called automatically
+ * toJSON transform method is automatically called when converting a mission
+ * to JSON (as before sending it over the API)
+ * @type {{transform: Function}}
  */
-missionSchema.methods.toApiObject = function() {
-    // TODO: how to handle the different outcomes: need to sanitize them
-    return _.assign(
-        _.pick(this, ['id', 'completed', 'outcome', 'points']),
-        {
-            // Expose only the person and location id
-            // (need this because it could be populated or not)
-            person: this.person._id || this.person,
-            location: this.location._id || this.location,
-            type: this.getIdentifier()
+missionSchema.options.toJSON = {
+    transform: function(doc, ret) {
+        // Check if this is a sub document
+        if (typeof doc.ownerDocument === 'function') {
+            // Don't expose the id of the sub document
+            delete ret._id;
         }
-    );
+        else {
+            // Pick from the ret object, since subdocs other models are already transformed
+            return _.assign(_.pick(ret, ['completed', 'outcome', 'points', 'person', 'location']), {
+                id: ret._id,
+                type: doc.getIdentifier()
+            });
+        }
+
+    }
 };
 
 // Create Mission model

@@ -93,7 +93,11 @@ exports.submit = function(req, res, next) {
         }
 
         var causedOwnerChange = (location.team !== oldTeam);
-        var response = _.assign(mission.toApiObject(), {
+
+        // Depopulate the location, don't want to send that
+        // TODO: there should be a better way of doing that
+        mission.location = location.id;
+        var response = _.assign(mission.toJSON(), {
             causedOwnerChange: causedOwnerChange
         });
         return res.status(201).send(response);

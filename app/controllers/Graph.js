@@ -129,7 +129,7 @@ var getGraph = function(person, cb) {
 
             // Convert persons to the format needed by the frontend
             var graphNodes = _.map(persons, function (p) {
-                var result = p.toApiObject();
+                var result = p.toJSON();
 
                 if (typeof graphnodes[p.id] !== 'undefined') {
                     result.coordX = graphnodes[p.id].coordX;

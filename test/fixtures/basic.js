@@ -144,25 +144,25 @@ var getFixtures = function() {
     fix.bobMission1Ruprecht = new Missions.HasOptionsMission({
         location: fix.ruprecht.id,
         person: fix.bob.id,
-        completed: '2014-08-24',
+        completed: '2014-08-24T11:00:00',
         outcome: 'yes'
     });
     fix.bobMission2Ruprecht = new Missions.OfferQualityMission({
         location: fix.ruprecht.id,
         person: fix.bob.id,
-        completed: '2014-08-24',
+        completed: '2014-08-24T12:00:00',
         outcome: 3
     });
     fix.aliceMission1Ruprecht = new Missions.VisitBonusMission({
         location: fix.ruprecht.id,
         person: fix.alice.id,
-        completed: '2014-08-25',
+        completed: '2014-08-25T15:00:00',
         outcome: true
     });
     fix.aliceMission2Ruprecht = new Missions.HasOptionsMission({
         location: fix.ruprecht.id,
         person: fix.alice.id,
-        completed: '2014-08-25',
+        completed: '2014-08-25T16:00:00',
         outcome: 'yes'
     });
 

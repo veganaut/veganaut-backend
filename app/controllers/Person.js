@@ -82,7 +82,7 @@ exports.register = function (req, res, next) {
             return next(err);
         }
 
-        return res.status(201).send(person.toApiObject());
+        return res.status(201).send(person);
     });
 };
 
@@ -91,7 +91,7 @@ exports.getMe = function(req, res, next) {
         if (err) {
             return next(err);
         }
-        return res.status(200).send(req.user.toApiObject());
+        return res.status(200).send(req.user);
     });
 };
 

@@ -8,6 +8,12 @@ var Location = mongoose.model('Location');
 var Missions = require('../models/Missions');
 var Product = require('../models/Product');
 
+/**
+ * Number of missions to send in the get completed missions call
+ * @type {number}
+ */
+var NUM_COMPLETED_MISSION_LIMIT = 10;
+
 exports.location = function(req, res, next) {
     var location = new Location(_.assign(
         _.pick(req.body, 'name', 'description', 'link', 'type'),
@@ -40,7 +46,7 @@ exports.location = function(req, res, next) {
         if (err) {
             return next(err);
         }
-        return res.send(location.toApiObject(req.user));
+        return res.send(location);
     });
 };
 
@@ -62,9 +68,6 @@ exports.list = function(req, res, next) {
             },
             function(err) {
                 if (err) { return next(err); }
-                locations = _.map(locations, function(l) {
-                    return l.toApiObject(req.user);
-                });
                 return res.send(locations);
             }
         );
@@ -139,7 +142,7 @@ var handleSingleLocationResult = function(err, obj) {
     if (err) {
         return obj.next(err);
     }
-    var returnObj = obj.location.toApiObject(obj.req.user);
+    var returnObj = obj.location.toJSON();
 
     // Add the products and rating
     returnObj.products = [];
@@ -206,4 +209,32 @@ exports.update = function(req, res, next) {
         findProducts,
         getProductRatings
     ], handleSingleLocationResult);
+};
+
+/**
+ * Returns the latest completed missions at a location
+ * @param req
+ * @param res
+ * @param next
+ */
+exports.getCompletedMissions = function(req, res, next) {
+    var locationId = req.params.locationId;
+    Missions.Mission
+        // For privacy reasons, we don't include the completed date
+        .find({ location: locationId }, 'person location points outcome completed')
+        .populate('person', 'team nickname')
+        .sort({ completed: 'desc' })
+        .limit(NUM_COMPLETED_MISSION_LIMIT)
+        .exec(function(err, missions) {
+            if (!err && (!missions || missions.length === 0)) {
+                res.status(404);
+                err = new Error('Could not find location with id: ' + locationId);
+            }
+            if (err) {
+                return next(err);
+            }
+
+            return res.send(missions);
+        })
+    ;
 };

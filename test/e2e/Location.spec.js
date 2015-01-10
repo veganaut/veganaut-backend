@@ -151,6 +151,48 @@ h.describe('Location API methods as logged in user alice', function() {
         });
     });
 
+    it('can get mission list of a location', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'location/000000000000000000000007/mission/list')
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    var missions = res.body;
+
+                    expect(typeof missions).toBe('object', 'response is an array (object)');
+                    expect(missions.length).toBeGreaterThan(1, 'received more than one mission');
+
+                    var updatedAt, previousUpdatedAt;
+                    _.each(missions, function(mission) {
+                        expect(typeof mission.id).toBe('string', 'id is a string');
+                        expect(typeof mission.type).toBe('string', 'type is a string');
+                        expect(typeof mission.location).toBe('string', 'location is a string');
+                        expect(typeof mission.person).toBe('object', 'person is an object');
+                        expect(typeof mission.person.id).toBe('string', 'person has an id');
+                        expect(typeof mission.person.nickname).toBe('string', 'person has a nickname');
+                        expect(typeof mission.person.team).toBe('string', 'person has a team');
+                        expect(Object.keys(mission.person).length).toBe(3, 'only 3 properties of the person are exposed');
+                        expect(typeof mission.points).toBe('object', 'points is an object');
+
+                        expect(typeof mission.completed).toMatch('string', 'completed is a string');
+                        updatedAt = new Date(mission.completed);
+                        expect(isNaN(updatedAt.getTime())).toBe(false,
+                            'completed can be parsed as a valid date'
+                        );
+
+                        // Should be ordered from newest to oldest
+                        if (previousUpdatedAt) {
+                            expect(previousUpdatedAt - updatedAt).toBeGreaterThan(-1, 'correct mission order');
+                        }
+                        previousUpdatedAt = updatedAt;
+
+                    });
+
+                    done();
+                })
+            ;
+        });
+    });
+
     it('returns 404 for location that does not exist', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/999999999999999999999999')
