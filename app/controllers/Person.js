@@ -9,6 +9,7 @@ var mongoose = require('mongoose');
 var async = require('async');
 var constants = require('../utils/constants');
 var Person = mongoose.model('Person');
+var Mission = require('../models/Missions').Mission;
 var crypto = require('crypto');
 
 exports.register = function (req, res, next) {
@@ -91,7 +92,15 @@ exports.getMe = function(req, res, next) {
         if (err) {
             return next(err);
         }
-        return res.status(200).send(req.user);
+
+        // Count number of missions of this player
+        Mission.count({ person: req.user })
+            .exec(function(err, numMissions) {
+                var resObj = req.user.toJSON();
+                resObj.completedMissions = numMissions;
+                return res.status(200).send(resObj);
+            })
+        ;
     });
 };
 

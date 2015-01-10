@@ -119,18 +119,20 @@ h.describe('Person API methods for logged in user', function() {
             h.request('GET', h.baseURL + 'person/me').end(function(res) {
                 expect(res.statusCode).toBe(200);
 
-                expect(res.body.id).toEqual('000000000000000000000001');
-                expect(res.body.email).toEqual('foo@bar.baz');
-                expect(res.body.fullName).toEqual('Alice Alison');
-                expect(res.body.role).toEqual('veteran');
-                expect(res.body.team).toEqual('team1');
-                expect(res.body.type).toEqual('user');
-                expect(res.body.locale).toEqual('en');
-                expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
-                expect(typeof res.body.nickname).toEqual('string', 'should have a nickname');
-                expect(typeof res.body.strength).toEqual('number', 'should have a strength');
-                expect(typeof res.body.hits).toEqual('number', 'should have hits');
-                expect(typeof res.body.isCaptured).toEqual('boolean', 'should have a isCaptured flag');
+                var me = res.body;
+                expect(me.id).toEqual('000000000000000000000001');
+                expect(me.email).toEqual('foo@bar.baz');
+                expect(me.fullName).toEqual('Alice Alison');
+                expect(me.role).toEqual('veteran');
+                expect(me.team).toEqual('team1');
+                expect(me.type).toEqual('user');
+                expect(me.locale).toEqual('en');
+                expect(me.completedMissions).toBeGreaterThan(1, 'did a few missions');
+                expect(typeof me.password).toEqual('undefined', 'password should not be returned');
+                expect(typeof me.nickname).toEqual('string', 'should have a nickname');
+                expect(typeof me.strength).toEqual('number', 'should have a strength');
+                expect(typeof me.hits).toEqual('number', 'should have hits');
+                expect(typeof me.isCaptured).toEqual('boolean', 'should have a isCaptured flag');
 
                 done();
             });
