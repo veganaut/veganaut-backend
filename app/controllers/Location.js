@@ -221,7 +221,7 @@ exports.getCompletedMissions = function(req, res, next) {
     var locationId = req.params.locationId;
     Missions.Mission
         // For privacy reasons, we don't include the completed date
-        .find({ location: locationId }, 'person location points outcome completed')
+        .find({ location: locationId }, 'person location points outcome')
         .populate('person', 'team nickname')
         .sort({ completed: 'desc' })
         .limit(NUM_COMPLETED_MISSION_LIMIT)

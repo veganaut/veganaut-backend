@@ -172,12 +172,7 @@ h.describe('Location API methods as logged in user alice', function() {
                         expect(typeof mission.person.team).toBe('string', 'person has a team');
                         expect(Object.keys(mission.person).length).toBe(3, 'only 3 properties of the person are exposed');
                         expect(typeof mission.points).toBe('object', 'points is an object');
-
-                        expect(typeof mission.completed).toMatch('string', 'completed is a string');
-                        updatedAt = new Date(mission.completed);
-                        expect(isNaN(updatedAt.getTime())).toBe(false,
-                            'completed can be parsed as a valid date'
-                        );
+                        expect(typeof mission.completed).toMatch('undefined', 'does not expose when the mission was done');
 
                         // Should be ordered from newest to oldest
                         if (previousUpdatedAt) {
