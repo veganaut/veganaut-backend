@@ -7,6 +7,7 @@ var Missions = require('../models/Missions');
 var Location = mongoose.model('Location');
 var Person = mongoose.model('Person');
 
+// TODO: add test!
 exports.stats = function(req, res, next) {
     async.parallel([
         function(cb) {
@@ -110,7 +111,7 @@ exports.stats = function(req, res, next) {
                     _.each(peopleStats, function(stat) {
                         if (typeof peopleById[stat._id] !== 'undefined') {
                             stats.push({
-                                person: _.pick(peopleById[stat._id], ['nickname', 'team']),
+                                person: _.pick(peopleById[stat._id], ['id', 'nickname', 'team']),
                                 missions: stat.sum
                             });
                         }
