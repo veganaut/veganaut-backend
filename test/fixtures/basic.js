@@ -21,7 +21,6 @@ var getFixtures = function() {
         email: 'foo@bar.baz',
         password: 'foobar',
         team: 'team1',
-        role: 'veteran',
         fullName: 'Alice Alison'
     });
 
@@ -31,7 +30,6 @@ var getFixtures = function() {
         password: 'bestpasswordever',
         team: 'team2',
         fullName: 'Bob Burton',
-        role: 'scout',
         gender: 'male'
     });
 

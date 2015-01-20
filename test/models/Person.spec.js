@@ -11,8 +11,6 @@ var mongoose = require('mongoose');
 require('../../app/models/Person');
 var Person = mongoose.model('Person');
 
-var async = require('async');
-
 describe('A person', function() {
     h.beforeAll(function() {
         h.runAsync(function(done) {
@@ -62,124 +60,6 @@ describe('A person', function() {
                         done();
                     });
                 });
-            });
-        });
-    });
-
-    it('can compute its strength', function() {
-        h.runAsync(function(done) {
-            h.setupFixtures(function(err) {
-                expect(err).toBeUndefined();
-
-                async.series([
-                    function(next) {
-                        Person.findOne({email: 'foo@bar.baz'}).exec(function(err, alice) {
-                            expect(err).toBeNull();
-                            alice.populateActivityLinks(function(err) {
-                                expect(err).toBeNull();
-                                expect(alice.getStrength()).toBe(12);
-                                next();
-                            });
-                        });
-                    },
-
-                    function(next) {
-                        Person.findOne({email: 'im@stoop.id'}).exec(function(err, bob) {
-                            expect(err).toBeNull();
-                            bob.populateActivityLinks(function(err) {
-                                expect(err).toBeNull();
-                                expect(bob.getStrength()).toBe(3);
-                                next();
-                            });
-                        });
-                    },
-
-                    function(next) {
-                        Person.findOne({fullName: 'Dave Donaldsson'}).exec(function(err, dave) {
-                            expect(err).toBeNull();
-                            dave.populateActivityLinks(function(err) {
-                                expect(err).toBeNull();
-                                expect(dave.getStrength()).toBe(0.5);
-                                next();
-                            });
-                        });
-                    }
-                ], done);
-            });
-        });
-    });
-
-    it('can compute its hits', function() {
-        h.runAsync(function(done) {
-            h.setupFixtures(function(err) {
-                expect(err).toBeUndefined();
-
-                async.series([
-                    function(next) {
-                        Person.findOne({email: 'foo@bar.baz'}).exec(function(err, alice) {
-                            expect(err).toBeNull();
-                            alice.populateActivityLinks(function(err) {
-                                expect(err).toBeNull();
-                                expect(alice.getHits()).toBe(0);
-                                next();
-                            });
-                        });
-                    },
-
-                    function(next) {
-                        Person.findOne({email: 'im@stoop.id'}).exec(function(err, bob) {
-                            expect(err).toBeNull();
-                            bob.populateActivityLinks(function(err) {
-                                expect(err).toBeNull();
-                                expect(bob.getHits()).toBe(1);
-                                next();
-                            });
-                        });
-                    }
-                ], done);
-            });
-        });
-    });
-
-    it('knows when it\'s captured', function() {
-        h.runAsync(function(done) {
-            h.setupFixtures(function(err) {
-                expect(err).toBeUndefined();
-
-                async.series([
-                    function(next) {
-                        Person.findOne({email: 'foo@bar.baz'}).exec(function(err, alice) {
-                            expect(err).toBeNull();
-                            alice.populateActivityLinks(function(err) {
-                                expect(err).toBeNull();
-                                expect(alice.isCaptured()).toBe(false);
-                                next();
-                            });
-                        });
-                    },
-
-                    function(next) {
-                        Person.findOne({email: 'im@stoop.id'}).exec(function(err, bob) {
-                            expect(err).toBeNull();
-                            bob.populateActivityLinks(function(err) {
-                                expect(err).toBeNull();
-                                expect(bob.isCaptured()).toBe(false);
-                                next();
-                            });
-                        });
-                    },
-
-                    function(next) {
-                        Person.findOne({fullName: 'Dave Donaldsson'}).exec(function(err, dave) {
-                            expect(err).toBeNull();
-                            dave.populateActivityLinks(function(err) {
-                                expect(err).toBeNull();
-                                expect(dave.isCaptured()).toBe(false);
-                                next();
-                            });
-                        });
-                    }
-                ], done);
             });
         });
     });

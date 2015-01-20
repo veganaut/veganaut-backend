@@ -37,7 +37,17 @@ h.describe('ActivityLink API methods', function() {
                     expect(res.statusCode).toBe(200);
                     expect(res.body.referenceCode).toEqual('AK92oj');
                     expect(res.body.target).toBe('000000000000000000000001');
-                    done();
+
+                    // Alice doesn't get captured because Bob was captured by her team
+                    Person.findById('000000000000000000000001', function (err, alice) {
+                        expect(alice.capture.active).toBe(false, 'alice is not captured');
+
+                        // Bob freed himself with this activity link
+                        Person.findById('000000000000000000000002', function (err, bob) {
+                            expect(bob.capture.active).toBe(false, 'bob is no longer captured');
+                            done();
+                        });
+                    });
                 })
             ;
         });
@@ -208,6 +218,133 @@ h.describe('ActivityLink between existing users', {fixtures: fix, user: 'alice@e
                             done();
                         });
                     });
+                })
+            ;
+        });
+    });
+});
+
+fix = new FixtureCreator()
+    .user('alice', 'team1')
+    .user('bob', 'team2')
+    .activityLink('bob', 'alice', false)
+;
+h.describe('Capturing existing users', {fixtures: fix, user: 'alice@example.com'}, function() {
+    it('using a reference code captures the target of the activity link', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink/reference')
+                .send({
+                    referenceCode: 'bobDoesSomethingForAlice'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    Person.findOne({ email: 'alice@example.com' })
+                        .populate('capture.person')
+                        .exec(function (err, alice) {
+                            expect(alice.capture.active).toBe(true, 'alice is now captured');
+                            expect(alice.capture.person.email).toBe('bob@example.com', 'captured by bob');
+                            expect(alice.capture.team).toBe('team2', 'captured by team2');
+                            return done();
+                        })
+                    ;
+                })
+            ;
+        });
+    });
+});
+
+fix = new FixtureCreator()
+    .user('alice', 'team1')
+    .user('bob', 'team2')
+    .user('carol', 'team1')
+    .activityLink('bob', 'alice', true)  // Bob captured Alice (team2)
+    .activityLink('carol', 'bob', true)  // Carol captured Bob (team1)
+    .activityLink('alice', 'bob', false) // Alice wants to capture Bob (and therefore free both)
+;
+h.describe('Capturing existing users', {fixtures: fix, user: 'bob@example.com'}, function() {
+    it('targeting a player of the team that one is currently captured by frees both players', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink/reference')
+                .send({
+                    referenceCode: 'aliceDoesSomethingForBob'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    Person.findOne({ email: 'alice@example.com' }, function (err, alice) {
+                        expect(alice.capture.active).toBe(false, 'alice is no longer captured');
+
+                        Person.findOne({ email: 'bob@example.com' }, function (err, bob) {
+                            expect(bob.capture.active).toBe(false, 'bob is no longer captured');
+                            done();
+                        });
+                    });
+                })
+            ;
+        });
+    });
+});
+
+fix = new FixtureCreator()
+    .user('alice', 'team1')
+    .user('bob', 'team2')
+    .user('carol', 'team3')
+    .activityLink('bob', 'alice', true)    // Bob captured Alice (team2)
+    .activityLink('carol', 'alice', false) // Carol wants to capture Alice
+;
+h.describe('Capturing existing users', {fixtures: fix, user: 'alice@example.com'}, function() {
+    it('capturing an already captured player gets rid of the old capture', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink/reference')
+                .send({
+                    referenceCode: 'carolDoesSomethingForAlice'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    Person.findOne({ email: 'alice@example.com' })
+                        .populate('capture.person')
+                        .exec(function (err, alice) {
+                            expect(alice.capture.active).toBe(true, 'alice is still captured');
+                            expect(alice.capture.person.email).toBe('carol@example.com', 'captured by carol');
+                            expect(alice.capture.team).toBe('team3', 'captured by team3');
+                            done();
+                        })
+                    ;
+                })
+            ;
+        });
+    });
+});
+
+fix = new FixtureCreator()
+    .user('alice', 'team1')
+    .user('bob', 'team2')
+    .user('carol', 'team3')
+    .maybe('alicely')
+    .activityLink('bob', 'alice', true)    // Bob captured Alice (team2)
+    .activityLink('carol', 'alicely', false) // Carol wants to capture Alice (but doesn't have a direct reference to her yet)
+;
+h.describe('Capturing existing users', {fixtures: fix, user: 'alice@example.com'}, function() {
+    it('capturing an already captured player gets rid of the old capture (also if it goes through a maybe)', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'activityLink/reference')
+                .send({
+                    referenceCode: 'carolDoesSomethingForAlicely'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    Person.findOne({ email: 'alice@example.com' })
+                        .populate('capture.person')
+                        .exec(function (err, alice) {
+                            expect(alice.capture.active).toBe(true, 'alice is still captured');
+                            expect(alice.capture.person.email).toBe('carol@example.com', 'captured by carol');
+                            expect(alice.capture.team).toBe('team3', 'captured by team3');
+                            done();
+                        })
+                    ;
                 })
             ;
         });

@@ -23,7 +23,6 @@ h.describe('Person API methods', function() {
                     expect(res.body.email).toEqual('doge@mac.dog');
                     expect(res.body.fullName).toEqual('Doge MacDog');
                     expect(res.body.nickname).toEqual('Doger');
-                    expect(res.body.role).toEqual('rookie', 'should set "rookie" role as default');
                     expect(res.body.locale).toEqual('de', 'has correct locale');
 
                     // Make sure password is not returned
@@ -35,23 +34,24 @@ h.describe('Person API methods', function() {
         });
     });
 
-    it('cannot set values that are not writable when registering', function() {
-        h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'person')
-                .send({
-                    email: 'doge@do.ge',
-                    fullName: 'Just Doge',
-                    role: 'scout',
-                    password: 'much safe. so security. wow.'
-                })
-                .end(function(res) {
-                    expect(res.body.role).toEqual('rookie', 'should have rookie role even when providing another one');
-                    // TODO: should check that team cannot be set, but it's random, so tricky to test
-                    done();
-                })
-            ;
-        });
-    });
+    // TODO: write new test
+    //it('cannot set values that are not writable when registering', function() {
+    //    h.runAsync(function(done) {
+    //        h.request('POST', h.baseURL + 'person')
+    //            .send({
+    //                email: 'doge@do.ge',
+    //                fullName: 'Just Doge',
+    //                role: 'scout',
+    //                password: 'much safe. so security. wow.'
+    //            })
+    //            .end(function(res) {
+    //                expect(res.body.role).toEqual('rookie', 'should have rookie role even when providing another one');
+    //                // TODO: should check that team cannot be set, but it's random, so tricky to test
+    //                done();
+    //            })
+    //        ;
+    //    });
+    //});
 
     it('can register as a full user from partial user (that already entered reference code)', function() {
         h.runAsync(function(done) {
@@ -123,16 +123,14 @@ h.describe('Person API methods for logged in user', function() {
                 expect(me.id).toEqual('000000000000000000000001');
                 expect(me.email).toEqual('foo@bar.baz');
                 expect(me.fullName).toEqual('Alice Alison');
-                expect(me.role).toEqual('veteran');
                 expect(me.team).toEqual('team1');
                 expect(me.type).toEqual('user');
                 expect(me.locale).toEqual('en');
                 expect(me.completedMissions).toBeGreaterThan(1, 'did a few missions');
                 expect(typeof me.password).toEqual('undefined', 'password should not be returned');
                 expect(typeof me.nickname).toEqual('string', 'should have a nickname');
-                expect(typeof me.strength).toEqual('number', 'should have a strength');
-                expect(typeof me.hits).toEqual('number', 'should have hits');
-                expect(typeof me.isCaptured).toEqual('boolean', 'should have a isCaptured flag');
+                expect(typeof me.capture).toEqual('object', 'should have a capture object');
+                expect(typeof me.capture.active).toEqual('boolean', 'should have a capture.active flag');
 
                 done();
             });
@@ -186,13 +184,11 @@ h.describe('Person API methods for logged in user trying naughty things', functi
         h.runAsync(function(done) {
             h.request('PUT', h.baseURL + 'person/me')
                 .send({
-                    role: 'scout',
                     type: 'maybe'
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
 
-                    expect(res.body.role).toEqual('veteran', 'role has not changed');
                     expect(res.body.type).toEqual('user', 'type has not changed');
 
                     done();

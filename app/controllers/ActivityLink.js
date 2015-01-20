@@ -8,7 +8,13 @@ var ActivityLink = mongoose.model('ActivityLink');
 var Person = mongoose.model('Person');
 var GraphNode = mongoose.model('GraphNode');
 
-// TODO: test this thoroughly
+/**
+ * Accepts a reference code and completes the corresponding activity link.
+ * TODO: test this thoroughly
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.referenceCode = function(req, res, next) {
     // TODO: make sure the given user is allowed to use the reference code:
     // if the activityLink was created already with an existing user, only that user can enter the code
@@ -40,13 +46,6 @@ exports.referenceCode = function(req, res, next) {
                 cb(err);
             })
         ;
-    };
-
-    var updateActivityLink = function(cb) {
-        activityLink.completedAt = Date.now();
-        activityLink.save(function(err) {
-            cb(err);
-        });
     };
 
     /**
@@ -98,11 +97,18 @@ exports.referenceCode = function(req, res, next) {
         }
     };
 
+    var updateActivityLink = function(cb) {
+        activityLink.completedAt = Date.now();
+        activityLink.save(function(err) {
+            cb(err);
+        });
+    };
+
     // TODO: better error and input checking along the way
     async.series([
         findActivityLink,
-        updateActivityLink,
         mergePerson,
+        updateActivityLink
     ], function(err) {
         if (err) {
             return next(err);

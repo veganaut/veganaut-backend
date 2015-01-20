@@ -45,7 +45,7 @@ var computeScores = function(next) {
                             throw new Error('Illegal person type: ' + person.getType());
                     }
 
-                    if (person.isCaptured()) {
+                    if (person.capture.active) {
                         result[person.team].captured += 1;
                     }
                 });

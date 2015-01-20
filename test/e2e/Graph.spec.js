@@ -22,18 +22,13 @@ h.describe('Graph API methods', function() {
                 // Validate all the nodes
                 nodeKeys.forEach(function(id) {
                     var node = res.body.nodes[id];
-
                     expect(typeof node.id).toBe('string', 'id is string');
                     expect(typeof node.nickname).toBe('string', 'nickname is string');
                     expect(typeof node.type).toBe('string', 'type is string');
                     expect(node.type).toMatch(/^(user|baby|maybe)$/, 'type is one of user,baby or maybe');
                     //expect(typeof node.team).toBe('string', 'team is a string');  can be undefined
-                    expect(node.role).toMatch(/^(rookie|scout|veteran|)$/, 'role is one of rookie,scout or veteran');
-                    expect(typeof node.strength).toBe('number', 'strength is a number');
-                    expect(node.strength).toBeGreaterThan(-1, '... and positive');
-                    expect(typeof node.hits).toBe('number', 'hits is a number');
-                    expect(node.hits).toBeGreaterThan(-1, '... and positive');
-                    expect(typeof node.isCaptured).toBe('boolean', 'isCaptured is a boolean');
+                    expect(typeof node.capture).toBe('object', 'capture is an object');
+                    expect(typeof node.capture.active).toBe('boolean', 'capture.active is a boolean');
                     expect(typeof node.relation).toBe('string', 'relation is a string');
                     switch (node.relation) {
                     case 'me':

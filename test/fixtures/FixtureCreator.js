@@ -45,26 +45,12 @@ var capitalize = function(s) {
  *
  * @param {string} name
  * @param {string} [team]
- * @param {string} [role]
  * @returns {FixtureCreator}
  */
-FixtureCreator.prototype.user = function(name, team, role) {
+FixtureCreator.prototype.user = function(name, team) {
     // Assign random values when they are not provided
     if (typeof team === 'undefined') {
         team = _.sample(constants.TEAMS);
-    }
-
-    if (typeof role === 'undefined') {
-        var rand = Math.random();
-        if (rand < 0.33) {
-            role = 'rookie';
-        }
-        else if (rand < 0.67) {
-            role = 'scout';
-        }
-        else {
-            role = 'veteran';
-        }
     }
 
     this._fixtures[name] = new Person({
@@ -72,8 +58,7 @@ FixtureCreator.prototype.user = function(name, team, role) {
         email: name + '@example.com',
         password: name,
         fullName: capitalize(name) + ' Example',
-        team: team,
-        role: role
+        team: team
     });
 
     return this;

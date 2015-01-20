@@ -19,10 +19,6 @@ var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
 var crypto = require('crypto');
 
-// Constants used in strength and hits computation
-var INNATE_STRENGTH = {rookie: 1, scout: 3, veteran: 10, nonUser: 0.5};
-var MULTIPLE_LINKS_FACTOR = 0.5;
-
 function generateNickname() {
     return 'Veganaut-' + ((1000000 * Math.random()).toFixed(0));
 }
@@ -45,14 +41,19 @@ var personSchema = new Schema({
     locale: {type: String, default: 'en', enum: ['en', 'de']},
 
     team: {type: String, enum: constants.TEAMS},
-    role: {type: String, enum: ['rookie', 'scout', 'veteran'], default: 'rookie'}
+    capture: {
+        active: {type: Boolean, default: false},
+        person: {type: Schema.Types.ObjectId, ref: 'Person'},
+        team: {type: String, enum: constants.TEAMS},
+        pointsUntilFree: {type: Number}
+    }
 });
 
 personSchema.pre('save', function(next) {
     var user = this;
 
     if (this.isUser()) {
-        _.each(['fullName', 'role', 'email', 'team'], function(key) {
+        _.each(['fullName', 'email', 'team'], function(key) {
             if (typeof user[key] === 'undefined') {
                 return next(new Error('Required field ' + key + ' missing for Person of type user.'));
             }
@@ -117,7 +118,7 @@ personSchema.methods.populateActivityLinks = function(next) {
 };
 
 personSchema.methods.isUser = function() {
-    return typeof this.password !== 'undefined';
+    return (typeof this.password !== 'undefined');
 };
 
 personSchema.methods.getType = function() {
@@ -136,78 +137,6 @@ personSchema.methods.getType = function() {
     }
 };
 
-personSchema.methods.isCaptured = function() {
-    return (this.getHits() >= this.getStrength());
-};
-
-// Computes the strength of a person.
-//
-// A person has an innate strength depending on their role. It also gets
-// strength from every activity link for which it is a source, and from every
-// incoming activity link of a teammate.
-//
-// Multiple activity links between the same pair of people give decreasing
-// amounts of strength. The first link has a value of 1, the second
-// MULTIPLE_LINKS_FACTOR, the third MULTIPLE_LINKS_FACTOR**2, etc.
-personSchema.methods.getStrength = function() {
-    if (typeof(this._activityLinks) === 'undefined') {
-        throw 'Must call populateActivityLinks before calling getStrength';
-    }
-
-    var that = this;
-
-    var innateStrengthType = that.isUser() ? that.role : 'nonUser';
-    var strength = INNATE_STRENGTH[innateStrengthType];
-    var completedActivityLinks = _.filter(that._activityLinks, 'completedAt');
-    var nLinksByOther = {};
-    _.forEach(completedActivityLinks, function(al) {
-        var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
-        nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
-        var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);
-
-        if (al.source.id === that.id) {
-            strength += activityLinkValue;
-        }
-        else {
-            if (al.source.team === that.team) {
-                strength += activityLinkValue;
-            }
-        }
-    });
-
-    return strength;
-};
-
-// Computes the hits of a person.
-//
-// A person incurs hits when a member of the opponent team creates an activity
-// link.
-//
-// Multiple activity links between the same pair of people give decreasing
-// amounts of hit points, just like for strength.
-personSchema.methods.getHits = function() {
-    if (typeof(this._activityLinks) === 'undefined') {
-        throw 'Must call populateActivityLinks before calling getHits';
-    }
-
-    var that = this;
-
-    var hits = 0;
-    var completedActivityLinks = _.filter(that._activityLinks, 'completedAt');
-    var nLinksByOther = {};
-    _.forEach(completedActivityLinks, function(al) {
-        var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
-        nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
-        var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);
-
-        if (al.source.id !== that.id && al.source.team !== that.team) {
-            hits += activityLinkValue;
-        }
-    });
-
-    return hits;
-};
-
 /**
  * toJSON transform method is automatically called when converting a person
  * to JSON (as before sending it over the API)
@@ -215,18 +144,22 @@ personSchema.methods.getHits = function() {
  */
 personSchema.options.toJSON = {
     transform: function(doc) {
+        // Pick basic properties
         var ret = _.pick(doc,
             'id', 'email', 'nickname', 'fullName', 'gender', 'locale',
-            'dateOfBirth', 'phone', 'address', 'team', 'role'
+            'dateOfBirth', 'phone', 'address', 'team'
         );
-        if (doc._activityLinks) {
-            ret = _.assign(ret, {
-                type: doc.getType(),
-                strength: doc.getStrength(),
-                hits: doc.getHits(),
-                isCaptured: doc.isCaptured()
-            });
+
+        // Attach capture if it has been loaded
+        if (typeof doc.capture.active !== 'undefined') {
+            ret.capture = doc.capture;
         }
+
+        // Add type if the activity links have been loaded
+        if (doc._activityLinks) {
+            ret.type = doc.getType();
+        }
+
         return ret;
     }
 };
