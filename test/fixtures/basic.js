@@ -57,8 +57,8 @@ var getFixtures = function() {
         source: fix.alice.id,
         target: fix.bob.id,
         location: 'Bern, Switzerland',
-        startDate: '2014-01-10',
-        success: true,
+        createdAt: '2014-01-10',
+        completedAt: '2014-01-11',
         referenceCode: 'Ff8tEQ'
     });
 
@@ -67,8 +67,8 @@ var getFixtures = function() {
         source: fix.alice.id,
         target: fix.carol.id,
         location: 'Bern',
-        startDate: '2014-02-20',
-        success: true,
+        createdAt: '2014-02-20',
+        completedAt: '2014-01-22',
         referenceCode: '30Ajak'
     });
 
@@ -76,7 +76,6 @@ var getFixtures = function() {
         activity: fix.buyActivity.id,
         source: fix.alice.id,
         target: fix.dave.id,
-        success: false,
         referenceCode: 'OiWCrB'
     });
 
@@ -84,7 +83,6 @@ var getFixtures = function() {
         activity: fix.buyActivity.id,
         source: fix.bob.id,
         target: fix.eve.id,
-        success: false,
         referenceCode: 'AK92oj'
     });
 

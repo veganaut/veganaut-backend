@@ -27,7 +27,7 @@ exports.referenceCode = function(req, res, next) {
                     res.status(404);
                     err = new Error('Could not find activityLink with referenceCode: ' + referenceCode);
                 }
-                else if (link.success === true) {
+                else if (typeof link.completedAt !== 'undefined') {
                     res.status(409);
                     err = new Error('This referenceCode has already been used: ' + referenceCode);
                 }
@@ -43,7 +43,7 @@ exports.referenceCode = function(req, res, next) {
     };
 
     var updateActivityLink = function(cb) {
-        activityLink.success = true;
+        activityLink.completedAt = Date.now();
         activityLink.save(function(err) {
             cb(err);
         });
@@ -183,8 +183,7 @@ exports.link = function(req, res, next) {
             activity: activity ? activity.id : undefined,
             source: user.id,
             target: targetPerson.id,
-            location: req.body.location,
-            startDate: req.body.startDate
+            location: req.body.location
         });
 
         link.save(function(err) {
@@ -194,7 +193,7 @@ exports.link = function(req, res, next) {
     };
 
     // TODO: better error and input checking along the way
-    // TODO: should roll back changes if any later step fails (e.g. startDate is not valid -> person and node is created, but link not)
+    // TODO: should roll back changes if any later step fails
     async.series([
         findActivity,
         createPersonIfNeeded,
@@ -213,8 +212,8 @@ exports.openList = function(req, res, next) {
     var me = req.user;
 
     // Query all the activityLinks from the logged in user that
-    // aren't successful yet
-    ActivityLink.find({source: me.id, success: false})
+    // aren't completed yet
+    ActivityLink.find({source: me.id, completedAt: undefined})
         .populate('target', 'fullName')
         .populate('activity', 'name')
         .exec(function(err, links) {

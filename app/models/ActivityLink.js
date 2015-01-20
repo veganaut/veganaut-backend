@@ -18,9 +18,8 @@ var activityLinkSchema = new Schema({
     activity: { type: Schema.Types.ObjectId, ref: 'Activity' },
     source: { type: Schema.Types.ObjectId, ref: 'Person' },
     target: { type: Schema.Types.ObjectId, ref: 'Person' },
-    location: String,
-    startDate: Date,
-    success: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now },
+    completedAt: Date,
     referenceCode: { type: String, default: generateReferenceCode }
 });
 

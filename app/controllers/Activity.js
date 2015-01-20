@@ -19,7 +19,6 @@ exports.list = function(req, res) {
                 result.name = a.name;
                 result.className = a.className;
                 result.timeLimit = a.timeLimit;
-                result.givesVegBytes = a.givesVegBytes;
 
                 return result;
             });

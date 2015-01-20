@@ -128,7 +128,7 @@ personSchema.methods.getType = function() {
     if (this.isUser()) {
         return 'user';
     }
-    else if (_.some(this._activityLinks, 'success')) {
+    else if (_.some(this._activityLinks, 'completedAt')) {
         return 'baby';
     }
     else {
@@ -158,9 +158,9 @@ personSchema.methods.getStrength = function() {
 
     var innateStrengthType = that.isUser() ? that.role : 'nonUser';
     var strength = INNATE_STRENGTH[innateStrengthType];
-    var successfulActivityLinks = _.filter(that._activityLinks, 'success');
+    var completedActivityLinks = _.filter(that._activityLinks, 'completedAt');
     var nLinksByOther = {};
-    _.forEach(successfulActivityLinks, function(al) {
+    _.forEach(completedActivityLinks, function(al) {
         var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
         nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
         var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);
@@ -193,9 +193,9 @@ personSchema.methods.getHits = function() {
     var that = this;
 
     var hits = 0;
-    var successfulActivityLinks = _.filter(that._activityLinks, 'success');
+    var completedActivityLinks = _.filter(that._activityLinks, 'completedAt');
     var nLinksByOther = {};
-    _.forEach(successfulActivityLinks, function(al) {
+    _.forEach(completedActivityLinks, function(al) {
         var otherId = (al.source.id === that.id) ? al.target.id : al.source.id;
         nLinksByOther[otherId] = (nLinksByOther[otherId] || 0) + 1;
         var activityLinkValue = Math.pow(MULTIPLE_LINKS_FACTOR, nLinksByOther[otherId] - 1);

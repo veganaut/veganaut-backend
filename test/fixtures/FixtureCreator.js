@@ -98,13 +98,14 @@ FixtureCreator.prototype.maybe = function(name) {
  * Adds an activity link to the fixtures
  * @param {string} source Name of the source
  * @param {string} target Name of the target
- * @param {boolean} [success=true]
+ * @param {boolean} [completed=true] Whether the link is completed
  * @returns {FixtureCreator}
  */
-FixtureCreator.prototype.activityLink = function(source, target, success) {
+FixtureCreator.prototype.activityLink = function(source, target, completed) {
     // Set default value
-    if (typeof success === 'undefined') {
-        success = true;
+    var completedAt;
+    if (typeof completed === 'undefined' || completed === true) {
+        completedAt = Date.now();
     }
     var linkName = source + 'DoesSomethingFor' + capitalize(target);
     var suffix = 0;
@@ -119,7 +120,7 @@ FixtureCreator.prototype.activityLink = function(source, target, success) {
         activity: this._fixtures.buyActivity.id,
         source: this._fixtures[source].id,
         target: this._fixtures[target].id,
-        success: success,
+        completedAt: completedAt,
         referenceCode: linkName
     });
 

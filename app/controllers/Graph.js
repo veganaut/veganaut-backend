@@ -111,7 +111,7 @@ var getGraph = function(person, cb) {
                         completed: 0
                     };
                 }
-                counts[l.source][l.target][l.success ? 'completed' : 'open'] += 1;
+                counts[l.source][l.target][l.completedAt ? 'completed' : 'open'] += 1;
             });
 
             // Convert links to the format needed by the frontend

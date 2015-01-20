@@ -66,8 +66,6 @@ h.describe('ActivityLink API methods', function() {
                     target: {
                         fullName: 'Tester'
                     },
-                    location: 'Bern',
-                    startDate: '01.02.2014',
                     activity: {
                         id: 'a00000000000000000000001'
                     }

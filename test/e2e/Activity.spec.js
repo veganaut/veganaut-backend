@@ -17,7 +17,6 @@ h.describe('Activity API methods', function() {
                 expect(typeof activity.name).toBe('string');
                 expect(typeof activity.className).toBe('string');
                 expect(typeof activity.timeLimit).toBe('number');
-                expect(typeof activity.givesVegBytes).toBe('boolean');
                 done();
             });
         });

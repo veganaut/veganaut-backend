@@ -13,15 +13,13 @@ var getFixtures = function() {
     fix.buyActivity = new Activity({
         _id: 'a00000000000000000000001',
         name: 'Buy something vegan for ...',
-        className: 'Shopping',
-        givesVegBytes: false
+        className: 'Shopping'
     });
 
     fix.cookActivity = new Activity({
         _id: 'a00000000000000000000002',
         name: 'Cook something vegan for ...',
-        className: 'Cooking',
-        givesVegBytes: true
+        className: 'Cooking'
     });
 
     return fix;
