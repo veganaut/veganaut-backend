@@ -3,6 +3,7 @@
 
 var h = require('../helpers_');
 
+// TODO: this whole call has to be thought about again (it's not used by the frontend at the moment)
 h.describe('The Match controller', {fixtures: 'extended'}, function() {
     it('can compute scores', function() {
         h.runAsync(function(done) {
@@ -17,10 +18,10 @@ h.describe('The Match controller', {fixtures: 'extended'}, function() {
                         captured: 0
                     },
                     team2: {
-                        score: 6,
+                        score: 5,
                         users: 7,
                         babies: 0,
-                        captured: 1
+                        captured: 2
                     },
                     team3: {
                         score: 0,
