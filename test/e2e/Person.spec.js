@@ -85,6 +85,7 @@ h.describe('Person API methods', function() {
                 .send({
                     email: 'foo@bar.baz',
                     fullName: 'Dudette That',
+                    nickname: 'Dude',
                     password: 'already has an account but forgot 2 months ago'
                 })
                 .end(function(res) {
@@ -122,6 +123,7 @@ h.describe('Person API methods for logged in user', function() {
                 var me = res.body;
                 expect(me.id).toEqual('000000000000000000000001');
                 expect(me.email).toEqual('foo@bar.baz');
+                expect(me.nickname).toEqual('Alice');
                 expect(me.fullName).toEqual('Alice Alison');
                 expect(me.team).toEqual('team1');
                 expect(me.type).toEqual('user');

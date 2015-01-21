@@ -175,7 +175,11 @@ exports.link = function(req, res, next) {
         }
         else {
             // Create a new person with the given data
-            var newPerson = new Person(_.pick(person, 'fullName'));
+            if (typeof person.nickname === 'undefined') {
+                res.status(400);
+                return cb(new Error('Need to specify nickname of new person.'));
+            }
+            var newPerson = new Person(_.pick(person, 'nickname'));
             newPerson.save(function(err) {
                 targetPerson = newPerson;
                 targetWasCreated = true;
@@ -220,7 +224,7 @@ exports.openList = function(req, res, next) {
     // Query all the activityLinks from the logged in user that
     // aren't completed yet
     ActivityLink.find({source: me.id, completedAt: undefined})
-        .populate('target', 'fullName')
+        .populate('target', 'nickname')
         .populate('activity', 'name')
         .exec(function(err, links) {
             if (err) {
@@ -231,7 +235,7 @@ exports.openList = function(req, res, next) {
             links = _.map(links, function(link) {
                 return {
                     activity: link.activity.name,
-                    target: link.target.fullName,
+                    target: link.target.nickname,
                     referenceCode: link.referenceCode
                 };
             });

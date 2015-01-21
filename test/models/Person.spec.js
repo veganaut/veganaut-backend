@@ -29,7 +29,6 @@ describe('A person', function() {
         var p = new Person({email: 'mynewperson@example.com'});
         expect(p.email).toBe('mynewperson@example.com');
         expect(p.id).toBeTruthy();
-        expect(p.nickname).toMatch(/Veganaut-\d+/);
 
         h.runAsync(function(done) {
             p.save(function(err) {

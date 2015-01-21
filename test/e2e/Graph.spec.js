@@ -37,7 +37,12 @@ h.describe('Graph API methods', function() {
                         expect(typeof node.coordY).toBe('number', 'coordY of me is set');
                         break;
                     case 'friend':
-                        expect(typeof node.fullName).toBe('string', 'fullName of friends is set');
+                        if (node.type === 'user') {
+                            expect(typeof node.fullName).toBe('string', 'fullName of user friends is set');
+                        }
+                        else {
+                            expect(node.fullName).toBeUndefined('fullName of friend that is not a user is *not* set');
+                        }
                         break;
                     case 'friendOfFriend':
                         expect(node.fullName).toBeUndefined('fullName of friendsOfFriends is *not* set');

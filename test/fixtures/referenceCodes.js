@@ -16,6 +16,7 @@ var getFixtures = function() {
         email: 'frank@frank.fr',
         password: 'frank',
         team: 'team2',
+        nickname: 'Frank',
         fullName: 'Frank Frankster'
     });
 

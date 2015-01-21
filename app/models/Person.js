@@ -19,14 +19,11 @@ var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
 var crypto = require('crypto');
 
-function generateNickname() {
-    return 'Veganaut-' + ((1000000 * Math.random()).toFixed(0));
-}
 
 var personSchema = new Schema({
     email: {type: String, unique: true, sparse: true},
     password: String,
-    nickname: {type: String, default: generateNickname},
+    nickname: String,
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
@@ -53,7 +50,7 @@ personSchema.pre('save', function(next) {
     var user = this;
 
     if (this.isUser()) {
-        _.each(['fullName', 'email', 'team'], function(key) {
+        _.each(['fullName', 'nickname', 'email', 'team'], function(key) {
             if (typeof user[key] === 'undefined') {
                 return next(new Error('Required field ' + key + ' missing for Person of type user.'));
             }

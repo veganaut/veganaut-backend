@@ -74,7 +74,7 @@ h.describe('ActivityLink API methods', function() {
             h.request('POST', h.baseURL + 'activityLink')
                 .send({
                     target: {
-                        fullName: 'Tester'
+                        nickname: 'Tester'
                     },
                     activity: {
                         id: 'a00000000000000000000001'
@@ -86,7 +86,12 @@ h.describe('ActivityLink API methods', function() {
                     // Make sure we get a referenceCode back and only that
                     expect(typeof res.body.referenceCode).toEqual('string');
                     expect(Object.keys(res.body)).toEqual(['referenceCode']);
-                    done();
+
+                    Person.findOne({nickname: 'Tester'}, function (err, newPerson) {
+                        expect(newPerson).not.toBeNull('should have created a new person');
+                        expect(newPerson.nickname).toBe('Tester', 'set correct nickname');
+                        done();
+                    });
                 }
             );
         });
@@ -350,3 +355,5 @@ h.describe('Capturing existing users', {fixtures: fix, user: 'alice@example.com'
         });
     });
 });
+
+// TODO: add spec that new player should get team of the link, not of the person adding him/her

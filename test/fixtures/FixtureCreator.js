@@ -57,6 +57,7 @@ FixtureCreator.prototype.user = function(name, team) {
         _id: intToId(_.size(this._fixtures)),
         email: name + '@example.com',
         password: name,
+        nickname: capitalize(name),
         fullName: capitalize(name) + ' Example',
         team: team
     });
@@ -73,7 +74,7 @@ FixtureCreator.prototype.user = function(name, team) {
 FixtureCreator.prototype.maybe = function(name) {
     this._fixtures[name] = new Person({
         _id: intToId(_.size(this._fixtures)),
-        fullName: capitalize(name) + ' the Maybe'
+        nickname: capitalize(name)
     });
 
     return this;
