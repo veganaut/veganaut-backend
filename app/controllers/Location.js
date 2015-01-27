@@ -118,45 +118,14 @@ var findProducts = function(obj, cb) {
     });
 };
 
-var getProductRatings = function(obj, cb) {
-    // TODO: the average should be calculated on write, not on read
-    obj.ratings = {};
-    Missions.RateOptionsMission.find({location: obj.location.id}, 'outcome', function(err, missions) {
-        if (!err) {
-            _.each(missions, function(mission) {
-                _.each(mission.outcome, function(rate) {
-                    obj.ratings[rate.product] = obj.ratings[rate.product] || {
-                        total: 0,
-                        num: 0
-                    };
-                    obj.ratings[rate.product].total += rate.info;
-                    obj.ratings[rate.product].num += 1;
-                });
-            });
-        }
-        cb(err, obj);
-    });
-};
-
 var handleSingleLocationResult = function(err, obj) {
     if (err) {
         return obj.next(err);
     }
     var returnObj = obj.location.toJSON();
 
-    // Add the products and rating
-    returnObj.products = [];
-    _.each(obj.products, function(p) {
-        var productJson = p.toJSON();
-        if (obj.ratings[p.id]) {
-            var rating = obj.ratings[p.id];
-            productJson.rating = {
-                average: rating.total / rating.num,
-                numRatings: rating.num
-            };
-        }
-        returnObj.products.push(productJson);
-    });
+    // Add the products
+    returnObj.products = obj.products;
 
     return obj.res.send(returnObj);
 };
@@ -182,8 +151,7 @@ exports.get = function(req, res, next) {
             findLocation(obj, cb);
         },
         computeVisitBonusDate,
-        findProducts,
-        getProductRatings
+        findProducts
     ], handleSingleLocationResult);
 };
 
@@ -206,8 +174,7 @@ exports.update = function(req, res, next) {
         },
         updateLocation,
         computeVisitBonusDate,
-        findProducts,
-        getProductRatings
+        findProducts
     ], handleSingleLocationResult);
 };
 

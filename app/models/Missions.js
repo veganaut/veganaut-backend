@@ -8,11 +8,11 @@
 
 var util = require('util');
 var _ = require('lodash');
+var async = require('async');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
 
-require('./Product');
 require('./Person');
 var Person = mongoose.model('Person');
 
@@ -115,6 +115,19 @@ missionSchema.pre('save', function(next) {
             }
             return that.location.notifyMissionCompleted(that, next);
         });
+
+        // Check if this is a product mission
+        // TODO: make this check easier
+        if (allMissions.isProductMission(allMissions.getModelForIdentifier(that.getIdentifier()))) {
+            that.populate('outcome.product', function(err) {
+                if (err) {
+                    return next(err);
+                }
+                async.each(that.outcome, function(outcome, cb) {
+                    outcome.product.notifyProductMissionCompleted(that, outcome, cb);
+                }, next);
+            });
+        }
     });
 });
 
@@ -143,11 +156,18 @@ missionSchema.options.toJSON = {
     transform: function(doc, ret) {
         // Check if this is a sub document
         if (typeof doc.ownerDocument === 'function') {
+            // TODO: how do I know which subdoc I'm working on?
+            // Check if this subdoc has a product that is populated
+            if (typeof ret.product === 'object') {
+                // Depopulate it
+                ret.product = ret.product.id;
+            }
+
             // Don't expose the id of the sub document
             delete ret._id;
         }
         else {
-            // Pick from the ret object, since subdocs other models are already transformed
+            // Pick from the ret object, since subdocs and other models are already transformed
             return _.assign(_.pick(ret, ['completed', 'outcome', 'points', 'person', 'location']), {
                 id: ret._id,
                 type: doc.getIdentifier()

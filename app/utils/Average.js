@@ -17,9 +17,30 @@
 
 var inflection = require('inflection');
 
-var Average = function(name, schema) {
+/**
+ * We calculate a "rank" of the average that can be used for
+ * sorting by the average. For the rank, a number of exactly
+ * average shadow values are added to the actual values, to
+ * discount items that have only a very small amount of values
+ * @type {number}
+ */
+var RANK_NUM_AVERAGE_RATINGS = 2;
 
+/**
+ * Average constructor
+ * @param {string} name Name of the average field
+ * @param {number} min Minimum possible value
+ * @param {number} max Maximum possible value
+ * @param {Schema} schema Schema to add the field to
+ * @constructor
+ */
+var Average = function(name, min, max, schema) {
     var that = this;
+
+    that.minValue = min;
+    that.maxValue = max;
+    that.averageValue = (min + max) / 2;
+
     that.propertyName = inflection.pluralize(name);
     that.virtualName = that.propertyName + '.average';
     that.addMethodName = 'add' + inflection.classify(name);
@@ -28,7 +49,8 @@ var Average = function(name, schema) {
     var averageProperty = {};
     averageProperty[that.propertyName] = {
         total: Number,
-        count: Number
+        count: Number,
+        rank: Number
     };
     schema.add(averageProperty);
 
@@ -43,8 +65,13 @@ var Average = function(name, schema) {
 
     // A method to add a value
     schema.methods[that.addMethodName] = function(value) {
-        this[that.propertyName].total += value;
-        this[that.propertyName].count += 1;
+        var property = this[that.propertyName];
+        property.total += value;
+        property.count += 1;
+        property.rank = (property.total + that.averageValue * RANK_NUM_AVERAGE_RATINGS) /
+            (property.count + RANK_NUM_AVERAGE_RATINGS)
+        ;
+
         this.markModified(that.propertyName);
     };
 
@@ -57,6 +84,10 @@ var Average = function(name, schema) {
         }
         if (typeof this[that.propertyName].count !== 'number') {
             this[that.propertyName].count = 0;
+            this.markModified(that.propertyName);
+        }
+        if (typeof this[that.propertyName].rank !== 'number') {
+            this[that.propertyName].rank = 0;
             this.markModified(that.propertyName);
         }
 

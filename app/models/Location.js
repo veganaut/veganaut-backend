@@ -45,8 +45,8 @@ var locationSchema = new Schema({
 });
 
 // Locations keep track of average quality and effort
-new Average('quality', locationSchema);
-new Average('effort', locationSchema);
+new Average('quality', 1, 5, locationSchema);
+new Average('effort', -1, 1, locationSchema);
 
 
 /**

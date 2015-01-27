@@ -358,6 +358,56 @@ h.describe('Products missions can refer to existing products.', function() {
     });
 });
 
+h.describe('Update of product rating.', function() {
+    it('correctly updates options rating when submitting rateOptions mission.', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000006',
+                    type: 'rateOptions',
+                    outcome: [
+                        {
+                            product: '000000000000000000000101',
+                            info: 5
+                        },
+                        {
+                            product: '000000000000000000000102',
+                            info: 1
+                        }
+                    ],
+                    points: { team1: 10 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('rateOptions', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+
+                    h.request('GET', h.baseURL + 'location/000000000000000000000006')
+                        .end(function(res) {
+                            var products = res.body.products;
+                            var curry =_.findWhere(products, { id: '000000000000000000000101' });
+                            //console.log(curry);
+
+                            //return done();
+                            expect(curry).toBeDefined('curry product is defined');
+                            expect(curry.rating).toBeDefined('curry has a rating');
+                            expect(curry.rating.average).toBe(4.5, 'curry  has correct rating');
+                            expect(curry.rating.numRatings).toBe(2, 'curry hast correct number of ratings');
+
+                            var samosa =_.findWhere(products, { id: '000000000000000000000102' });
+                            expect(samosa).toBeDefined('samosa product is defined');
+                            expect(samosa.rating).toBeDefined('samosa has a rating');
+                            expect(samosa.rating.average).toBe(2, 'samosa  has correct rating');
+                            expect(samosa.rating.numRatings).toBe(2, 'samosa hast correct number of ratings');
+                            done();
+                        })
+                    ;
+                })
+            ;
+        });
+    });
+});
+
 h.describe('Mission API methods and their influence on locations.', function() {
     it('location can change owner when new mission is submitted', function() {
         h.runAsync(function(done) {
