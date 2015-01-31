@@ -3,7 +3,6 @@
  */
 
 'use strict';
-/* global describe, it, expect */
 
 var _ = require('lodash');
 var mongoose = require('mongoose');

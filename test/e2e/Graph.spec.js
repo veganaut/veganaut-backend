@@ -1,5 +1,4 @@
 'use strict';
-/* global it, expect */
 
 var _ = require('lodash');
 var h = require('../helpers_');

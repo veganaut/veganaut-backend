@@ -5,7 +5,6 @@
  * files called "helpers.js" specially.
  */
 'use strict';
-/* global runs, waitsFor, describe */
 
 var _ = require('lodash');
 
@@ -16,7 +15,6 @@ exports.baseURL = 'http://localhost:' + port + '/';
 
 // Export beforeAll and afterAll
 require('jasmine-before-all');
-/* global beforeAll, afterAll */
 exports.beforeAll = beforeAll;
 exports.afterAll = afterAll;
 

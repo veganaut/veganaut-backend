@@ -3,7 +3,6 @@
  */
 
 'use strict';
-/* global describe, it, expect */
 
 var h = require('../helpers_');
 

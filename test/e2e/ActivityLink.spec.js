@@ -1,5 +1,4 @@
 'use strict';
-/* global it, expect */
 
 var h = require('../helpers_');
 var mongoose = require('mongoose');
