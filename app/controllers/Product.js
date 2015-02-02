@@ -6,7 +6,7 @@ var Location = mongoose.model('Location');
 var Product = mongoose.model('Product');
 
 exports.list = function(req, res, next) {
-  var products = [], coords;
+  var coords;
   var limit = parseInt(req.query.limit, 10) || 20;
   var skip = parseInt(req.query.skip, 10) || 0;
   var error;
@@ -63,33 +63,31 @@ exports.list = function(req, res, next) {
   Location
     .find(coords)
     .exec(function(err, locations) {
+        console.log(1, locations);
       if (err) {
         return next(err);
       }
         var ObjectId = mongoose.Types.ObjectId;
+        var ids = [];
       async.each(locations, function(location, cb) {
-        //do stuffs
-        Product
-          .find({'location': new ObjectId(location._id)})
-          .skip(skip)
-          .limit(limit)
-          .sort('-ratings.rank -ratings.count')
-          .exec(function(err, product) {
-            async.each(product, function(prod, callback) {
-              products.push(prod);
-              callback();
-            },
-            function() {
-            });
-          cb();
-          });
+        ids.push(new ObjectId(location._id));
+        console.log(2, ids);
+        cb();
       },
       function(err) {
         if (err) {return next(err); }
-        var response = {};
-        response.products = products;
-        response.totalProducts = products.length;
-        return res.send(response);
+        Product
+          .find({'location': {$in: ids}})
+          .skip(skip)
+          .limit(limit)
+          .sort('-ratings.rank -ratings.count')
+          .exec(function(err, products) {
+            if (err) {return next(err); }
+            var response = {};
+            response.products = products;
+            response.totalProducts = products.length;
+            return res.send(response);
+          });
       });
     });
 };
