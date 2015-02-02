@@ -25,6 +25,7 @@ var Person = require('./app/controllers/Person');
 var Score = require('./app/controllers/Score');
 var Session = require('./app/controllers/Session');
 var PasswordResetEmail = require('./app/controllers/PasswordResetEmail');
+var Product = require('./app/controllers/Product');
 
 // Create the app
 var app = express();
@@ -114,6 +115,10 @@ app.get('/location/:locationId/mission/list', cors(), Session.restrict, Location
 // Score
 app.options('/score', cors());
 app.get('/score', cors(), Session.restrict, Score.stats);
+
+//Products
+app.options('/product/list', cors());
+app.get('/product/list', cors(), Product.list);
 
 // GeoIP
 app.options('/geoip', cors());
