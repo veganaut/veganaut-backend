@@ -5,11 +5,17 @@ var mongoose = require('mongoose');
 var Location = mongoose.model('Location');
 var Product = mongoose.model('Product');
 
+//Constant values for the controller
+var NUM_MAX_LIMIT = 20,
+    NUM_SKIP_MIN_VALUE = 0,
+    NUM_MIN_LIMIT = 1,
+    NUM_MAX_BOUNDING_BOX = 180;
+
 exports.list = function(req, res, next) {
-  var coords;
-  var limit = parseInt(req.query.limit, 10) || 20;
-  var skip = parseInt(req.query.skip, 10) || 0;
-  var error;
+  var coords, ObjectId = mongoose.Types.ObjectId, ids = [], limit, skip, error, box = [[],[]];
+  limit = parseInt(req.query.limit, 10) || NUM_MAX_LIMIT;
+  skip = parseInt(req.query.skip, 10) || NUM_SKIP_MIN_VALUE;
+
   function isInteger(element) {
     return parseFloat(element);
   }
@@ -18,10 +24,10 @@ exports.list = function(req, res, next) {
   if(typeof limit !== 'number') {
     error = new Error('limit should be a Number');
     return next(error);
-  } else if (limit > 20) {
+  } else if (limit > NUM_MAX_LIMIT) {
     error = new Error('limit should be less than twenty');
     return next(error);
-  } else if (limit < 1) {
+  } else if (limit < NUM_MIN_LIMIT) {
     error = new Error('limit should be greater than one');
     return next(error);
   }
@@ -30,7 +36,7 @@ exports.list = function(req, res, next) {
   if (typeof skip !== 'number') {
     error = new Error('Skip should be a number');
     return next(error);
-  } else if (skip < 0) {
+  } else if (skip < NUM_SKIP_MIN_VALUE) {
     error = new Error('Skip should be equal to or greater than 0');
     return next(error);
   }
@@ -48,11 +54,10 @@ exports.list = function(req, res, next) {
     bounds = bounds.map(function(x) {
       return parseFloat(x);
     });
-    if (Math.abs(bounds[2] - bounds[0]) >= 180) {
+    if (Math.abs(bounds[2] - bounds[0]) >= NUM_MAX_BOUNDING_BOX) {
       error = new Error('Bounding box is too big');
       return next(error);
     }
-    var box = [[],[]];
     box[0][0] = bounds[0];
     box[0][1] = bounds[1];
     box[1][0] = bounds[2];
@@ -63,15 +68,12 @@ exports.list = function(req, res, next) {
   Location
     .find(coords)
     .exec(function(err, locations) {
-        console.log(1, locations);
       if (err) {
         return next(err);
       }
-        var ObjectId = mongoose.Types.ObjectId;
-        var ids = [];
       async.each(locations, function(location, cb) {
+        //Pushes all ids into an array as expected by MongoDB
         ids.push(new ObjectId(location._id));
-        console.log(2, ids);
         cb();
       },
       function(err) {
