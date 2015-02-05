@@ -17,7 +17,7 @@ var ActivityLink = mongoose.model('ActivityLink');
 
 var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
-var crypto = require('crypto');
+var cryptoUtils = require('../utils/cryptoUtils');
 
 
 var personSchema = new Schema({
@@ -59,7 +59,7 @@ personSchema.pre('save', function(next) {
 
     async.series([
         function(cb) {
-            // only hash the password if it has been modified (or is new)
+            // Only hash the password if it has been modified (or is new)
             if (user.isModified('password')) {
                 bcrypt.hash(user.password, BCRYPT_WORK_FACTOR, function(err, hash) {
                     if (err) {
@@ -76,22 +76,13 @@ personSchema.pre('save', function(next) {
             }
         },
         function() {
-            if (user.isModified('resetPasswordToken')) {
-                if (user.resetPasswordToken) {
-                    var shasum = crypto.createHash('sha1');
-                    shasum.update(user.resetPasswordToken);
-                    // override the cleartext token with the hashed one
-                    user.resetPasswordToken = shasum.digest('hex');
-                }
-                next();
+            if (user.isModified('resetPasswordToken') && user.resetPasswordToken) {
+                // Override the cleartext token with the hashed one
+                user.resetPasswordToken = cryptoUtils.hashResetToken(user.resetPasswordToken);
             }
-            else {
-                return next();
-            }
+            return next();
         }
-    ])
-    ;
-
+    ]);
 })
 ;
 
