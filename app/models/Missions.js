@@ -56,7 +56,8 @@ var MissionSchema = function(outcomeType) {
         person: {type: Schema.Types.ObjectId, ref: 'Person', required: true},
         location: {type: Schema.Types.ObjectId, ref: 'Location', required: true},
         points: points,
-        completed: {type: Date}
+        completed: {type: Date},
+        isFirstOfType: {type: Boolean}
     });
 
     // Add the outcome (unless we're in the base schema, which doesn't have it)
@@ -73,10 +74,38 @@ var MissionSchema = function(outcomeType) {
 util.inherits(MissionSchema, Schema);
 
 var missionSchema = new MissionSchema();
-missionSchema.pre('save', function(next) {
+missionSchema.pre('save', function(next){
     var that = this;
     var missionType = that.getType();
 
+    if(that.isFirstOfType === undefined){
+        that.getMissionCount(missionType, that.location, function(err, count){
+            if(err){
+                return next(err);
+            }
+            if (count <= 0){
+                that.isFirstOfType = true;
+            }else{
+                that.isFirstOfType = false;
+            }
+            return next();
+        });
+    }
+});
+
+missionSchema.pre('save', function(next){
+    var that = this;
+    that.populate('person', function(err) {
+        if (err) {
+            return next(err);
+        }
+        return that.person.notifyMissionCompleted(that, next);
+    });
+});
+
+missionSchema.pre('save', function(next) {
+    var that = this;
+    var missionType = that.getType();
     // Validate points
     Person.findById(that.person, function(err, person) {
         if (err) {
@@ -131,6 +160,8 @@ missionSchema.pre('save', function(next) {
     });
 });
 
+
+
 /**
  * Returns the type of the mission
  * @returns {string}
@@ -175,6 +206,16 @@ missionSchema.options.toJSON = {
         }
 
     }
+};
+
+/**
+ * Returns the count of the missions which have the same type and the same location.
+ * @returns {number}
+ */
+missionSchema.methods.getMissionCount = function(missionType, locationId, callback) {
+    allMissions.Mission.count({"__t":missionType, "location": locationId}, function(err, count){
+         callback(err, count);
+    });
 };
 
 // Create Mission model

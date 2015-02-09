@@ -22,7 +22,13 @@ var getFixtures = function() {
         password: 'foobar',
         team: 'team1',
         nickname: 'Alice',
-        fullName: 'Alice Alison'
+        fullName: 'Alice Alison',
+        attributes:{
+            pioneer:0,
+            diplomat:0,
+            evaluator:0,
+            gourmet:0
+        }
     });
 
     fix.bob = new Person({
@@ -32,23 +38,47 @@ var getFixtures = function() {
         team: 'team2',
         nickname: 'Bob',
         fullName: 'Bob Burton',
-        gender: 'male'
+        gender: 'male',
+        attributes:{
+            pioneer:0,
+            diplomat:0,
+            evaluator:0,
+            gourmet:0
+        }
     });
 
     fix.carol = new Person({
         _id: '000000000000000000000003',
         team: 'team1',
-        nickname: 'Carol'
+        nickname: 'Carol',
+        attributes:{
+            pioneer:0,
+            diplomat:0,
+            evaluator:0,
+            gourmet:0
+        }
     });
 
     fix.dave = new Person({
         _id: '000000000000000000000004',
-        nickname: 'Dave Donaldsson'
+        nickname: 'Dave Donaldsson',
+        attributes:{
+            pioneer:0,
+            diplomat:0,
+            evaluator:0,
+            gourmet:0
+        }
     });
 
     fix.eve = new Person({
         _id: '000000000000000000000005',
-        nickname: 'Eve'
+        nickname: 'Eve',
+        attributes:{
+            pioneer:0,
+            diplomat:0,
+            evaluator:0,
+            gourmet:0
+        }
     });
 
 

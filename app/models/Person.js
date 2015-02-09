@@ -43,6 +43,12 @@ var personSchema = new Schema({
         person: {type: Schema.Types.ObjectId, ref: 'Person'},
         team: {type: String, enum: constants.TEAMS},
         pointsUntilFree: {type: Number}
+    },
+    attributes: {
+        pioneer: {type: Number, default: 0},
+        diplomat: {type: Number, default: 0},
+        evaluator: {type: Number, default: 0},
+        gourmet: {type: Number, default: 0}
     }
 });
 
@@ -134,6 +140,61 @@ personSchema.methods.getType = function() {
     }
 };
 
+personSchema.methods.notifyMissionCompleted = function(mission, next) {
+    var that = this;
+    var INC = 1;
+    var PIONEER_INC = INC;
+    var DIPLOMAT_INC = INC;
+    var EVALUATOR_INC = INC;
+    var GOURMET_INC = INC;
+
+    var pioneerInc = 0;
+    var diplomatInc = 0;
+    var evaluatorInc = 0;
+    var gourmetInc = 0;
+
+    var missionType = mission.getType();
+
+    if(missionType === 'AddLocationMission' ||
+        missionType === 'WhatOptionsMission'){
+        pioneerInc += PIONEER_INC;
+    }
+
+    if(mission.isFirstOfType &&
+        (missionType === 'VisitBonusMission' ||
+            missionType === 'HasOptionsMission' ||
+            missionType === 'WantVeganMission' ||
+            missionType === 'WhatOptionsMission' ||
+            missionType === 'RateOptionsMission' ||
+            missionType === 'OfferQualityMission' ||
+            missionType === 'EffortValueMission')) {
+        pioneerInc += PIONEER_INC;
+    }
+
+    if(missionType === 'HasOptionsMission' ||
+        missionType === 'WantVeganMission' ||
+        missionType === 'GiveFeedbackMission'){
+        diplomatInc = DIPLOMAT_INC;
+    }
+
+    if(missionType === 'RateOptionsMission' ||
+        missionType === 'OfferQualityMission' ||
+        missionType === 'EffortValueMission'){
+        evaluatorInc = EVALUATOR_INC;
+    }
+
+    if(missionType === 'VisitBonusMission' ||
+        missionType === 'BuyOptionsMission'){
+        gourmetInc = GOURMET_INC;
+    }
+    that.attributes.pioneer += pioneerInc;
+    that.attributes.diplomat += diplomatInc;
+    that.attributes.evaluator += evaluatorInc;
+    that.attributes.gourmet += gourmetInc;
+    that.updatedAt = Date.now();
+    that.save(next);
+};
+
 /**
  * toJSON transform method is automatically called when converting a person
  * to JSON (as before sending it over the API)
@@ -144,7 +205,7 @@ personSchema.options.toJSON = {
         // Pick basic properties
         var ret = _.pick(doc,
             'id', 'email', 'nickname', 'fullName', 'gender', 'locale',
-            'dateOfBirth', 'phone', 'address', 'team'
+            'dateOfBirth', 'phone', 'address', 'team', 'attributes'
         );
 
         // Attach capture if it has been loaded

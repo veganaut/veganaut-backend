@@ -82,6 +82,7 @@ app.get('/activityLink/mine/open', cors(), Session.restrict, ActivityLink.openLi
 // Person
 app.options('/person', cors());
 app.post('/person', cors(), Person.register);
+
 app.options('/person/me', cors());
 
 app.options('person/isValidToken/:token', cors());
@@ -90,6 +91,9 @@ app.get('/person/me', cors(), Session.restrict, Person.getMe);
 app.put('/person/me', cors(), Session.restrict, Person.updateMe);
 app.get('/person/isValidToken/:token', cors(), Person.isValidToken);
 app.post('/person/reset', cors(), Person.resetPassword);
+
+app.options('/person/:id', cors());
+app.get('/person/:id', cors(), Person.getById);
 
 // Match
 app.options('/match', cors());

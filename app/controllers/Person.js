@@ -104,6 +104,54 @@ exports.getMe = function(req, res, next) {
     });
 };
 
+exports.getById = function(req, res, next) {
+    // Count number of missions of this player
+    var personId = req.params.id;
+    var person;
+    var completedMissions;
+
+    var getPerson = function (cb) {
+        Person.findById(personId, function (err, existingPerson) {
+            if (err) {
+                return cb(err);
+            }
+
+            // Check if the given id points to an existing person
+            if (!existingPerson) {
+                res.status(404);
+                err = new Error('Could not find any user with the given id.');
+                return cb(err);
+            }
+
+            // All good, use the found person
+            person = existingPerson;
+            return cb();
+        });
+    };
+
+    var getMissionCount = function (cb){
+        Mission.count({ person: personId })
+            .exec(function(err, numMissions) {
+                completedMissions = numMissions;
+                return cb();
+            });
+    };
+    async.series([
+        getPerson,
+        getMissionCount
+    ], function (err){
+        if(err){
+            return next(err);
+        }
+        var resObj = _.pick(person,
+            'id', 'nickname', 'team', 'attributes'
+        );
+        resObj.completedMissions = completedMissions;
+        return res.status(200).send(resObj);
+    });
+
+};
+
 exports.updateMe = function(req, res, next) {
     // Get the values that can be updated and set them on the user
     var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'locale');
