@@ -22,7 +22,7 @@ var POINTS_DECREASE_FACTOR = Math.pow(0.90, 1.0 / (24*60*60*1000));
 var EFFORT_VALUES = {
     yes: 1.0,
     ratherYes: 0.5,
-    ratherNo: 0.5,
+    ratherNo: -0.5,
     no: -1.0
 };
 
