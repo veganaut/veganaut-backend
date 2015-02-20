@@ -90,6 +90,8 @@ missionSchema.pre('save', function(next){
             }
             return next();
         });
+    }else {
+        return next();
     }
 });
 
@@ -213,7 +215,7 @@ missionSchema.options.toJSON = {
  * @returns {number}
  */
 missionSchema.methods.getMissionCount = function(missionType, locationId, callback) {
-    allMissions.Mission.count({"__t":missionType, "location": locationId}, function(err, count){
+    allMissions.Mission.count({'__t':missionType, 'location': locationId}, function(err, count){
          callback(err, count);
     });
 };

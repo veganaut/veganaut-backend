@@ -198,3 +198,27 @@ h.describe('Person API methods for logged in user trying naughty things', functi
         });
     });
 });
+
+h.describe('Person API methods for person/:id', function() {
+    it('Person API methods for person/:id', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                expect(res.statusCode).toBe(200);
+
+                expect(res.body.email).toBeUndefined();
+                expect(res.body.nickname).toBeDefined();
+                expect(res.body.fullName).toBeUndefined();
+                expect(res.body.locale).toBeUndefined();
+                expect(res.body.team).toBeDefined();
+                expect(res.body.completedMissions).toBeDefined();
+                expect(typeof res.body.attributes).toEqual('object', 'attributes is a object');
+                expect(res.body.attributes.pioneer).toBeDefined();
+                expect(res.body.attributes.diplomat).toBeDefined();
+                expect(res.body.attributes.evaluator).toBeDefined();
+                expect(res.body.attributes.gourmet).toBeDefined();
+
+                done();
+            });
+        });
+    });
+});

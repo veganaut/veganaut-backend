@@ -24,7 +24,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     expect(res.statusCode).toBe(201);
                     var mission = res.body;
                     expect(typeof mission.id).toBe('string', 'id is a string');
-                    expect(typeof mission.person).toBe('string', 'person is a string');
+                    expect(typeof mission.person).toBe('object', 'person is an object');
                     expect(typeof mission.location).toBe('string', 'location is a string');
                     expect(typeof mission.completed).toBe('string', 'completed is a string');
                     expect(typeof mission.points).toBe('object', 'points is an object');

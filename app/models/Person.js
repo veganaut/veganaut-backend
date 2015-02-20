@@ -191,7 +191,6 @@ personSchema.methods.notifyMissionCompleted = function(mission, next) {
     that.attributes.diplomat += diplomatInc;
     that.attributes.evaluator += evaluatorInc;
     that.attributes.gourmet += gourmetInc;
-    that.updatedAt = Date.now();
     that.save(next);
 };
 
