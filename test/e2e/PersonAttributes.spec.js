@@ -1,6 +1,5 @@
 'use strict';
 
-var _ = require('lodash');
 var h = require('../helpers_');
 var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
 
@@ -9,8 +8,6 @@ fix
     .user('alice', 'team1')
     .location('alice', 'Tingelkringel')
 ;
-
-var async = require('async');
 
 var uuid = require('uuid');
 
