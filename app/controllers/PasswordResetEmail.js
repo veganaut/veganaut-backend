@@ -2,9 +2,9 @@
 
 var async = require('async');
 var mongoose = require('mongoose');
-var nodemailer = require('nodemailer');
 var generatePassword = require('password-generator');
 var config = require('../config.js');
+var mailTransporter = require('../utils/mailTransporter.js');
 
 var Person = mongoose.model('Person');
 
@@ -43,7 +43,6 @@ exports.send = function (req, res, next) {
             });
         },
         function (token, user, done) {
-            var transporter = nodemailer.createTransport(config.email.transporter);
             // TODO: how to do translations in the backend?
             var mailOptions = {
                 to: user.email,
@@ -54,7 +53,7 @@ exports.send = function (req, res, next) {
                 RESET_BASE_URL + token + '\n\n' +
                 'If you did not request this, please ignore this email and your password will remain unchanged.\n'
             };
-            transporter.sendMail(mailOptions, function (err) {
+            mailTransporter.sendMail(mailOptions, function (err) {
                 done(err, 'done');
             });
         }

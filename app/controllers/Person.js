@@ -10,8 +10,14 @@ var async = require('async');
 var constants = require('../utils/constants');
 var Person = mongoose.model('Person');
 var Mission = require('../models/Missions').Mission;
-var crypto = require('crypto');
+var cryptoUtils = require('../utils/cryptoUtils');
 
+/**
+ * Register a new user
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.register = function (req, res, next) {
     // TODO: This needs to work as follows:
     // - If the user already entered a reference code, (s)he has a session. In
@@ -87,6 +93,12 @@ exports.register = function (req, res, next) {
     });
 };
 
+/**
+ * Return the logged in user data
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.getMe = function(req, res, next) {
     req.user.populateActivityLinks(function(err) {
         if (err) {
@@ -104,6 +116,12 @@ exports.getMe = function(req, res, next) {
     });
 };
 
+/**
+ * Return the profile of a user with a certain id
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.getById = function(req, res, next) {
     // Count number of missions of this player
     var personId = req.params.id;
@@ -152,6 +170,12 @@ exports.getById = function(req, res, next) {
 
 };
 
+/**
+ * Update some of the properties of the logged in user
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.updateMe = function(req, res, next) {
     // Get the values that can be updated and set them on the user
     var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'locale');
@@ -168,41 +192,43 @@ exports.updateMe = function(req, res, next) {
     });
 };
 
+/**
+ * Checks whether the given reset token is valid
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.isValidToken = function (req, res, next) {
-
-    var shasum = crypto.createHash('sha1');
-    shasum.update(req.params.token);
-    var hash = shasum.digest('hex');
+    var hash = cryptoUtils.hashResetToken(req.params.token);
 
     Person.findOne({
         resetPasswordToken: hash,
         resetPasswordExpires: {$gt: Date.now()}
     }, function (err, user) {
-
         if (!user) {
-            res.status(404);
+            res.status(400);
             return next(new Error('Invalid token'));
         }
         return res.status(200).send({});
-
     });
-
 };
 
+/**
+ * Resets the password of the person if the correct reset token is given
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.resetPassword = function (req, res, next) {
-
     var personData = _.pick(req.body, 'token', 'password');
-
-    var shasum = crypto.createHash('sha1');
-    shasum.update(personData.token);
-    var hash = shasum.digest('hex');
+    var hash = cryptoUtils.hashResetToken(personData.token);
 
     Person.findOne({
         resetPasswordToken: hash,
         resetPasswordExpires: {$gt: Date.now()}
     }, function (err, user) {
         if (!user) {
-            res.status(404);
+            res.status(400);
             return next(new Error('Invalid token!'));
         }
 

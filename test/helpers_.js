@@ -9,7 +9,6 @@
 var _ = require('lodash');
 
 // Get the app
-var app = require('../app');
 var port = 3001;
 exports.baseURL = 'http://localhost:' + port + '/';
 
@@ -17,6 +16,27 @@ exports.baseURL = 'http://localhost:' + port + '/';
 require('jasmine-before-all');
 exports.beforeAll = beforeAll;
 exports.afterAll = afterAll;
+
+// Set up a mock mailer
+var mockMailer = {
+    sentMails: []
+};
+exports.mockMailer = mockMailer;
+
+// Enable mockery (without complaining about all the modules we are going to load)
+var mockery = require('mockery');
+mockery.enable({
+    warnOnUnregistered: false
+});
+
+// Register the mock mailer with mockery
+// TODO: should use more absolute path?
+mockery.registerMock('../utils/mailTransporter.js', {
+    sendMail: function(mail, cb) {
+        mockMailer.sentMails.push(mail);
+        cb();
+    }
+});
 
 // SuperAgent
 var request = require('superagent');
@@ -91,6 +111,9 @@ var createSessionFor = function(email, next) {
     });
 };
 exports.createSessionFor = createSessionFor;
+
+// Get the app
+var app = require('../app');
 
 /**
  * describe is our wrapper around jasmine's describe. It runs a server, sets up fixtures, etc.
