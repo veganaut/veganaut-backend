@@ -18,7 +18,7 @@ var cryptoUtils = require('../utils/cryptoUtils');
  * @param res
  * @param next
  */
-exports.register = function (req, res, next) {
+exports.register = function(req, res, next) {
     // TODO: This needs to work as follows:
     // - If the user already entered a reference code, (s)he has a session. In
     //   this case, we take the user from the session, and update it.
@@ -31,9 +31,9 @@ exports.register = function (req, res, next) {
     var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'id', 'locale');
     var person;
 
-    var getOrCreatePerson = function (cb) {
+    var getOrCreatePerson = function(cb) {
         if (typeof personData.id === 'string') {
-            Person.findById(personData.id, function (err, existingPerson) {
+            Person.findById(personData.id, function(err, existingPerson) {
                 if (err) {
                     return cb(err);
                 }
@@ -64,7 +64,7 @@ exports.register = function (req, res, next) {
         }
     };
 
-    var updatePerson = function (cb) {
+    var updatePerson = function(cb) {
         // Assign a random team
         if (typeof person.team === 'undefined') {
             person.team = _.sample(constants.TEAMS);
@@ -77,10 +77,10 @@ exports.register = function (req, res, next) {
     async.series([
         getOrCreatePerson,
         updatePerson,
-        function (cb) {
+        function(cb) {
             person.populateActivityLinks(cb);
         }
-    ], function (err) {
+    ], function(err) {
         if (err) {
             // Send a 400 status if the email address is already used
             if (err.name === 'MongoError' && err.code === 11000) {
@@ -106,7 +106,7 @@ exports.getMe = function(req, res, next) {
         }
 
         // Count number of missions of this player
-        Mission.count({ person: req.user })
+        Mission.count({person: req.user})
             .exec(function(err, numMissions) {
                 var resObj = req.user.toJSON();
                 resObj.completedMissions = numMissions;
@@ -128,8 +128,8 @@ exports.getById = function(req, res, next) {
     var person;
     var completedMissions;
 
-    var getPerson = function (cb) {
-        Person.findById(personId, function (err, existingPerson) {
+    var getPerson = function(cb) {
+        Person.findById(personId, function(err, existingPerson) {
             if (err) {
                 return cb(err);
             }
@@ -147,8 +147,8 @@ exports.getById = function(req, res, next) {
         });
     };
 
-    var getMissionCount = function (cb){
-        Mission.count({ person: personId })
+    var getMissionCount = function(cb) {
+        Mission.count({person: personId})
             .exec(function(err, numMissions) {
                 completedMissions = numMissions;
                 return cb();
@@ -157,8 +157,8 @@ exports.getById = function(req, res, next) {
     async.series([
         getPerson,
         getMissionCount
-    ], function (err){
-        if(err){
+    ], function(err) {
+        if (err) {
             return next(err);
         }
         var resObj = _.pick(person,
@@ -182,7 +182,7 @@ exports.updateMe = function(req, res, next) {
     _.assign(req.user, personData);
 
     // Save the user
-    req.user.save(function (err) {
+    req.user.save(function(err) {
         if (err) {
             return next(err);
         }
@@ -198,13 +198,13 @@ exports.updateMe = function(req, res, next) {
  * @param res
  * @param next
  */
-exports.isValidToken = function (req, res, next) {
+exports.isValidToken = function(req, res, next) {
     var hash = cryptoUtils.hashResetToken(req.params.token);
 
     Person.findOne({
         resetPasswordToken: hash,
         resetPasswordExpires: {$gt: Date.now()}
-    }, function (err, user) {
+    }, function(err, user) {
         if (!user) {
             res.status(400);
             return next(new Error('Invalid token'));
@@ -219,14 +219,14 @@ exports.isValidToken = function (req, res, next) {
  * @param res
  * @param next
  */
-exports.resetPassword = function (req, res, next) {
+exports.resetPassword = function(req, res, next) {
     var personData = _.pick(req.body, 'token', 'password');
     var hash = cryptoUtils.hashResetToken(personData.token);
 
     Person.findOne({
         resetPasswordToken: hash,
         resetPasswordExpires: {$gt: Date.now()}
-    }, function (err, user) {
+    }, function(err, user) {
         if (!user) {
             res.status(400);
             return next(new Error('Invalid token!'));
@@ -236,7 +236,7 @@ exports.resetPassword = function (req, res, next) {
         user.password = personData.password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
-        user.save(function () {
+        user.save(function() {
             return res.status(200).send({});
         });
     });

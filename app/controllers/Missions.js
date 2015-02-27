@@ -94,6 +94,9 @@ exports.submit = function(req, res, next) {
 
         var causedOwnerChange = (location.team !== oldTeam);
 
+        // De-populate the person
+        mission.person = mission.person.id;
+
         // Depopulate the location, don't want to send that
         // TODO: there should be a better way of doing that
         mission.location = location.id;

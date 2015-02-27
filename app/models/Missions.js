@@ -63,9 +63,9 @@ var MissionSchema = function(outcomeType) {
     // Add the outcome (unless we're in the base schema, which doesn't have it)
     if (typeof outcomeType !== 'undefined') {
         if (_.isPlainObject(outcomeType) === false) {
-            outcomeType = { type: outcomeType };
+            outcomeType = {type: outcomeType};
         }
-        _.assign(outcomeType, { required: true });
+        _.assign(outcomeType, {required: true});
         this.add({
             outcome: outcomeType
         });
@@ -74,28 +74,25 @@ var MissionSchema = function(outcomeType) {
 util.inherits(MissionSchema, Schema);
 
 var missionSchema = new MissionSchema();
-missionSchema.pre('save', function(next){
+missionSchema.pre('save', function(next) {
     var that = this;
     var missionType = that.getType();
 
-    if(that.isFirstOfType === undefined){
-        that.getMissionCount(missionType, that.location, function(err, count){
-            if(err){
+    if (typeof that.isFirstOfType === 'undefined') {
+        that.getMissionCount(missionType, that.location, function(err, count) {
+            if (err) {
                 return next(err);
             }
-            if (count <= 0){
-                that.isFirstOfType = true;
-            }else{
-                that.isFirstOfType = false;
-            }
+            that.isFirstOfType = (count <= 0);
             return next();
         });
-    }else {
+    }
+    else {
         return next();
     }
 });
 
-missionSchema.pre('save', function(next){
+missionSchema.pre('save', function(next) {
     var that = this;
     that.populate('person', function(err) {
         if (err) {
@@ -162,8 +159,6 @@ missionSchema.pre('save', function(next) {
     });
 });
 
-
-
 /**
  * Returns the type of the mission
  * @returns {string}
@@ -212,12 +207,15 @@ missionSchema.options.toJSON = {
 
 /**
  * Returns the count of the missions which have the same type and the same location.
- * @returns {number}
+ * @param {string} missionType
+ * @param {id} locationId
+ * @param {function} callback Will be called with (err, count)
  */
 missionSchema.methods.getMissionCount = function(missionType, locationId, callback) {
-    allMissions.Mission.count({'__t':missionType, 'location': locationId}, function(err, count){
-         callback(err, count);
-    });
+    allMissions.Mission.count({
+        '__t': missionType,
+        'location': locationId
+    }, callback);
 };
 
 // Create Mission model

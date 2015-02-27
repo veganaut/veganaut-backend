@@ -131,7 +131,14 @@ personSchema.methods.getType = function() {
     }
 };
 
+/**
+ * Method will be called every time a mission is completed.
+ * Updates this person's attributes based on the passed mission
+ * @param mission
+ * @param next
+ */
 personSchema.methods.notifyMissionCompleted = function(mission, next) {
+    // TODO: make this more easily configurable
     var that = this;
     var INC = 1;
     var PIONEER_INC = INC;
@@ -146,36 +153,41 @@ personSchema.methods.notifyMissionCompleted = function(mission, next) {
 
     var missionType = mission.getType();
 
-    if(missionType === 'AddLocationMission' ||
-        missionType === 'WhatOptionsMission'){
+    if (missionType === 'AddLocationMission' ||
+        missionType === 'WhatOptionsMission')
+    {
         pioneerInc += PIONEER_INC;
     }
 
-    if(mission.isFirstOfType &&
+    if (mission.isFirstOfType &&
         (missionType === 'VisitBonusMission' ||
-            missionType === 'HasOptionsMission' ||
-            missionType === 'WantVeganMission' ||
-            missionType === 'WhatOptionsMission' ||
-            missionType === 'RateOptionsMission' ||
-            missionType === 'OfferQualityMission' ||
-            missionType === 'EffortValueMission')) {
+        missionType === 'HasOptionsMission' ||
+        missionType === 'WantVeganMission' ||
+        missionType === 'WhatOptionsMission' ||
+        missionType === 'RateOptionsMission' ||
+        missionType === 'OfferQualityMission' ||
+        missionType === 'EffortValueMission'))
+    {
         pioneerInc += PIONEER_INC;
     }
 
-    if(missionType === 'HasOptionsMission' ||
+    if (missionType === 'HasOptionsMission' ||
         missionType === 'WantVeganMission' ||
-        missionType === 'GiveFeedbackMission'){
+        missionType === 'GiveFeedbackMission')
+    {
         diplomatInc = DIPLOMAT_INC;
     }
 
-    if(missionType === 'RateOptionsMission' ||
+    if (missionType === 'RateOptionsMission' ||
         missionType === 'OfferQualityMission' ||
-        missionType === 'EffortValueMission'){
+        missionType === 'EffortValueMission')
+    {
         evaluatorInc = EVALUATOR_INC;
     }
 
-    if(missionType === 'VisitBonusMission' ||
-        missionType === 'BuyOptionsMission'){
+    if (missionType === 'VisitBonusMission' ||
+        missionType === 'BuyOptionsMission')
+    {
         gourmetInc = GOURMET_INC;
     }
     that.attributes.pioneer += pioneerInc;
