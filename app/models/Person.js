@@ -195,12 +195,22 @@ personSchema.options.toJSON = {
         // Pick basic properties
         var ret = _.pick(doc,
             'id', 'email', 'nickname', 'fullName', 'gender', 'locale',
-            'dateOfBirth', 'phone', 'address', 'team', 'attributes'
+            'dateOfBirth', 'phone', 'address', 'team'
         );
 
         // Attach capture if it has been loaded
         if (typeof doc.capture.active !== 'undefined') {
             ret.capture = doc.capture;
+        }
+
+        // Attach attributes if they have been loaded
+        // TODO: there should be a better way of checking whether that was loaded
+        if (typeof doc.attributes.pioneer !== 'undefined' ||
+            typeof doc.attributes.diplomat !== 'undefined' ||
+            typeof doc.attributes.evaluator !== 'undefined' ||
+            typeof doc.attributes.gourmet !== 'undefined')
+        {
+            ret.attributes = doc.attributes;
         }
 
         // Add type if the activity links have been loaded
