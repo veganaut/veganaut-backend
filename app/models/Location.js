@@ -172,12 +172,11 @@ locationSchema.options.toJSON = {
         // Compute points as of now
         ret.points = doc.computeCurrentPoints();
 
-        // Add the quality
+        // Add the quality and effort
         ret.quality = {
             average: doc.quality.average,
             numRatings: doc.quality.count
         };
-
         ret.effort = {
             average: doc.efforts.average,
             numRatings: doc.efforts.count
