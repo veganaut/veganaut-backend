@@ -88,19 +88,19 @@ var getFixtures = function() {
 
     fix.dosha = new Location({
         _id: '000000000000000000000006',
-        coordinates: [46.957113, 7.452544],
+        coordinates: [7.452544, 46.957113],
         name: '3dosha',
         type: 'gastronomy'
     });
     fix.ruprecht = new Location({
         _id: '000000000000000000000007',
-        coordinates: [46.946757, 7.441016],
+        coordinates: [7.441016, 46.946757],
         name: 'Reformhaus Ruprecht',
         type: 'retail'
     });
     fix.hollow = new Location({
         _id: '000000000000000000000008',
-        coordinates: [46.953880, 7.446611],
+        coordinates: [7.446611, 46.953880],
         name: 'Kremoby Hollow',
         type: 'gastronomy'
     });

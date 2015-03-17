@@ -47,7 +47,7 @@ productSchema.methods.notifyProductMissionCompleted = function(mission, productO
  */
 productSchema.methods.toJSON = function() {
     return _.assign(
-        _.pick(this, ['name', 'description']),
+        _.pick(this, ['name', 'description', 'location']),
         {
             id: this.id,
             rating: {

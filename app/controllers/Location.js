@@ -18,7 +18,7 @@ exports.location = function(req, res, next) {
     var location = new Location(_.assign(
         _.pick(req.body, 'name', 'description', 'link', 'type'),
         {
-            coordinates: [req.body.lat, req.body.lng]
+            coordinates: [req.body.lng, req.body.lat]
         }
     ));
 
@@ -126,6 +126,11 @@ var handleSingleLocationResult = function(err, obj) {
 
     // Add the products
     returnObj.products = obj.products;
+
+    // Remove the back reference to the location
+    _.each(returnObj.products, function(product) {
+        product.location = undefined;
+    });
 
     return obj.res.send(returnObj);
 };

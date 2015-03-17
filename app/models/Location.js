@@ -165,8 +165,8 @@ locationSchema.options.toJSON = {
 
         // Add lat/lng in the format the frontend expects
         if (util.isArray(doc.coordinates)) {
-            ret.lat = doc.coordinates[0];
-            ret.lng = doc.coordinates[1];
+            ret.lng = doc.coordinates[0];
+            ret.lat = doc.coordinates[1];
         }
 
         // Compute points as of now

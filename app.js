@@ -116,7 +116,7 @@ app.get('/location/:locationId/mission/list', cors(), Session.restrict, Location
 app.options('/score', cors());
 app.get('/score', cors(), Session.restrict, Score.stats);
 
-//Products
+// Products
 app.options('/product/list', cors());
 app.get('/product/list', cors(), Product.list);
 
