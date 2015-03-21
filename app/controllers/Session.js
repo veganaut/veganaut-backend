@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var uuid = require('uuid');
+var generatePassword = require('password-generator');
 var mongoose = require('mongoose');
 var Person = mongoose.model('Person');
 
@@ -15,7 +15,7 @@ var Person = mongoose.model('Person');
 var sessionStore = {};
 
 exports.createSessionFor = function(user) {
-    var sessionId = uuid.v4(); // TODO: this is not secure: use password-generator
+    var sessionId = generatePassword(40, false);
     sessionStore[sessionId] = user.id;
     return sessionId;
 };
