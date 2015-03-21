@@ -54,7 +54,8 @@ h.describe('Person Attributes E2E Test', function() {
                     expect(location.name).toBe(locationName, 'set location name');
                     expect(typeof location.id).toBe('string', 'has an id');
 
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get the new person data (via person/me)
+                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -82,7 +83,8 @@ h.describe('Person Attributes E2E Test', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get the new person data (via person/me)
+                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -110,7 +112,8 @@ h.describe('Person Attributes E2E Test', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get the new person data (via person/me)
+                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -142,7 +145,8 @@ h.describe('Person Attributes E2E Test', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get the new person data (via person/me)
+                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -183,7 +187,8 @@ h.describe('Person Attributes E2E Test', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get the new person data (via person/me)
+                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -222,6 +227,7 @@ h.describe('Person Attributes E2E Test', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
+                    // Get new person data (via person/{id})
                     h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
@@ -263,6 +269,7 @@ h.describe('Person Attributes E2E Test', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
+                    // Get new person data (via person/{id})
                     h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
@@ -291,6 +298,7 @@ h.describe('Person Attributes E2E Test', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
+                    // Get new person data (via person/{id})
                     h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
@@ -322,6 +330,7 @@ h.describe('Person Attributes E2E Test', function() {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('offerQuality', 'type of mission');
                     expect(res.body.points).toEqual({team1: 20}, 'points of mission');
+                    // Get new person data (via person/{id})
                     h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
@@ -353,6 +362,7 @@ h.describe('Person Attributes E2E Test', function() {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('effortValue', 'type of mission');
                     expect(res.body.points).toEqual({team1: 20}, 'points of mission');
+                    // Get new person data (via person/{id})
                     h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
@@ -370,6 +380,4 @@ h.describe('Person Attributes E2E Test', function() {
             ;
         });
     });
-
 });
-

@@ -8,7 +8,7 @@ var mongoose = require('mongoose');
 var Person = mongoose.model('Person');
 
 /**
- * Temporary storage for sessions (map of session id to user object)
+ * Temporary storage for sessions (map of session id to user id)
  * TODO: need to find a better way to store session (in mongo e.g.)
  * @type {{}}
  */
@@ -16,7 +16,7 @@ var sessionStore = {};
 
 exports.createSessionFor = function(user) {
     var sessionId = uuid.v4(); // TODO: this is not secure: use password-generator
-    sessionStore[sessionId] = user;
+    sessionStore[sessionId] = user.id;
     return sessionId;
 };
 
@@ -56,6 +56,7 @@ var authenticate = function(email, pass, next) {
  * @param next
  */
 exports.addUserToRequest = function(req, res, next) {
+    var foundSession = false;
     var authHeader = req.get('Authorization');
     if (authHeader) {
         var parts = authHeader.split(' ');
@@ -63,10 +64,21 @@ exports.addUserToRequest = function(req, res, next) {
         // (or is it? I don't know, the docs are too long)
         if (parts.length === 2 && parts[0] === 'VeganautBearer' && sessionStore[parts[1]]) {
             req.sessionId = parts[1];
-            req.user = sessionStore[req.sessionId];
+
+            var userId = sessionStore[req.sessionId];
+            foundSession = true;
+            Person.findOne({_id: userId}, function(err, user) {
+                if (err) {
+                    return next(err);
+                }
+                req.user = user;
+                return next();
+            });
         }
     }
-    next();
+    if (!foundSession) {
+        return next();
+    }
 };
 
 /**
