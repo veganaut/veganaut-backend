@@ -67,7 +67,9 @@ exports.list = function(req, res, next) {
                 }
             },
             function(err) {
-                if (err) { return next(err); }
+                if (err) {
+                    return next(err);
+                }
                 return res.send(locations);
             }
         );
@@ -115,7 +117,7 @@ var findProducts = function(obj, cb) {
             obj.products = p;
         }
         cb(err, obj);
-    });
+    }).sort('-ratings.rank -ratings.count name');
 };
 
 var handleSingleLocationResult = function(err, obj) {
@@ -193,9 +195,9 @@ exports.getCompletedMissions = function(req, res, next) {
     var locationId = req.params.locationId;
     Missions.Mission
         // For privacy reasons, we don't include the completed date
-        .find({ location: locationId }, 'person location points outcome')
+        .find({location: locationId}, 'person location points outcome')
         .populate('person', 'team nickname')
-        .sort({ completed: 'desc' })
+        .sort({completed: 'desc'})
         .limit(NUM_COMPLETED_MISSION_LIMIT)
         .exec(function(err, missions) {
             if (!err && (!missions || missions.length === 0)) {
