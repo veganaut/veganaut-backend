@@ -112,12 +112,16 @@ var computeVisitBonusDate = function(obj, cb) {
 
 var findProducts = function(obj, cb) {
     obj.products = [];
-    Product.find({location: obj.location.id}, function(err, p) {
-        if (p) {
-            obj.products = p;
-        }
-        cb(err, obj);
-    }).sort('-ratings.rank -ratings.count name');
+    Product
+        .find({location: obj.location.id})
+        .sort('-ratings.rank -ratings.count name')
+        .exec(function(err, p) {
+            if (p) {
+                obj.products = p;
+            }
+            cb(err, obj);
+        })
+    ;
 };
 
 var handleSingleLocationResult = function(err, obj) {
