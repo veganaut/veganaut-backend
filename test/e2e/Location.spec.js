@@ -207,7 +207,9 @@ h.describe('Location API methods as logged in user alice', function() {
                     name: '3-Dosha',
                     description: 'Ayurvedic Cuisine',
                     link: 'http://example.ch',
-                    type: 'retail'
+                    type: 'retail',
+                    lat: 47.3,
+                    lng: 7.1
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
@@ -218,6 +220,8 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.description).toBe('Ayurvedic Cuisine', 'correct description');
                     expect(location.link).toBe('http://example.ch', 'correct link');
                     expect(location.type).toBe('retail', 'correct new type');
+                    expect(location.lat).toBe(47.3, 'correct new lat');
+                    expect(location.lng).toBe(7.1, 'correct new lng');
                     done();
                 })
             ;

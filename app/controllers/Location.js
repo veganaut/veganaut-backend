@@ -94,6 +94,7 @@ var findLocation = function(obj, cb) {
 
 var updateLocation = function(obj, cb) {
     _.merge(obj.location, _.pick(obj.req.body, ['name', 'description', 'link', 'type']));
+    obj.location.coordinates = [obj.req.body.lng, obj.req.body.lat];
     obj.location.save(function(err) {
         cb(err, obj);
     });
