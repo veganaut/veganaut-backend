@@ -93,7 +93,7 @@ var findLocation = function(obj, cb) {
 };
 
 var updateLocation = function(obj, cb) {
-    _.merge(obj.location, _.pick(obj.req.body, ['name', 'description', 'link']));
+    _.merge(obj.location, _.pick(obj.req.body, ['name', 'description', 'link', 'type']));
     obj.location.save(function(err) {
         cb(err, obj);
     });
