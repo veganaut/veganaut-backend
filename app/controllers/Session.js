@@ -89,9 +89,8 @@ exports.addUserToRequest = function(req, res, next) {
  */
 exports.restrict = function(req, res, next) {
     if (typeof req.user === 'undefined') {
-        return res.status(401).send({ status: 'Error',
-            message: 'Access denied!'
-        });
+        res.status(401);
+        return next(new Error('Access denied.'));
     }
     next();
 };

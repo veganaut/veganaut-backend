@@ -93,8 +93,18 @@ var findLocation = function(obj, cb) {
 };
 
 var updateLocation = function(obj, cb) {
-    _.merge(obj.location, _.pick(obj.req.body, ['name', 'description', 'link', 'type']));
-    obj.location.coordinates = [obj.req.body.lng, obj.req.body.lat];
+    var locationData = obj.req.body;
+    _.merge(obj.location, _.pick(locationData, ['name', 'description', 'link', 'type']));
+
+    // Set coordinates if they are given
+    if (typeof locationData.lng === 'number') {
+        obj.location.coordinates[0] = locationData.lng;
+    }
+    if (typeof locationData.lat === 'number') {
+        obj.location.coordinates[1] = locationData.lat;
+    }
+
+    // Save the new data
     obj.location.save(function(err) {
         cb(err, obj);
     });

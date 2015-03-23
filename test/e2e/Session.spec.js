@@ -9,10 +9,11 @@ h.describe('Session API methods', function() {
             h.request('GET', h.baseURL + 'graph/me')
                 .set('Authorization', null)
                 .end(function(res) {
-                expect(res.statusCode).toBe(401);
-                expect(res.body.status).toEqual('Error');
-                done();
-            });
+                    expect(res.statusCode).toBe(401);
+                    expect(typeof res.body.error).toBe('string');
+                    done();
+                })
+            ;
         });
     });
 

@@ -230,6 +230,33 @@ h.describe('Location API methods as logged in user alice', function() {
 });
 
 
+h.describe('Location update methods as logged in user alice', function() {
+    it('does not update fields that are not sent', function() {
+        h.runAsync(function(done) {
+            h.request('PUT', h.baseURL + 'location/000000000000000000000006')
+                .send({
+                    description: 'test'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    var location = res.body;
+                    expect(typeof location).toBe('object', 'response is an object');
+                    expect(location.id).toBe('000000000000000000000006', 'correct location id');
+                    expect(location.name).toBe('3dosha', 'correct name');
+                    expect(location.description).toBe('test', 'correct description');
+                    expect(typeof location.link).toBe('undefined', 'correct link');
+                    expect(location.type).toBe('gastronomy', 'correct type');
+                    expect(location.lat).toBe(46.957113, 'correct lat');
+                    expect(location.lng).toBe(7.452544, 'correct lng');
+
+                    done();
+                })
+            ;
+        });
+    });
+});
+
+
 h.describe('Location API methods anonymous user', { user: '' }, function() {
     it('can list locations', function() {
         h.runAsync(function(done) {
@@ -286,6 +313,21 @@ h.describe('Location API methods anonymous user', { user: '' }, function() {
                         expect(typeof product.location).toBe('undefined', 'location is not sent again');
                     });
 
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('cannot update a location', function() {
+        h.runAsync(function(done) {
+            h.request('PUT', h.baseURL + 'location/000000000000000000000006')
+                .send({
+                    name: 'test'
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(401);
+                    expect(typeof res.body.error).toBe('string');
                     done();
                 })
             ;
