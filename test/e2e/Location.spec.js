@@ -222,7 +222,20 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.type).toBe('retail', 'correct new type');
                     expect(location.lat).toBe(47.3, 'correct new lat');
                     expect(location.lng).toBe(7.1, 'correct new lng');
-                    done();
+
+                    // Check that it was really saved
+                    h.request('GET', h.baseURL + 'location/000000000000000000000006')
+                        .end(function(res) {
+                            var location = res.body;
+                            expect(location.name).toBe('3-Dosha', 'correct name');
+                            expect(location.description).toBe('Ayurvedic Cuisine', 'correct description');
+                            expect(location.link).toBe('http://example.ch', 'correct link');
+                            expect(location.type).toBe('retail', 'correct new type');
+                            expect(location.lat).toBe(47.3, 'correct new lat');
+                            expect(location.lng).toBe(7.1, 'correct new lng');
+                            done();
+                        })
+                    ;
                 })
             ;
         });

@@ -99,9 +99,11 @@ var updateLocation = function(obj, cb) {
     // Set coordinates if they are given
     if (typeof locationData.lng === 'number') {
         obj.location.coordinates[0] = locationData.lng;
+        obj.location.markModified('coordinates');
     }
     if (typeof locationData.lat === 'number') {
         obj.location.coordinates[1] = locationData.lat;
+        obj.location.markModified('coordinates');
     }
 
     // Save the new data
