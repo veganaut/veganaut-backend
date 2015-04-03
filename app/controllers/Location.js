@@ -18,7 +18,8 @@ exports.location = function(req, res, next) {
     var location = new Location(_.assign(
         _.pick(req.body, 'name', 'description', 'link', 'type'),
         {
-            coordinates: [req.body.lng, req.body.lat]
+            coordinates: [req.body.lng, req.body.lat],
+            team: req.user.team
         }
     ));
 
