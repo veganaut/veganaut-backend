@@ -2,7 +2,7 @@
 
 var _ = require('lodash');
 var h = require('../helpers_');
-var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
+var FixtureCreator = require('../fixtures/FixtureCreator');
 
 var fix = new FixtureCreator();
 fix

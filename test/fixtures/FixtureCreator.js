@@ -137,4 +137,4 @@ FixtureCreator.prototype.setupFixtures = function(done) {
     FixtureLoader.load(this._fixtures, done);
 };
 
-exports.FixtureCreator = FixtureCreator;
+module.exports = FixtureCreator;

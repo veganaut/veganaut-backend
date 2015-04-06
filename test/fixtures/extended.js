@@ -4,7 +4,7 @@
 'use strict';
 
 var mongoose = require('mongoose');
-var FixtureCreator = require('./FixtureCreator').FixtureCreator;
+var FixtureCreator = require('./FixtureCreator');
 var referenceCodes = require('./referenceCodes');
 
 var getFixtures = function() {

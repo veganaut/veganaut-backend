@@ -3,7 +3,7 @@
 var h = require('../helpers_');
 var mongoose = require('mongoose');
 var Person = mongoose.model('Person');
-var FixtureCreator = require('../fixtures/FixtureCreator').FixtureCreator;
+var FixtureCreator = require('../fixtures/FixtureCreator');
 
 h.describe('ActivityLink API methods', function() {
     it('can use a reference code', function() {
