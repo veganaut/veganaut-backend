@@ -47,7 +47,7 @@ h.describe('Location API methods as logged in user alice', function() {
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
                     expect(typeof res.body).toBe('object', 'returns an array of locations');
-                    expect(res.body.length).toBe(4, '4 locations (3 from fixtures, one from previous test)');
+                    expect(res.body.length).toBe(5, '5 locations (4 from fixtures, one from previous test)');
 
                     _.each(res.body, function(location) {
                         expect(typeof location.name).toBe('string', 'has a name');
@@ -277,7 +277,7 @@ h.describe('Location API methods anonymous user', { user: '' }, function() {
             .end(function(res) {
                 expect(res.statusCode).toBe(200);
                 expect(typeof res.body).toBe('object', 'returns an array of locations');
-                expect(res.body.length).toBe(3, 'has 3 locations');
+                expect(res.body.length).toBe(4, 'has 4 locations');
 
                 _.each(res.body, function(location) {
                     expect(typeof location.name).toBe('string', 'has a name');

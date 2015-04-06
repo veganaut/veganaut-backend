@@ -104,6 +104,12 @@ var getFixtures = function() {
         name: 'Kremoby Hollow',
         type: 'gastronomy'
     });
+    fix.shop = new Location({
+        _id: '000000000000000000000009',
+        coordinates: [7.444621, 46.957212],
+        name: 'Shop',
+        type: 'retail'
+    });
 
     fix.doshaCurry = new Product({
         _id: '000000000000000000000101',
@@ -193,6 +199,13 @@ var getFixtures = function() {
         person: fix.bob.id,
         completed: '2014-08-15',
         outcome: true
+    });
+
+    fix.bobMission1Shop = new Missions.OfferQualityMission({
+        location: fix.shop.id,
+        person: fix.bob.id,
+        completed: '2014-08-10',
+        outcome: 4
     });
 
     return fix;
