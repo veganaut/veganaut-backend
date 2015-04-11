@@ -19,7 +19,6 @@ var ActivityLink = require('./app/controllers/ActivityLink');
 var GeoIP = require('./app/controllers/GeoIP');
 var Graph = require('./app/controllers/Graph');
 var Location = require('./app/controllers/Location');
-var Match = require('./app/controllers/Match');
 var Missions = require('./app/controllers/Missions');
 var Person = require('./app/controllers/Person');
 var Score = require('./app/controllers/Score');
@@ -92,10 +91,6 @@ app.put('/person/me', cors(), Session.restrict, Person.updateMe);
 app.get('/person/isValidToken/:token', cors(), Person.isValidToken);
 app.post('/person/reset', cors(), Person.resetPassword);
 app.get('/person/:id', cors(), Person.getById);
-
-// Match
-app.options('/match', cors());
-app.get('/match', cors(), Match.current);
 
 // Mission
 app.options('/mission', cors());
