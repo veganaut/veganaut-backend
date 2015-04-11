@@ -43,6 +43,14 @@ exports.stats = function(req, res, next) {
         function(cb) {
             Location.aggregate([
                 {
+                    $match: {
+                        // Only select location that belong to actual player teams
+                        team: {
+                            $in: constants.PLAYER_TEAMS
+                        }
+                    }
+                },
+                {
                     $group: {
                         _id: '$team',
                         sum: {$sum: 1}
@@ -81,7 +89,11 @@ exports.stats = function(req, res, next) {
                 // TODO: this selects only people that actually have an account. This implementation details should stay in the Person model
                 {
                     $match: {
-                        password: {$exists: true}
+                        password: {$exists: true},
+                        // Only select people in actual player teams
+                        team: {
+                            $in: constants.PLAYER_TEAMS
+                        }
                     }
                 },
                 {
@@ -137,7 +149,12 @@ exports.stats = function(req, res, next) {
                     return cb(err);
                 }
 
-                Person.find({}, 'nickname team', function(err, people) {
+                Person.find({
+                    // Only select people in actual player teams
+                    team: {
+                        $in: constants.PLAYER_TEAMS
+                    }
+                }, 'nickname team', function(err, people) {
                     if (err) {
                         return cb(err);
                     }

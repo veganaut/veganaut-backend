@@ -62,7 +62,7 @@ h.describe('Location API methods as logged in user alice', function() {
                             'updatedAt can be parsed as a valid date'
                         );
 
-                        expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
+                        expect(location.team).toMatch(/^(team[1-5]|anonymous)$/, 'team is valid');
                         expect(typeof location.points).toBe('object', 'points is an object');
                         expect(typeof location.quality).toBe('object', 'has a quality');
                         expect(typeof location.quality.average).toBe('number', 'has a quality average');
@@ -270,7 +270,7 @@ h.describe('Location update methods as logged in user alice', function() {
 });
 
 
-h.describe('Location API methods anonymous user', { user: '' }, function() {
+h.describe('Location API methods when not logged in', { user: '' }, function() {
     it('can list locations', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/list')
@@ -285,7 +285,7 @@ h.describe('Location API methods anonymous user', { user: '' }, function() {
                     expect(typeof location.lng).toBe('number', 'has lng');
                     expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
                     expect(typeof location.lastMissionDates).toMatch('undefined', 'no lastMissionDates set');
-                    expect(location.team).toMatch(/^(team1|team2)$/, 'team is team1 or team2');
+                    expect(location.team).toMatch(/^(team[1-5]|anonymous)$/, 'has a valid team');
                     expect(typeof location.points).toBe('object', 'points is an object');
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');

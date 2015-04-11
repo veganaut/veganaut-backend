@@ -51,6 +51,15 @@ var getFixtures = function() {
         nickname: 'Eve'
     });
 
+    fix.anon = new Person({
+        _id: '000000000000000000000010',
+        email: 'anon@example.com',
+        password: 'anon',
+        team: 'anonymous',
+        nickname: 'Anon',
+        fullName: 'Anon Ymous'
+    });
+
 
     fix.aliceBuysSomethingForBob = new ActivityLink({
         activity: fix.buyActivity.id,
@@ -203,7 +212,7 @@ var getFixtures = function() {
 
     fix.bobMission1Shop = new Missions.OfferQualityMission({
         location: fix.shop.id,
-        person: fix.bob.id,
+        person: fix.anon.id,
         completed: '2014-08-10',
         outcome: 4
     });
