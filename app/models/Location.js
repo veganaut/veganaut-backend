@@ -120,7 +120,7 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
     // Update the score of the location
     var points = this.computeCurrentPoints();
     var team = this.team;
-    var teamPoints = points[team] || -1;
+    var teamPoints = points[team] || 0;
 
     // Add up all the new points
     _.forOwn(mission.points.toObject(), function(p, t) {
