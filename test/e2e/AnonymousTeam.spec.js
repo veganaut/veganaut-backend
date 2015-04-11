@@ -1,13 +1,8 @@
 'use strict';
 
 var h = require('../helpers_');
-var FixtureCreator = require('../fixtures/FixtureCreator');
 
-var fix = new FixtureCreator();
-fix
-    .user('anon', 'anonymous')
-;
-h.describe('Anonymous team behaviour', {fixtures: fix, user: 'anon@example.com'}, function() {
+h.describe('Logged in as anonymous team member', {user: 'anon@example.com'}, function() {
     it('can create a new location', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'location')
@@ -29,6 +24,21 @@ h.describe('Anonymous team behaviour', {fixtures: fix, user: 'anon@example.com'}
                     expect(loc.points.team4).toBe(0, 'no points for team4');
                     expect(loc.points.team5).toBe(0, 'no points for team5');
                     expect(loc.team).toBe('anonymous', 'location belong to anonymous');
+                    done();
+                })
+            ;
+        });
+    });
+});
+
+h.describe('Anonymous team members from outside this team', function() {
+    it('cannot get the details of a member of the anonymous team', function() {
+        h.runAsync(function(done) {
+            // Try to get anon@example.com
+            h.request('GET', h.baseURL + 'person/000000000000000000000010')
+                .end(function(res) {
+                    expect(res.statusCode).toBe(404, 'anonymous person not found');
+                    expect(typeof res.body.error).toBe('string', 'got an error message');
                     done();
                 })
             ;

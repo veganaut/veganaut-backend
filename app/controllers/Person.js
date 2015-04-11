@@ -135,7 +135,8 @@ exports.getById = function(req, res, next) {
             }
 
             // Check if the given id points to an existing person
-            if (!existingPerson) {
+            // And that person belong to a player team
+            if (!existingPerson || constants.PLAYER_TEAMS.indexOf(existingPerson.team) === -1) {
                 res.status(404);
                 err = new Error('Could not find any user with the given id.');
                 return cb(err);
