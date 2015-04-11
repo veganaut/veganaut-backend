@@ -169,7 +169,7 @@ h.describe('Location API methods as logged in user alice', function() {
                         expect(typeof mission.person).toBe('object', 'person is an object');
                         expect(typeof mission.person.id).toBe('string', 'person has an id');
                         expect(typeof mission.person.nickname).toBe('string', 'person has a nickname');
-                        expect(typeof mission.person.team).toBe('string', 'person has a team');
+                        expect(mission.person.team).toMatch(/^team[1-5]$/, 'person has a valid team');
                         expect(Object.keys(mission.person).length).toBe(3, 'only 3 properties of the person are exposed');
                         expect(typeof mission.points).toBe('object', 'points is an object');
                         expect(typeof mission.completed).toMatch('undefined', 'does not expose when the mission was done');

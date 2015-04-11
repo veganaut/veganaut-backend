@@ -212,16 +212,17 @@ exports.update = function(req, res, next) {
 exports.getCompletedMissions = function(req, res, next) {
     var locationId = req.params.locationId;
     Missions.Mission
+        // Get missions at this location that are not from NPCs
         // For privacy reasons, we don't include the completed date
-        .find({location: locationId}, 'person location points outcome')
+        .find({
+            location: locationId,
+            isNpcMission: false
+        }, 'person location points outcome')
         .populate('person', 'team nickname')
         .sort({completed: 'desc'})
         .limit(NUM_COMPLETED_MISSION_LIMIT)
         .exec(function(err, missions) {
-            if (!err && (!missions || missions.length === 0)) {
-                res.status(404);
-                err = new Error('Could not find location with id: ' + locationId);
-            }
+            // TODO: should return a 404 when the location doesn't exist at all
             if (err) {
                 return next(err);
             }

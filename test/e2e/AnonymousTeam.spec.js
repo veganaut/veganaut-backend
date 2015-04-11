@@ -2,7 +2,7 @@
 
 var h = require('../helpers_');
 
-h.describe('Logged in as npc', {user: 'npc@example.com'}, function() {
+h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
     it('can create a new location', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'location')
@@ -31,7 +31,7 @@ h.describe('Logged in as npc', {user: 'npc@example.com'}, function() {
     });
 });
 
-h.describe('Npc viewed from player team member', function() {
+h.describe('NPCs viewed from player team member', function() {
     it('cannot get the details of a member of the npc team', function() {
         h.runAsync(function(done) {
             // Try to get npc@example.com
@@ -39,6 +39,23 @@ h.describe('Npc viewed from player team member', function() {
                 .end(function(res) {
                     expect(res.statusCode).toBe(404, 'npc not found');
                     expect(typeof res.body.error).toBe('string', 'got an error message');
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('does not include missions of NPCs in location mission list', function() {
+        h.runAsync(function(done) {
+            // Get the location where only the NPC did any missions
+            h.request('GET', h.baseURL + 'location/000000000000000000000009/mission/list')
+                .end(function(res) {
+
+                    expect(res.statusCode).toBe(200);
+
+                    var missions = res.body;
+                    expect(typeof missions).toBe('object', 'response is an array (object)');
+                    expect(missions.length).toBe(0, 'received no mission');
                     done();
                 })
             ;

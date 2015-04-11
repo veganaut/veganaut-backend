@@ -57,7 +57,8 @@ var MissionSchema = function(outcomeType) {
         location: {type: Schema.Types.ObjectId, ref: 'Location', required: true},
         points: points,
         completed: {type: Date},
-        isFirstOfType: {type: Boolean}
+        isFirstOfType: {type: Boolean},
+        isNpcMission: {type: Boolean, default: false}
     });
 
     // Add the outcome (unless we're in the base schema, which doesn't have it)
@@ -103,6 +104,7 @@ missionSchema.pre('save', function(next) {
 });
 
 missionSchema.pre('save', function(next) {
+    // TODO: missions should never be edited, should we enforce that somehow?
     var that = this;
     var missionType = that.getType();
     // Validate points
@@ -115,6 +117,7 @@ missionSchema.pre('save', function(next) {
         if (person.team === constants.NPC_TEAM) {
             // No points for npc team
             that.points = {};
+            that.isNpcMission = true;
         }
         else {
             // No npc, validate and set correct points
@@ -138,7 +141,6 @@ missionSchema.pre('save', function(next) {
                 });
             }
         }
-
 
         if (!that.isNew) {
             return next();
