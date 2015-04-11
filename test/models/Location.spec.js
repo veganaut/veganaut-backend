@@ -31,6 +31,7 @@ describe('A location', function() {
         h.runAsync(function(done) {
             Location.findById(p.id).exec(function(err, location) {
                 expect(location instanceof Location).toBe(true, 'found the created location');
+                expect(location.team).toBe('anonymous', 'set a valid default team');
                 expect(err).toBeNull();
                 done();
             });

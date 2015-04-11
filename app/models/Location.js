@@ -38,7 +38,7 @@ var locationSchema = new Schema({
 
     // The team that last conquered this place. Used to break ties if teams
     // have the same number of points.
-    team: String,
+    team: {type: String, enum: constants.ALL_TEAMS, default: constants.ANONYMOUS_TEAM},
 
     // When the points were last calculated and stored
     updatedAt: {type: Date, default: Date.now}
