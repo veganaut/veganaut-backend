@@ -19,13 +19,17 @@ h.describe('Person API methods', function() {
                     expect(res.statusCode).toBe(201);
 
                     // Some sanity checks on the returned person
-                    expect(res.body.email).toEqual('doge@mac.dog');
-                    expect(res.body.fullName).toEqual('Doge MacDog');
-                    expect(res.body.nickname).toEqual('Doger');
-                    expect(res.body.locale).toEqual('de', 'has correct locale');
+                    var person = res.body;
+                    expect(person.email).toEqual('doge@mac.dog');
+                    expect(person.fullName).toEqual('Doge MacDog');
+                    expect(person.nickname).toEqual('Doger');
+                    expect(person.locale).toEqual('de', 'has correct locale');
+
+                    // Team is randomly assigned, but it should always be one of the 5 player teams
+                    expect(person.team).toMatch(/^team[1-5]$/, 'has valid team');
 
                     // Make sure password is not returned
-                    expect(typeof res.body.password).toEqual('undefined');
+                    expect(typeof person.password).toEqual('undefined');
 
                     done();
                 })
@@ -33,24 +37,38 @@ h.describe('Person API methods', function() {
         });
     });
 
-    // TODO: write new test
-    //it('cannot set values that are not writable when registering', function() {
-    //    h.runAsync(function(done) {
-    //        h.request('POST', h.baseURL + 'person')
-    //            .send({
-    //                email: 'doge@do.ge',
-    //                fullName: 'Just Doge',
-    //                role: 'scout',
-    //                password: 'much safe. so security. wow.'
-    //            })
-    //            .end(function(res) {
-    //                expect(res.body.role).toEqual('rookie', 'should have rookie role even when providing another one');
-    //                // TODO: should check that team cannot be set, but it's random, so tricky to test
-    //                done();
-    //            })
-    //        ;
-    //    });
-    //});
+    it('cannot set values that are not writable when registering', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'person')
+                .send({
+                    email: 'doge@do.ge',
+                    fullName: 'Just Doge',
+                    nickname: 'Doge',
+                    password: 'much safe. so security. wow.',
+
+                    // These values shouldn't be writable
+                    team: 'anonymous',
+                    attributes: {
+                        pioneer: 100,
+                        diplomat: 10,
+                        evaluator: 20,
+                        gourmet: 30
+                    }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+
+                    var person = res.body;
+                    expect(person.team).toMatch(/^team[1-5]$/, 'team was not set to anonymous');
+                    expect(person.attributes.pioneer).toEqual(0, 'could not set pioneer attribute');
+                    expect(person.attributes.diplomat).toEqual(0, 'could not set diplomat attribute');
+                    expect(person.attributes.evaluator).toEqual(0, 'could not set evaluator attribute');
+                    expect(person.attributes.gourmet).toEqual(0, 'could not set gourmet attribute');
+                    done();
+                })
+            ;
+        });
+    });
 
     it('can register as a full user from partial user (that already entered reference code)', function() {
         h.runAsync(function(done) {
