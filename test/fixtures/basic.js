@@ -51,13 +51,13 @@ var getFixtures = function() {
         nickname: 'Eve'
     });
 
-    fix.anon = new Person({
+    fix.npc = new Person({
         _id: '000000000000000000000010',
-        email: 'anon@example.com',
-        password: 'anon',
-        team: 'anonymous',
-        nickname: 'Anon',
-        fullName: 'Anon Ymous'
+        email: 'npc@example.com',
+        password: 'npc',
+        team: 'npc',
+        nickname: 'Npc',
+        fullName: 'Non Player Character'
     });
 
 
@@ -212,7 +212,7 @@ var getFixtures = function() {
 
     fix.bobMission1Shop = new Missions.OfferQualityMission({
         location: fix.shop.id,
-        person: fix.anon.id,
+        person: fix.npc.id,
         completed: '2014-08-10',
         outcome: 4
     });

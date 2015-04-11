@@ -111,12 +111,13 @@ missionSchema.pre('save', function(next) {
             return next(err);
         }
 
-        // Check if anonymous pseudo-team
-        if (person.team === 'anonymous') {
-            // No points for anonymous team
+        // Check if it's an npc
+        if (person.team === constants.NPC_TEAM) {
+            // No points for npc team
             that.points = {};
         }
         else {
+            // No npc, validate and set correct points
             if (Object.keys(that.points.toObject()).length === 0) {
                 // If no points are defined, set the maximum for the given person
                 that.points = {};

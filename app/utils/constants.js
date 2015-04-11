@@ -18,13 +18,17 @@ constants.PLAYER_TEAMS = [
     'team5'
 ];
 
-constants.ANONYMOUS_TEAM = 'anonymous';
+/**
+ * Team name of the NPC (Non-Player Character) team.
+ * @type {string}
+ */
+constants.NPC_TEAM = 'npc';
 
 /**
  * List of all possible team names
  * @type {string[]}
  */
 constants.ALL_TEAMS = constants.PLAYER_TEAMS.slice(); // Create a copy of the player teams
-constants.ALL_TEAMS.push(constants.ANONYMOUS_TEAM);
+constants.ALL_TEAMS.push(constants.NPC_TEAM);
 
 module.exports = constants;

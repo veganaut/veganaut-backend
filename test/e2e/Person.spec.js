@@ -47,7 +47,7 @@ h.describe('Person API methods', function() {
                     password: 'much safe. so security. wow.',
 
                     // These values shouldn't be writable
-                    team: 'anonymous',
+                    team: 'npc',
                     attributes: {
                         pioneer: 100,
                         diplomat: 10,
@@ -59,7 +59,7 @@ h.describe('Person API methods', function() {
                     expect(res.statusCode).toBe(201);
 
                     var person = res.body;
-                    expect(person.team).toMatch(/^team[1-5]$/, 'team was not set to anonymous');
+                    expect(person.team).toMatch(/^team[1-5]$/, 'team was not set to npc');
                     expect(person.attributes.pioneer).toEqual(0, 'could not set pioneer attribute');
                     expect(person.attributes.diplomat).toEqual(0, 'could not set diplomat attribute');
                     expect(person.attributes.evaluator).toEqual(0, 'could not set evaluator attribute');
