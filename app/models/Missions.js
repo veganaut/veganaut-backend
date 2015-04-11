@@ -45,7 +45,7 @@ var allMissions = {};
 var MissionSchema = function(outcomeType) {
     // Prepare the points schema
     var points = {};
-    _.each(constants.TEAMS, function(team) {
+    _.each(constants.PLAYER_TEAMS, function(team) {
         points[team] = {
             type: Number
         };

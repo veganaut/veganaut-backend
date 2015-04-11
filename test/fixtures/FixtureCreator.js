@@ -50,7 +50,7 @@ var capitalize = function(s) {
 FixtureCreator.prototype.user = function(name, team) {
     // Assign random values when they are not provided
     if (typeof team === 'undefined') {
-        team = _.sample(constants.TEAMS);
+        team = _.sample(constants.PLAYER_TEAMS);
     }
 
     this._fixtures[name] = new Person({

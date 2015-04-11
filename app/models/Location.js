@@ -98,7 +98,7 @@ locationSchema.methods.computeCurrentPoints = function() {
     var elapsed = Date.now() - this.updatedAt.getTime();
 
     // Ensure the result contains points for every team
-    _.each(constants.TEAMS, function(team) {
+    _.each(constants.PLAYER_TEAMS, function(team) {
         that.points[team] = that.points[team] || 0;
     });
 

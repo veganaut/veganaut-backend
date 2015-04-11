@@ -14,7 +14,7 @@ var SCORE_FACTOR_BABIES   = 0.5;
 // iterating through all the people in the database.
 var computeScores = function(next) {
     var result = {};
-    _.each(constants.TEAMS, function(team) {
+    _.each(constants.PLAYER_TEAMS, function(team) {
         result[team] = {
             score: 0,
             users: 0,
@@ -50,7 +50,7 @@ var computeScores = function(next) {
                     }
                 });
 
-                _.each(constants.TEAMS, function(team) {
+                _.each(constants.PLAYER_TEAMS, function(team) {
                     result[team].score = result[team].users +
                                          SCORE_FACTOR_CAPTURED * result[team].captured +
                                          SCORE_FACTOR_BABIES * result[team].babies;

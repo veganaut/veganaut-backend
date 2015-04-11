@@ -67,7 +67,7 @@ exports.register = function(req, res, next) {
     var updatePerson = function(cb) {
         // Assign a random team
         if (typeof person.team === 'undefined') {
-            person.team = _.sample(constants.TEAMS);
+            person.team = _.sample(constants.PLAYER_TEAMS);
         }
 
         _.assign(person, personData);

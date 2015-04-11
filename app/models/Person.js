@@ -37,11 +37,11 @@ var personSchema = new Schema({
     gender: {type: String, enum: ['male', 'female', 'other']},
     locale: {type: String, default: 'en', enum: ['en', 'de']},
 
-    team: {type: String, enum: constants.TEAMS},
+    team: {type: String, enum: constants.ALL_TEAMS},
     capture: {
         active: {type: Boolean, default: false},
         person: {type: Schema.Types.ObjectId, ref: 'Person'},
-        team: {type: String, enum: constants.TEAMS},
+        team: {type: String, enum: constants.PLAYER_TEAMS},
         pointsUntilFree: {type: Number}
     },
     attributes: {
