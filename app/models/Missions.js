@@ -104,9 +104,15 @@ missionSchema.pre('save', function(next) {
 });
 
 missionSchema.pre('save', function(next) {
-    // TODO: missions should never be edited, should we enforce that somehow?
     var that = this;
     var missionType = that.getType();
+
+    // Missions should never be edited, throw an error if this is not a new mission
+    // Careful: if this is removed, some tasks in the hook have to be modified (they should only happen once)
+    if (!that.isNew) {
+        return next(new Error('Missions cannot be edited (' + missionType + ', ' + that.id + ')'));
+    }
+
     // Validate points
     Person.findById(that.person, function(err, person) {
         if (err) {
@@ -142,31 +148,39 @@ missionSchema.pre('save', function(next) {
             }
         }
 
-        if (!that.isNew) {
-            return next();
-        }
+        // Notify location and products of this mission
+        async.series([
+            // Populate the location to notify it of the new mission
+            function(cb) {
+                // TODO: should only populate if not already done?
+                that.populate('location', function(err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    return that.location.notifyMissionCompleted(that, cb);
+                });
+            },
 
-        // Populate the location to notify it of the new mission
-        // TODO: should only populate if not already done?
-        that.populate('location', function(err) {
-            if (err) {
-                return next(err);
-            }
-            return that.location.notifyMissionCompleted(that, next);
-        });
-
-        // Check if this is a product mission
-        // TODO: make this check easier
-        if (allMissions.isProductMission(allMissions.getModelForIdentifier(that.getIdentifier()))) {
-            that.populate('outcome.product', function(err) {
-                if (err) {
-                    return next(err);
+            // Populate products products to notify of completed missions (if product mission)
+            function(cb) {
+                // Check if this is a product mission
+                // TODO: make this check easier
+                if (allMissions.isProductMission(allMissions.getModelForIdentifier(that.getIdentifier()))) {
+                    that.populate('outcome.product', function(err) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        async.each(that.outcome, function(outcome, innerCb) {
+                            outcome.product.notifyProductMissionCompleted(that, outcome, innerCb);
+                        }, cb);
+                    });
                 }
-                async.each(that.outcome, function(outcome, cb) {
-                    outcome.product.notifyProductMissionCompleted(that, outcome, cb);
-                }, next);
-            });
-        }
+                else {
+                    // Not a product mission, nothing to do
+                    cb();
+                }
+            }
+        ], next);
     });
 });
 
