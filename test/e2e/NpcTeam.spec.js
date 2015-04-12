@@ -29,6 +29,28 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
             ;
         });
     });
+
+    it('can submit a mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000006', // Mission in dosha
+                    type: 'visitBonus',
+                    outcome: true,
+                    points: { npc: 50 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+
+                    var mission = res.body;
+                    expect(mission.type).toBe('visitBonus', 'sanity check on mission type');
+                    expect(mission.causedOwnerChange).toBe(false, 'should not have affected owner');
+                    expect(mission.points).toEqual({}, 'should have given no points');
+                    done();
+                })
+            ;
+        });
+    });
 });
 
 h.describe('NPCs viewed from player team member', function() {

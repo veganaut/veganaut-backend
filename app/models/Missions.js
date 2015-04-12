@@ -207,10 +207,17 @@ missionSchema.options.toJSON = {
         }
         else {
             // Pick from the ret object, since subdocs and other models are already transformed
-            return _.assign(_.pick(ret, ['completed', 'outcome', 'points', 'person', 'location']), {
+            var newRet = _.assign(_.pick(ret, ['completed', 'outcome', 'points', 'person', 'location']), {
                 id: ret._id,
                 type: doc.getIdentifier()
             });
+
+            // Mongoose converts empty subdocs to null instead of an empty object, we don't like it
+            if (_.isNull(newRet.points)) {
+                newRet.points = {};
+            }
+
+            return newRet;
         }
 
     }
