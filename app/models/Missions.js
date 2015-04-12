@@ -80,7 +80,7 @@ missionSchema.pre('save', function(next) {
     var missionType = that.getType();
 
     if (typeof that.isFirstOfType === 'undefined') {
-        that.getMissionCount(missionType, that.location, function(err, count) {
+        that.getNonNpcMissionCount(missionType, that.location, function(err, count) {
             if (err) {
                 return next(err);
             }
@@ -224,15 +224,17 @@ missionSchema.options.toJSON = {
 };
 
 /**
- * Returns the count of the missions which have the same type and the same location.
+ * Returns the number of missions of the given type completed by non-npc players
+ * at the given location
  * @param {string} missionType
  * @param {id} locationId
  * @param {function} callback Will be called with (err, count)
  */
-missionSchema.methods.getMissionCount = function(missionType, locationId, callback) {
+missionSchema.methods.getNonNpcMissionCount = function(missionType, locationId, callback) {
     allMissions.Mission.count({
-        '__t': missionType,
-        'location': locationId
+        __t: missionType,
+        location: locationId,
+        isNpcMission: false
     }, callback);
 };
 

@@ -36,6 +36,7 @@ h.describe('Person Attributes E2E Test', function() {
         });
     });
 
+    // TODO: this should be in a beforeAll or us an existing location
     it('can submit a addLocation mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'location')
@@ -373,6 +374,38 @@ h.describe('Person Attributes E2E Test', function() {
                         expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when effortValue mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when effortValue mission completed and isFirstOfType');
                         expect(me.attributes.gourmet).toEqual(gourmetCount, ' gourmet not changed when effortValue mission completed');
+
+                        done();
+                    });
+                })
+            ;
+        });
+    });
+
+    it('ignores npc missions when calculating person attribute changes for submitted missions', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    // Post a type of mission that an npc already did at this location
+                    location: '000000000000000000000009',
+                    type: 'offerQuality',
+                    outcome: 4,
+                    points: {team1: 20}
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('offerQuality', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
+
+                    // Get new person data (via person/{id})
+                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                        expect(res.statusCode).toBe(200);
+
+                        var me = res.body;
+                        expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when offerQuality mission completed and isFirstOfType');
+                        expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when offerQuality mission completed');
+                        expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when offerQuality mission completed and isFirstOfType');
+                        expect(me.attributes.gourmet).toEqual(gourmetCount, ' gourmet not changed when offerQuality mission completed');
 
                         done();
                     });
