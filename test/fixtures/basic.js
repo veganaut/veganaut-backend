@@ -154,6 +154,12 @@ var getFixtures = function() {
         ]
     });
 
+    fix.ruprechtTofu = new Product({
+        _id: '000000000000000000000103',
+        location: fix.ruprecht.id,
+        name: 'tofu'
+    });
+
     fix.bobMission1Ruprecht = new Missions.HasOptionsMission({
         location: fix.ruprecht.id,
         person: fix.bob.id,
@@ -177,6 +183,17 @@ var getFixtures = function() {
         person: fix.alice.id,
         completed: '2014-08-25T16:00:00',
         outcome: 'yes'
+    });
+    fix.aliceMission3Ruprecht = new Missions.WhatOptionsMission({
+        location: fix.ruprecht.id,
+        person: fix.alice.id,
+        completed: '2014-08-25T17:00:00',
+        outcome: [
+            {
+                product: fix.ruprechtTofu.id,
+                info: 'available'
+            }
+        ]
     });
 
     fix.aliceMission1Hollow = new Missions.VisitBonusMission({

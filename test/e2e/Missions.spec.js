@@ -385,9 +385,7 @@ h.describe('Update of product rating.', function() {
                         .end(function(res) {
                             var products = res.body.products;
                             var curry =_.findWhere(products, { id: '000000000000000000000101' });
-                            //console.log(curry);
 
-                            //return done();
                             expect(curry).toBeDefined('curry product is defined');
                             expect(curry.rating).toBeDefined('curry has a rating');
                             expect(curry.rating.average).toBe(4.5, 'curry  has correct rating');

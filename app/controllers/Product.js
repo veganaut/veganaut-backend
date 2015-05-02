@@ -43,11 +43,16 @@ exports.list = function(req, res, next) {
     var response = {
         products: [],
         totalProducts: 0,
-        includesWholeWorld: false
+        includesWholeWorld: true
     };
 
+    // Read the location type filter
+    var locationQuery = {};
+    if (typeof req.query.locationType !== 'undefined') {
+        locationQuery.type = req.query.locationType;
+    }
+
     // Checks if coordinates are sent
-    var coordsQuery;
     var bounds = req.query.bounds;
     if (typeof bounds === 'string') {
         bounds = bounds.split(',');
@@ -72,11 +77,12 @@ exports.list = function(req, res, next) {
                 [bounds[0], bounds[1]],
                 [bounds[2], bounds[3]]
             ];
-            coordsQuery = {
-                coordinates: {
-                    $within: {$box: box}
-                }
+            locationQuery.coordinates = {
+                $within: {$box: box}
             };
+
+            // We have a coords query, so not including the whole world
+            response.includesWholeWorld = false;
         }
     }
 
@@ -112,16 +118,11 @@ exports.list = function(req, res, next) {
         });
     };
 
-    // Check if the coords query was set
-    if (typeof coordsQuery === 'undefined') {
-        // If no coords are given, find all products
-        response.includesWholeWorld = true;
-        return doProductQuery({});
-    }
-    else {
-        // Find the locations withing the given coords
+    // Check if there is a location query
+    if (Object.keys(locationQuery).length > 0) {
+        // Find the relevant locations
         Location
-            .find(coordsQuery, function(err, locations) {
+            .find(locationQuery, function(err, locations) {
                 if (err) {
                     return next(err);
                 }
@@ -137,5 +138,9 @@ exports.list = function(req, res, next) {
                 });
             }
         );
+    }
+    else {
+        // No location query, return all products
+        return doProductQuery({});
     }
 };

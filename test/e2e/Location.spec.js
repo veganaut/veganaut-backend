@@ -123,7 +123,7 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.name).toBe('Reformhaus Ruprecht', 'correct name');
                     expect(typeof location.type).toBe('string', 'got a type');
                     expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
-                    expect(Object.keys(location.lastMissionDates).length).toMatch(2, 'has  lastMissionDates set');
+                    expect(Object.keys(location.lastMissionDates).length).toMatch(3, 'has  lastMissionDates set');
                     expect(typeof location.lastMissionDates.visitBonus).toMatch('string', 'got a last visitBonus date');
                     expect(typeof location.lastMissionDates.hasOptions).toMatch('string', 'got a last hasOptions date');
 
@@ -143,7 +143,7 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
-                    expect(location.products.length).toBe(0, 'got products array');
+                    expect(location.products.length).toBe(1, 'got products array');
 
                     done();
                 })
