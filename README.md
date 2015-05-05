@@ -1,4 +1,4 @@
-Veganaut Backend [![Build Status](https://travis-ci.org/veganaut/veganaut-backend.svg?branch=master)](https://travis-ci.org/veganaut/veganaut-backend)
+Veganaut Backend [![Build Status](https://travis-ci.org/veganaut/veganaut-backend.svg?branch=master)](https://travis-ci.org/veganaut/veganaut-backend) [![Code Climate](https://codeclimate.com/github/veganaut/veganaut-backend/badges/gpa.svg)](https://codeclimate.com/github/veganaut/veganaut-backend)
 ================
 
 This is the backend of Veganaut: a gamified platform (website and phonegap app) helping the international
