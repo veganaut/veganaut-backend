@@ -99,7 +99,7 @@ locationSchema.methods.computeCurrentPoints = function() {
 
     // Ensure the result contains points for every team
     _.each(constants.PLAYER_TEAMS, function(team) {
-        that.points[team] = that.points[team] || 0;
+        points[team] = 0;
     });
 
     // Points for each team diminish exponentially
@@ -169,8 +169,10 @@ locationSchema.options.toJSON = {
             ret.lat = doc.coordinates[1];
         }
 
-        // Compute points as of now
-        ret.points = doc.computeCurrentPoints();
+        // Compute and include points if the are present (= were loaded from db)
+        if (typeof doc.points !== 'undefined') {
+            ret.points = doc.computeCurrentPoints();
+        }
 
         // Add the quality and effort
         ret.quality = {

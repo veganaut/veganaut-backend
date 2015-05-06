@@ -52,12 +52,15 @@ exports.location = function(req, res, next) {
 };
 
 exports.list = function(req, res, next) {
-    Location.find(function(err, locations) {
-        if (err) {
-            return next(err);
+    // Load the locations, but only the data we actually want to send
+    Location.find({}, 'name type coordinates team updatedAt quality efforts',
+        function(err, locations) {
+            if (err) {
+                return next(err);
+            }
+            return res.send(locations);
         }
-        return res.send(locations);
-    });
+    );
 };
 
 
