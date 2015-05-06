@@ -54,7 +54,7 @@ h.describe('Location API methods as logged in user alice', function() {
                         expect(typeof location.lat).toBe('number', 'has lat');
                         expect(typeof location.lng).toBe('number', 'has lng');
                         expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
-                        expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
+                        expect(typeof location.lastMissionDates).toMatch('undefined', 'no lastMissionDates set');
 
                         expect(typeof location.updatedAt).toMatch('string', 'updatedAt is a string');
                         var updatedAt = new Date(location.updatedAt);

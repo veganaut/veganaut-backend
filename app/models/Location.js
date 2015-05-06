@@ -182,7 +182,7 @@ locationSchema.options.toJSON = {
             numRatings: doc.efforts.count
         };
 
-        // Add nextVisitBonusDate if it's available
+        // Add lastMissionDates if they are available
         if (typeof doc._lastMissionDates !== 'undefined') {
             ret.lastMissionDates = doc._lastMissionDates;
         }

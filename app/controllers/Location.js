@@ -56,24 +56,7 @@ exports.list = function(req, res, next) {
         if (err) {
             return next(err);
         }
-
-        async.each(locations,
-            function(location, cb) {
-                if (typeof req.user !== 'undefined') {
-                    // TODO: we don't really have to do this here, only in the .get method
-                    location.computeLastMissionDates(req.user, cb);
-                }
-                else {
-                    cb();
-                }
-            },
-            function(err) {
-                if (err) {
-                    return next(err);
-                }
-                return res.send(locations);
-            }
-        );
+        return res.send(locations);
     });
 };
 
