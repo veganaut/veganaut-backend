@@ -4,6 +4,10 @@
  */
 module.exports = {
     frontendUrl: 'https://veganaut.net',
+    locale: {
+        available:  ['en', 'de', 'fr'],
+        default: 'en'
+    },
     email: {
         from: 'veganautnet@yahoo.com',
         transporter: {

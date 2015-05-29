@@ -11,6 +11,7 @@ var mongoose = require('mongoose');
 var async = require('async');
 var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
+var config = require('../config');
 
 require('./ActivityLink');
 var ActivityLink = mongoose.model('ActivityLink');
@@ -35,7 +36,7 @@ var personSchema = new Schema({
     phone: String,
     address: String,
     gender: {type: String, enum: ['male', 'female', 'other']},
-    locale: {type: String, default: 'en', enum: ['en', 'de']},
+    locale: {type: String, default: config.locale.default, enum: config.locale.available},
 
     team: {type: String, enum: constants.ALL_TEAMS},
     capture: {
