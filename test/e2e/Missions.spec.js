@@ -327,7 +327,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
 
 });
 
-h.describe('Products missions can refer to existing products.', function() {
+h.describe('Product missions referring to existing products.', function() {
     it('can submit rateOptions mission with an existing product', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
@@ -355,10 +355,33 @@ h.describe('Products missions can refer to existing products.', function() {
             ;
         });
     });
+
+    it('can submit editProduct mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000006',
+                    type: 'editProduct',
+                    outcome: {
+                        product: '000000000000000000000101',
+                        field: 'name',
+                        value: 'Indian Curry'
+                    },
+                    points: { team1: 5 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('editProduct', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 5}, 'points of mission');
+                    done();
+                })
+            ;
+        });
+    });
 });
 
-h.describe('Update of product rating.', function() {
-    it('correctly updates options rating when submitting rateOptions mission.', function() {
+h.describe('Update of products.', function() {
+    it('correctly updates product rating when submitting rateOptions mission.', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
@@ -396,6 +419,72 @@ h.describe('Update of product rating.', function() {
                             expect(samosa.rating).toBeDefined('samosa has a rating');
                             expect(samosa.rating.average).toBe(2, 'samosa  has correct rating');
                             expect(samosa.rating.numRatings).toBe(2, 'samosa hast correct number of ratings');
+                            done();
+                        })
+                    ;
+                })
+            ;
+        });
+    });
+
+    it('can update product name with editProduct mission.', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000006',
+                    type: 'editProduct',
+                    outcome: {
+                        product: '000000000000000000000101',
+                        field: 'name',
+                        value: 'Indian Curry'
+                    },
+                    points: { team1: 5 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('editProduct', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 5}, 'points of mission');
+
+                    h.request('GET', h.baseURL + 'location/000000000000000000000006')
+                        .end(function(res) {
+                            var products = res.body.products;
+                            var curry =_.findWhere(products, { id: '000000000000000000000101' });
+
+                            expect(curry).toBeDefined('curry product is defined');
+                            expect(curry.name).toBe('Indian Curry', 'correctly updated name');
+                            done();
+                        })
+                    ;
+                })
+            ;
+        });
+    });
+
+    it('can update product description with editProduct mission.', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000006',
+                    type: 'editProduct',
+                    outcome: {
+                        product: '000000000000000000000101',
+                        field: 'description',
+                        value: 'Test desc'
+                    },
+                    points: {team1: 5}
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('editProduct', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 5}, 'points of mission');
+
+                    h.request('GET', h.baseURL + 'location/000000000000000000000006')
+                        .end(function(res) {
+                            var products = res.body.products;
+                            var curry = _.findWhere(products, {id: '000000000000000000000101'});
+
+                            expect(curry).toBeDefined('curry product is defined');
+                            expect(curry.description).toBe('Test desc', 'correctly updated description');
                             done();
                         })
                     ;

@@ -29,6 +29,7 @@ var POINTS_BY_TYPE = {
     WhatOptionsMission:  10,
     BuyOptionsMission:   20,
     RateOptionsMission:  10,
+    EditProductMission:   5,
     GiveFeedbackMission: 10,
     OfferQualityMission: 20,
     EffortValueMission:  20
@@ -63,10 +64,6 @@ var MissionSchema = function(outcomeType) {
 
     // Add the outcome (unless we're in the base schema, which doesn't have it)
     if (typeof outcomeType !== 'undefined') {
-        if (_.isPlainObject(outcomeType) === false) {
-            outcomeType = {type: outcomeType};
-        }
-        _.assign(outcomeType, {required: true});
         this.add({
             outcome: outcomeType
         });
@@ -170,7 +167,8 @@ missionSchema.pre('save', function(next) {
                         if (err) {
                             return cb(err);
                         }
-                        async.each(that.outcome, function(outcome, innerCb) {
+                        var outcomes = _.isArray(that.outcome) ? that.outcome : [that.outcome];
+                        async.each(outcomes, function(outcome, innerCb) {
                             outcome.product.notifyProductMissionCompleted(that, outcome, innerCb);
                         }, cb);
                     });
@@ -260,92 +258,135 @@ allMissions.Mission = Mission;
 
 // And all the discriminators (= specific missions)
 allMissions.AddLocationMission = Mission.discriminator('AddLocationMission', new MissionSchema(
-    Boolean
+    {
+        type: Boolean,
+        required: true
+    }
 ));
 
 
 allMissions.VisitBonusMission = Mission.discriminator('VisitBonusMission', new MissionSchema(
-    Boolean
+    {
+        type: Boolean,
+        required: true
+    }
 ));
 
 allMissions.HasOptionsMission = Mission.discriminator('HasOptionsMission', new MissionSchema(
     {
         type: String,
-        enum: ['no', 'ratherNo', 'noClue', 'ratherYes', 'yes']
+        enum: ['no', 'ratherNo', 'noClue', 'ratherYes', 'yes'],
+        required: true
     }
 ));
 
 allMissions.WantVeganMission = Mission.discriminator('WantVeganMission', new MissionSchema(
-    [{
-        expression: {
-            type: String,
-            required: true
-        },
-        expressionType: {
-            type: String,
-            required: true,
-            enum: ['builtin', 'custom']
-        }
-    }]
+    {
+        type: [{
+            expression: {
+                type: String,
+                required: true
+            },
+            expressionType: {
+                type: String,
+                required: true,
+                enum: ['builtin', 'custom']
+            }
+        }],
+        required: true
+    }
 ));
 
 allMissions.WhatOptionsMission = Mission.discriminator('WhatOptionsMission', new MissionSchema(
-    [{
-        product: {
-            type: Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true
-        },
-        info: {
-            type: String,
-            required: true,
-            enum: ['unavailable', 'temporarilyUnavailable', 'available']
-        }
-    }]
+    {
+        type: [{
+            product: {
+                type: Schema.Types.ObjectId,
+                ref: 'Product',
+                required: true
+            },
+            info: {
+                type: String,
+                required: true,
+                enum: ['unavailable', 'temporarilyUnavailable', 'available']
+            }
+        }],
+        required: true
+    }
 ));
 
 allMissions.BuyOptionsMission = Mission.discriminator('BuyOptionsMission', new MissionSchema(
-    [{
-        product: {
-            type: Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true
-        }
-    }]
+    {
+        type: [{
+            product: {
+                type: Schema.Types.ObjectId,
+                ref: 'Product',
+                required: true
+            }
+        }],
+        required: true
+    }
 ));
 
 allMissions.RateOptionsMission = Mission.discriminator('RateOptionsMission', new MissionSchema(
-    [{
+    {
+        type: [{
+            product: {
+                type: Schema.Types.ObjectId,
+                ref: 'Product',
+                required: true
+            },
+            info: {
+                type: Number,
+                min: 1.0,
+                max: 5.0,
+                required: true
+            }
+        }],
+        required: true
+    }
+));
+
+allMissions.EditProductMission = Mission.discriminator('EditProductMission', new MissionSchema(
+    {
         product: {
             type: Schema.Types.ObjectId,
             ref: 'Product',
             required: true
         },
-        info: {
-            type: Number,
-            min: 1.0,
-            max: 5.0,
+        field: {
+            type: String,
+            required: true,
+            enum: ['name', 'description']
+        },
+        value: {
+            type: String,
             required: true
         }
-    }]
+    }
 ));
 
 allMissions.GiveFeedbackMission = Mission.discriminator('GiveFeedbackMission', new MissionSchema(
-    String
+    {
+        type: String,
+        required: true
+    }
 ));
 
 allMissions.OfferQualityMission = Mission.discriminator('OfferQualityMission', new MissionSchema(
     {
         type: Number,
         min: 1.0,
-        max: 5.0
+        max: 5.0,
+        required: true
     }
 ));
 
 allMissions.EffortValueMission = Mission.discriminator('EffortValueMission', new MissionSchema(
     {
         type: String,
-        enum: ['no', 'ratherNo', 'ratherYes', 'yes']
+        enum: ['no', 'ratherNo', 'ratherYes', 'yes'],
+        required: true
     }
 ));
 
@@ -389,7 +430,8 @@ allMissions.isProductMission = function(MissionModel) {
     return (
         MissionModel === allMissions.WhatOptionsMission ||
         MissionModel === allMissions.BuyOptionsMission ||
-        MissionModel === allMissions.RateOptionsMission
+        MissionModel === allMissions.RateOptionsMission ||
+        MissionModel === allMissions.EditProductMission
     );
 };
 
