@@ -35,6 +35,17 @@ var POINTS_BY_TYPE = {
     EffortValueMission:  20
 };
 
+/**
+ * List of missions that act on products
+ * @type {string[]}
+ */
+var PRODUCT_MISSIONS = [
+    'WhatOptionsMission',
+    'BuyOptionsMission',
+    'RateOptionsMission',
+    'EditProductMission'
+];
+
 // Object to hold all the missions that will be exported
 var allMissions = {};
 
@@ -161,8 +172,7 @@ missionSchema.pre('save', function(next) {
             // Populate products products to notify of completed missions (if product mission)
             function(cb) {
                 // Check if this is a product mission
-                // TODO: make this check easier
-                if (allMissions.isProductMission(allMissions.getModelForIdentifier(that.getIdentifier()))) {
+                if (that._isProductMission()) {
                     that.populate('outcome.product', function(err) {
                         if (err) {
                             return cb(err);
@@ -181,6 +191,15 @@ missionSchema.pre('save', function(next) {
         ], next);
     });
 });
+
+/**
+ * Returns whether the given mission model is a mission that acts on Products
+ * @returns {boolean}
+ * @private
+ */
+missionSchema.methods._isProductMission = function() {
+    return (PRODUCT_MISSIONS.indexOf(this.getType()) >= 0);
+};
 
 /**
  * Returns the type of the mission
@@ -417,21 +436,6 @@ allMissions.getModelForIdentifier = function(identifier) {
 allMissions.getIdentifierForModelName = function(modelName) {
     return modelName.charAt(0).toLowerCase() + modelName.substr(
         1, modelName.length - 1 - 'Mission'.length
-    );
-};
-
-/**
- * Returns whether the given mission model is a mission
- * that acts on Products
- * @param {Mission} MissionModel
- * @returns {boolean}
- */
-allMissions.isProductMission = function(MissionModel) {
-    return (
-        MissionModel === allMissions.WhatOptionsMission ||
-        MissionModel === allMissions.BuyOptionsMission ||
-        MissionModel === allMissions.RateOptionsMission ||
-        MissionModel === allMissions.EditProductMission
     );
 };
 

@@ -37,11 +37,10 @@ exports.submit = function(req, res, next) {
 
         // TODO: before saving, make sure the user is allowed to complete it
 
-        // Create Products if the mission was about products
+        // Create Products if the mission is a WhatOptionsMission
         function(cb) {
-            if (Missions.isProductMission(MissionModel) && _.isArray(outcome)) {
+            if (MissionModel === Missions.WhatOptionsMission && _.isArray(outcome)) {
                 async.each(outcome, function(o, innerCb) {
-                    // TODO: only create product for the WhatOptionsMission
                     // Check if we didn't already get an object id
                     if (o.product && !_.isString(o.product)) {
                         o.product = new Product({
@@ -51,7 +50,7 @@ exports.submit = function(req, res, next) {
                         o.product.save(innerCb);
                     }
                     else {
-                        // TODO: validate that given product id exists
+                        // Got a product id, nothing to do
                         innerCb();
                     }
                 }, cb);

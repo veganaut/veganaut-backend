@@ -134,68 +134,6 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         });
     });
 
-    it('can submit buyOptions mission', function() {
-        h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'mission')
-                .send({
-                    location: '000000000000000000000003',
-                    type: 'buyOptions',
-                    outcome: [
-                        {
-                            product: {
-                                name: 'Curry'
-                            }
-                        },
-                        {
-                            product: {
-                                name: 'Smoothie'
-                            }
-                        }
-                    ],
-                    points: { team1: 20 }
-                })
-                .end(function(res) {
-                    expect(res.statusCode).toBe(201);
-                    expect(res.body.type).toBe('buyOptions', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
-                    done();
-                })
-            ;
-        });
-    });
-
-    it('can submit rateOptions mission', function() {
-        h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'mission')
-                .send({
-                    location: '000000000000000000000003',
-                    type: 'rateOptions',
-                    outcome: [
-                        {
-                            product: {
-                                name: 'Curry'
-                            },
-                            info: 5
-                        },
-                        {
-                            product: {
-                                name: 'Smoothie'
-                            },
-                            info: 4
-                        }
-                    ],
-                    points: { team1: 10 }
-                })
-                .end(function(res) {
-                    expect(res.statusCode).toBe(201);
-                    expect(res.body.type).toBe('rateOptions', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 10}, 'points of mission');
-                    done();
-                })
-            ;
-        });
-    });
-
     it('can submit giveFeedback mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
@@ -328,7 +266,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
 });
 
 h.describe('Product missions referring to existing products.', function() {
-    it('can submit rateOptions mission with an existing product', function() {
+    it('can submit rateOptions mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
@@ -350,6 +288,32 @@ h.describe('Product missions referring to existing products.', function() {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('rateOptions', 'type of mission');
                     expect(res.body.points).toEqual({team1: 10}, 'points of mission');
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('can submit buyOptions mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000006',
+                    type: 'buyOptions',
+                    outcome: [
+                        {
+                            product: '000000000000000000000101'
+                        },
+                        {
+                            product: '000000000000000000000102'
+                        }
+                    ],
+                    points: { team1: 20 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('buyOptions', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
                     done();
                 })
             ;
