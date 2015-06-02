@@ -190,8 +190,7 @@ var getFixtures = function() {
         completed: '2014-08-25T17:00:00',
         outcome: [
             {
-                product: fix.ruprechtTofu.id,
-                info: 'available'
+                product: fix.ruprechtTofu.id
             }
         ]
     });

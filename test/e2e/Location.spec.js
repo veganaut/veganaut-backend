@@ -104,6 +104,7 @@ h.describe('Location API methods as logged in user alice', function() {
                         expect(typeof product.name).toBe('string', 'has a name');
                         expect(typeof product.id).toBe('string', 'has an id');
                         expect(typeof product.location).toBe('undefined', 'location is not sent again');
+                        expect(typeof product.availability).toBe('string', 'has an availability');
                     });
 
                     done();
@@ -324,6 +325,7 @@ h.describe('Location API methods when not logged in', { user: '' }, function() {
                         expect(typeof product.rating.average).toBe('number', 'has a rating average');
                         expect(typeof product.rating.numRatings).toBe('number', 'has a rating amount');
                         expect(typeof product.location).toBe('undefined', 'location is not sent again');
+                        expect(typeof product.availability).toBe('string', 'has an availability');
                     });
 
                     done();

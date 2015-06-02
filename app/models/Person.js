@@ -140,6 +140,7 @@ personSchema.methods.getType = function() {
  */
 personSchema.methods.notifyMissionCompleted = function(mission, next) {
     // TODO: make this more easily configurable
+    // TODO: add new mission types
     var that = this;
     var INC = 1;
     var PIONEER_INC = INC;

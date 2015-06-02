@@ -167,14 +167,12 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                         {
                             product: {
                                 name: 'Curry'
-                            },
-                            info: 'available'
+                            }
                         },
                         {
                             product: {
                                 name: 'Smoothie'
-                            },
-                            info: 'available'
+                            }
                         }
                     ],
                     points: {team1: 10}

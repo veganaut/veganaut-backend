@@ -8,13 +8,29 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var constants = require('../utils/constants');
 var Average = require('../utils/Average');
 var Missions = require('./Missions');
 
 var productSchema = new Schema({
-    location: {type: Schema.Types.ObjectId, ref: 'Location', required: true},
-    name: { type: String, required: true },
-    description: { type: String }
+    location: {
+        type: Schema.Types.ObjectId,
+        ref: 'Location',
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String
+    },
+    availability: {
+        type: String,
+        required: true,
+        default: 'available',
+        enum: constants.PRODUCT_AVAILABILITIES
+    }
 });
 
 // Keep track of the rating of this product
@@ -53,7 +69,7 @@ productSchema.methods.notifyProductMissionCompleted = function(mission, productO
  */
 productSchema.methods.toJSON = function() {
     return _.assign(
-        _.pick(this, ['name', 'description', 'location']),
+        _.pick(this, ['name', 'description', 'location', 'availability']),
         {
             id: this.id,
             rating: {

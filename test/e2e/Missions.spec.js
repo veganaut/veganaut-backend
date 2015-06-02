@@ -108,14 +108,12 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                         {
                             product: {
                                 name: 'Curry'
-                            },
-                            info: 'available'
+                            }
                         },
                         {
                             product: {
                                 name: 'Smoothie'
-                            },
-                            info: 'available'
+                            }
                         }
                     ],
                     points: { team1: 10 }
@@ -125,7 +123,6 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     expect(res.body.type).toBe('whatOptions', 'type of mission');
                     expect(res.body.points).toEqual({team1: 10}, 'points of mission');
                     _.each(res.body.outcome, function(o) {
-                        expect(typeof o.info).toBe('string', 'product info is a string');
                         expect(typeof o.product).toBe('string', 'product (id) is an string');
                     });
                     done();
@@ -449,6 +446,39 @@ h.describe('Update of products.', function() {
 
                             expect(curry).toBeDefined('curry product is defined');
                             expect(curry.description).toBe('Test desc', 'correctly updated description');
+                            done();
+                        })
+                    ;
+                })
+            ;
+        });
+    });
+
+    it('can update product availability with editProduct mission.', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000006',
+                    type: 'editProduct',
+                    outcome: {
+                        product: '000000000000000000000101',
+                        field: 'availability',
+                        value: 'unavailable'
+                    },
+                    points: {team1: 5}
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.type).toBe('editProduct', 'type of mission');
+                    expect(res.body.points).toEqual({team1: 5}, 'points of mission');
+
+                    h.request('GET', h.baseURL + 'location/000000000000000000000006')
+                        .end(function(res) {
+                            var products = res.body.products;
+                            var curry = _.findWhere(products, {id: '000000000000000000000101'});
+
+                            expect(curry).toBeDefined('curry product is defined');
+                            expect(curry.availability).toBe('unavailable', 'correctly updated availability');
                             done();
                         })
                     ;

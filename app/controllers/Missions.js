@@ -41,18 +41,12 @@ exports.submit = function(req, res, next) {
         function(cb) {
             if (MissionModel === Missions.WhatOptionsMission && _.isArray(outcome)) {
                 async.each(outcome, function(o, innerCb) {
-                    // Check if we didn't already get an object id
-                    if (o.product && !_.isString(o.product)) {
-                        o.product = new Product({
-                            name: o.product.name,
-                            location: location.id
-                        });
-                        o.product.save(innerCb);
-                    }
-                    else {
-                        // Got a product id, nothing to do
-                        innerCb();
-                    }
+                    // Create a new product
+                    o.product = new Product({
+                        name: o.product.name,
+                        location: location.id
+                    });
+                    o.product.save(innerCb);
                 }, cb);
             }
             else {

@@ -323,11 +323,6 @@ allMissions.WhatOptionsMission = Mission.discriminator('WhatOptionsMission', new
                 type: Schema.Types.ObjectId,
                 ref: 'Product',
                 required: true
-            },
-            info: {
-                type: String,
-                required: true,
-                enum: ['unavailable', 'temporarilyUnavailable', 'available']
             }
         }],
         required: true
@@ -366,7 +361,7 @@ allMissions.RateOptionsMission = Mission.discriminator('RateOptionsMission', new
     }
 ));
 
-allMissions.EditProductMission = Mission.discriminator('EditProductMission', new MissionSchema(
+var editProductSchema = new MissionSchema(
     {
         product: {
             type: Schema.Types.ObjectId,
@@ -376,14 +371,26 @@ allMissions.EditProductMission = Mission.discriminator('EditProductMission', new
         field: {
             type: String,
             required: true,
-            enum: ['name', 'description']
+            enum: ['name', 'description', 'availability']
         },
         value: {
             type: String,
             required: true
         }
     }
-));
+);
+
+// Special validation method for the outcome value
+editProductSchema.path('outcome.value').validate(function(value) {
+    if (this.outcome.field === 'availability') {
+        // Only allow existing availabilities to be set
+        return (constants.PRODUCT_AVAILABILITIES.indexOf(value) >= 0);
+    }
+
+    return true;
+});
+
+allMissions.EditProductMission = Mission.discriminator('EditProductMission', editProductSchema);
 
 allMissions.GiveFeedbackMission = Mission.discriminator('GiveFeedbackMission', new MissionSchema(
     {

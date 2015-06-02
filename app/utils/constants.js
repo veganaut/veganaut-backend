@@ -31,4 +31,14 @@ constants.NPC_TEAM = 'npc';
 constants.ALL_TEAMS = constants.PLAYER_TEAMS.slice(); // Create a copy of the player teams
 constants.ALL_TEAMS.push(constants.NPC_TEAM);
 
+/**
+ * List of possible values for the availability of a product
+ * @type {string[]}
+ */
+constants.PRODUCT_AVAILABILITIES = [
+    'available',
+    'temporarilyUnavailable',
+    'unavailable'
+];
+
 module.exports = constants;
