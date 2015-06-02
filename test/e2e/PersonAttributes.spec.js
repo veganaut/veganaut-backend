@@ -7,42 +7,44 @@ var fix = new FixtureCreator();
 fix
     .user('alice', 'team1')
     .location('alice', 'Tingelkringel')
+    .product('Tingelkringel', 'Bagel')
 ;
 
-var locationName = 'Test Location';
-var locationId;
+var fixtures = fix.getFixtures();
+var userId = fixtures['alice'].id;
+var locationId = fixtures['Tingelkringel'].id;
+var productId = fixtures['product.Bagel'].id;
 var pioneerCount;
 var diplomatCount;
 var evaluatorCount;
 var gourmetCount;
 
+var getAttributeValues = function() {
+    h.runAsync(function(done) {
+        h.request('GET', h.baseURL + 'person/me').end(function(res) {
+            expect(res.statusCode).toBe(200);
 
-h.describe('Person Attributes E2E Test', function() {
-    beforeEach(function() {
-        h.runAsync(function(done) {
-            h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
-                expect(res.statusCode).toBe(200);
+            var me = res.body;
+            expect(typeof me.attributes).toEqual('object', 'attributes is a object');
+            pioneerCount = me.attributes.pioneer;
+            diplomatCount = me.attributes.diplomat;
+            evaluatorCount = me.attributes.evaluator;
+            gourmetCount = me.attributes.gourmet;
 
-                var me = res.body;
-                pioneerCount = me.attributes.pioneer;
-                diplomatCount = me.attributes.diplomat;
-                evaluatorCount = me.attributes.evaluator;
-                gourmetCount = me.attributes.gourmet;
-
-                expect(me.id).toEqual('000000000000000000000001');
-                expect(typeof me.attributes).toEqual('object', 'attributes is a object');
-                done();
-            });
+            done();
         });
     });
+};
 
-    // TODO: this should be in a beforeAll or us an existing location
+
+h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.com'}, function() {
+    beforeEach(getAttributeValues);
+
     it('can submit a addLocation mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'location')
                 .send({
-                    name: locationName,
-                    description: locationName,
+                    name: 'Test',
                     lat: 46,
                     lng: 7,
                     type: 'gastronomy'
@@ -50,17 +52,11 @@ h.describe('Person Attributes E2E Test', function() {
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
 
-                    var location = res.body;
-                    locationId = res.body.id;
-                    expect(location.name).toBe(locationName, 'set location name');
-                    expect(typeof location.id).toBe('string', 'has an id');
-
                     // Get the new person data (via person/me)
                     h.request('GET', h.baseURL + 'person/me').end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when addLocation mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when addLocation mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount, ' evaluator not changed when addLocation mission completed and isFirstOfType');
@@ -89,7 +85,6 @@ h.describe('Person Attributes E2E Test', function() {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when hasOptions mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount + 1, ' diplomat += 1 when hasOptions mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount, ' evaluator not changed when hasOptions mission completed and isFirstOfType');
@@ -118,7 +113,6 @@ h.describe('Person Attributes E2E Test', function() {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when visitBonus mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when visitBonus mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount, ' evaluator not changed when visitBonus mission completed and isFirstOfType');
@@ -151,7 +145,6 @@ h.describe('Person Attributes E2E Test', function() {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when wantVegan mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount + 1, ' diplomat += 1 when wantVegan mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount, ' evaluator not changed when wantVegan mission completed and isFirstOfType');
@@ -193,7 +186,6 @@ h.describe('Person Attributes E2E Test', function() {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount + 2, ' pioneer += 2 when whatOptions mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when whatOptions mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount, ' evaluator not changed when whatOptions mission completed and isFirstOfType');
@@ -214,26 +206,18 @@ h.describe('Person Attributes E2E Test', function() {
                     type: 'buyOptions',
                     outcome: [
                         {
-                            product: {
-                                name: 'Curry'
-                            }
-                        },
-                        {
-                            product: {
-                                name: 'Smoothie'
-                            }
+                            product: productId
                         }
                     ],
                     points: {team1: 20}
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    // Get new person data (via person/{id})
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get new person data (via person/{id} to test if that is also correctly updated)
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount, ' pioneer not changed when buyOptions mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when buyOptions mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount, ' evaluator not changed when buyOptions mission completed and isFirstOfType');
@@ -254,28 +238,19 @@ h.describe('Person Attributes E2E Test', function() {
                     type: 'rateOptions',
                     outcome: [
                         {
-                            product: {
-                                name: 'Curry'
-                            },
+                            product: productId,
                             info: 5
-                        },
-                        {
-                            product: {
-                                name: 'Smoothie'
-                            },
-                            info: 4
                         }
                     ],
                     points: {team1: 10}
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    // Get new person data (via person/{id})
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get new person data (via person/{id} to test if that is also correctly updated)
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when rateOptions mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when rateOptions mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when rateOptions mission completed and isFirstOfType');
@@ -299,13 +274,11 @@ h.describe('Person Attributes E2E Test', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    // Get new person data (via person/{id})
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get new person data (via person/{id} to test if that is also correctly updated)
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount, ' pioneer not changed when giveFeedback mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount + 1, ' diplomat += 1 when giveFeedback mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount, ' evaluator not changed when giveFeedback mission completed and isFirstOfType');
@@ -331,13 +304,11 @@ h.describe('Person Attributes E2E Test', function() {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('offerQuality', 'type of mission');
                     expect(res.body.points).toEqual({team1: 20}, 'points of mission');
-                    // Get new person data (via person/{id})
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get new person data (via person/{id} to test if that is also correctly updated)
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when offerQuality mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when offerQuality mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when offerQuality mission completed and isFirstOfType');
@@ -363,13 +334,11 @@ h.describe('Person Attributes E2E Test', function() {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('effortValue', 'type of mission');
                     expect(res.body.points).toEqual({team1: 20}, 'points of mission');
-                    // Get new person data (via person/{id})
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    // Get new person data (via person/{id} to test if that is also correctly updated)
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-
-                        expect(me.id).toEqual('000000000000000000000001');
                         expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when effortValue mission completed and isFirstOfType');
                         expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when effortValue mission completed');
                         expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when effortValue mission completed and isFirstOfType');
@@ -381,6 +350,12 @@ h.describe('Person Attributes E2E Test', function() {
             ;
         });
     });
+});
+
+
+// Use the basic fixtures for this more complicated scenarios
+h.describe('Person Attributes E2E Test with basic fixtures.', function() {
+    beforeEach(getAttributeValues);
 
     it('ignores npc missions when calculating person attribute changes for submitted missions', function() {
         h.runAsync(function(done) {
@@ -397,7 +372,7 @@ h.describe('Person Attributes E2E Test', function() {
                     expect(res.body.type).toBe('offerQuality', 'type of mission');
                     expect(res.body.points).toEqual({team1: 20}, 'points of mission');
 
-                    // Get new person data (via person/{id})
+                    // Get new person data (via person/{id} to test if that is also correctly updated)
                     h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
                         expect(res.statusCode).toBe(200);
 

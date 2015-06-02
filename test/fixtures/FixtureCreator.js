@@ -9,6 +9,7 @@ var constants = require('../../app/utils/constants');
 var FixtureLoader = require('./FixtureLoader');
 var activities = require('./activities');
 var Missions = require('../../app/models/Missions');
+var Product = require('../../app/models/Product');
 
 var Person = mongoose.model('Person');
 var ActivityLink = mongoose.model('ActivityLink');
@@ -113,7 +114,7 @@ FixtureCreator.prototype.activityLink = function(source, target, completed) {
     return this;
 };
 
-FixtureCreator.prototype.location = function (user, name, coordinates, type) {
+FixtureCreator.prototype.location = function(user, name, coordinates, type) {
     this._fixtures[name] = new Location({
         _id: intToId(_.size(this._fixtures)),
         name: name,
@@ -127,6 +128,18 @@ FixtureCreator.prototype.location = function (user, name, coordinates, type) {
         completed: new Date(),
         outcome: true
     });
+
+    return this;
+};
+
+FixtureCreator.prototype.product = function(location, name) {
+    this._fixtures['product.' + name] = new Product({
+        _id: intToId(_.size(this._fixtures)),
+        location: this._fixtures[location].id,
+        name: name
+    });
+
+    return this;
 };
 
 FixtureCreator.prototype.getFixtures = function() {
