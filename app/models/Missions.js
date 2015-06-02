@@ -29,7 +29,7 @@ var POINTS_BY_TYPE = {
     WhatOptionsMission:  10,
     BuyOptionsMission:   20,
     RateOptionsMission:  10,
-    EditProductMission:   5,
+    UpdateProductMission: 5,
     GiveFeedbackMission: 10,
     OfferQualityMission: 20,
     EffortValueMission:  20
@@ -43,7 +43,7 @@ var PRODUCT_MISSIONS = [
     'WhatOptionsMission',
     'BuyOptionsMission',
     'RateOptionsMission',
-    'EditProductMission'
+    'UpdateProductMission'
 ];
 
 // Object to hold all the missions that will be exported
@@ -361,7 +361,7 @@ allMissions.RateOptionsMission = Mission.discriminator('RateOptionsMission', new
     }
 ));
 
-var editProductSchema = new MissionSchema(
+var updateProductSchema = new MissionSchema(
     {
         product: {
             type: Schema.Types.ObjectId,
@@ -381,7 +381,7 @@ var editProductSchema = new MissionSchema(
 );
 
 // Special validation method for the outcome value
-editProductSchema.path('outcome.value').validate(function(value) {
+updateProductSchema.path('outcome.value').validate(function(value) {
     if (this.outcome.field === 'availability') {
         // Only allow existing availabilities to be set
         return (constants.PRODUCT_AVAILABILITIES.indexOf(value) >= 0);
@@ -390,7 +390,7 @@ editProductSchema.path('outcome.value').validate(function(value) {
     return true;
 });
 
-allMissions.EditProductMission = Mission.discriminator('EditProductMission', editProductSchema);
+allMissions.UpdateProductMission = Mission.discriminator('UpdateProductMission', updateProductSchema);
 
 allMissions.GiveFeedbackMission = Mission.discriminator('GiveFeedbackMission', new MissionSchema(
     {

@@ -50,7 +50,7 @@ productSchema.methods.notifyProductMissionCompleted = function(mission, productO
         this.addRating(productOutcome.info);
         shouldSave = true;
     }
-    else if (mission instanceof Missions.EditProductMission) {
+    else if (mission instanceof Missions.UpdateProductMission) {
         // Update the given field. We trust the mission to only update allowed fields.
         this[productOutcome.field] = productOutcome.value;
         shouldSave = true;
