@@ -28,8 +28,8 @@ var productSchema = new Schema({
     availability: {
         type: String,
         required: true,
-        default: 'available',
-        enum: constants.PRODUCT_AVAILABILITIES
+        default: 2,
+        enum: [0, 1, 2]
     }
 });
 
@@ -52,7 +52,12 @@ productSchema.methods.notifyProductMissionCompleted = function(mission, productO
     }
     else if (mission instanceof Missions.UpdateProductMission) {
         // Update the given field. We trust the mission to only update allowed fields.
-        this[productOutcome.field] = productOutcome.value;
+        if (productOutcome.field === 'availability') {
+            this.availability = constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE[productOutcome.value];
+        }
+        else {
+            this[productOutcome.field] = productOutcome.value;
+        }
         shouldSave = true;
     }
 
@@ -69,13 +74,14 @@ productSchema.methods.notifyProductMissionCompleted = function(mission, productO
  */
 productSchema.methods.toJSON = function() {
     return _.assign(
-        _.pick(this, ['name', 'description', 'location', 'availability']),
+        _.pick(this, ['name', 'description', 'location']),
         {
             id: this.id,
             rating: {
                 average: this.ratings.average,
                 numRatings: this.ratings.count
-            }
+            },
+            availability: constants.PRODUCT_AVAILABILITIES_VALUE_TO_STRING[this.availability]
         }
     );
 };

@@ -123,7 +123,8 @@ var getFixtures = function() {
     fix.doshaCurry = new Product({
         _id: '000000000000000000000101',
         location: fix.dosha.id,
-        name: 'curry'
+        name: 'curry',
+        availability: 1
     });
 
     fix.doshaSamosa = new Product({

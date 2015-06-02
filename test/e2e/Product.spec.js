@@ -23,7 +23,7 @@ h.describe('Product list method as anonymous user', { user: '' }, function() {
                     expect(typeof product.rating.average).toBe('number', 'average rating is a number');
                     expect(typeof product.rating.numRatings).toBe('number', 'num ratings is a number');
                     expect(typeof product.location).toBe('string', 'has a location id');
-                    expect(typeof product.availability).toBe('string', 'has an availablity');
+                    expect(product.availability).toBe('available', 'is available');
                     done();
                 })
             ;

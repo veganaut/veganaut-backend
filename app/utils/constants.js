@@ -4,6 +4,7 @@
 
 'use strict';
 
+var _ = require('lodash');
 var constants = {};
 
 /**
@@ -24,6 +25,8 @@ constants.PLAYER_TEAMS = [
  */
 constants.NPC_TEAM = 'npc';
 
+// TODO: should all this availability stuff be here?
+
 /**
  * List of all possible team names
  * @type {string[]}
@@ -32,13 +35,33 @@ constants.ALL_TEAMS = constants.PLAYER_TEAMS.slice(); // Create a copy of the pl
 constants.ALL_TEAMS.push(constants.NPC_TEAM);
 
 /**
- * List of possible values for the availability of a product
+ * List of product availability string
  * @type {string[]}
  */
-constants.PRODUCT_AVAILABILITIES = [
-    'available',
-    'temporarilyUnavailable',
-    'unavailable'
-];
+constants.PRODUCT_AVAILABILITY_STRINGS = ['unavailable', 'temporarilyUnavailable', 'available'];
+
+/**
+ * List of product availability values
+ * @type {number[]}
+ */
+constants.PRODUCT_AVAILABILITY_VALUES = [0, 1, 2];
+
+/**
+ * Mapping of product availability text to their numerical representation
+ * @type {{}}
+ */
+constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE = _.zipObject(
+    constants.PRODUCT_AVAILABILITY_STRINGS,
+    constants.PRODUCT_AVAILABILITY_VALUES
+);
+
+/**
+ * Mapping of product availability values to their textual representation
+ * @type {{}}
+ */
+constants.PRODUCT_AVAILABILITIES_VALUE_TO_STRING = _.zipObject(
+    constants.PRODUCT_AVAILABILITY_VALUES,
+    constants.PRODUCT_AVAILABILITY_STRINGS
+);
 
 module.exports = constants;

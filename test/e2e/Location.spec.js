@@ -100,11 +100,16 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
                     expect(location.products.length).toBeGreaterThan(0, 'got some products');
 
-                    _.each(location.products, function(product) {
+                    // Expected order: samosa should be before curry because curry is temporarilyUnavailable
+                    var expectedOrder = ['samosa', 'curry'];
+                    var expectedAvailabilities = ['available', 'temporarilyUnavailable'];
+                    _.each(location.products, function(product, index) {
                         expect(typeof product.name).toBe('string', 'has a name');
+                        expect(product.name).toBe(expectedOrder[index], 'correct name (meaning correct order)');
                         expect(typeof product.id).toBe('string', 'has an id');
                         expect(typeof product.location).toBe('undefined', 'location is not sent again');
                         expect(typeof product.availability).toBe('string', 'has an availability');
+                        expect(product.availability).toBe(expectedAvailabilities[index], 'correct availability');
                     });
 
                     done();

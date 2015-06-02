@@ -384,7 +384,7 @@ var updateProductSchema = new MissionSchema(
 updateProductSchema.path('outcome.value').validate(function(value) {
     if (this.outcome.field === 'availability') {
         // Only allow existing availabilities to be set
-        return (constants.PRODUCT_AVAILABILITIES.indexOf(value) >= 0);
+        return (constants.PRODUCT_AVAILABILITY_STRINGS.indexOf(value) >= 0);
     }
 
     return true;
