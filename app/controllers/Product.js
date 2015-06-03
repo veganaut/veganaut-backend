@@ -109,7 +109,7 @@ exports.list = function(req, res, next) {
                 .find(query)
                 .skip(skip)
                 .limit(limit)
-                .sort('-ratings.rank -ratings.count name')
+                .sort(Product.getDefaultSorting())
                 .exec(function(err, products) {
                     response.products = products;
                     return res.send(response);

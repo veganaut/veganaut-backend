@@ -36,6 +36,16 @@ var productSchema = new Schema({
 // Keep track of the rating of this product
 new Average('rating', 1, 5, productSchema);
 
+
+/**
+ * Static method that returns the sorting string to be used when getting lists
+ * of products.
+ * @returns {string}
+ */
+productSchema.statics.getDefaultSorting = function() {
+    return '-availability -ratings.rank -ratings.count name';
+};
+
 /**
  * Callback to notify the location that a new mission has been completed.
  * The product will update its score or other changed fields.

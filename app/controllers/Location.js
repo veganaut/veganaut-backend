@@ -114,7 +114,7 @@ var findProducts = function(obj, cb) {
     obj.products = [];
     Product
         .find({location: obj.location.id})
-        .sort('-availability -ratings.rank -ratings.count name')
+        .sort(Product.getDefaultSorting())
         .exec(function(err, p) {
             if (p) {
                 obj.products = p;
