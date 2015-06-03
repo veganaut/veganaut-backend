@@ -4,6 +4,7 @@
 'use strict';
 
 var mongoose = require('mongoose');
+var constants = require('../../app/utils/constants');
 var FixtureLoader = require('./FixtureLoader');
 var activities = require('./activities');
 
@@ -124,7 +125,7 @@ var getFixtures = function() {
         _id: '000000000000000000000101',
         location: fix.dosha.id,
         name: 'curry',
-        availability: 1
+        availability: constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE.temporarilyUnavailable
     });
 
     fix.doshaSamosa = new Product({

@@ -26,10 +26,10 @@ var productSchema = new Schema({
         type: String
     },
     availability: {
-        type: String,
+        type: Number,
         required: true,
-        default: 2,
-        enum: [0, 1, 2]
+        default: constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE.available,
+        enum: constants.PRODUCT_AVAILABILITY_VALUES
     }
 });
 

@@ -44,7 +44,7 @@ constants.PRODUCT_AVAILABILITY_STRINGS = ['unavailable', 'temporarilyUnavailable
  * List of product availability values
  * @type {number[]}
  */
-constants.PRODUCT_AVAILABILITY_VALUES = [0, 1, 2];
+constants.PRODUCT_AVAILABILITY_VALUES = [0, 50, 100];
 
 /**
  * Mapping of product availability text to their numerical representation
