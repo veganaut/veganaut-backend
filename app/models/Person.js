@@ -139,8 +139,7 @@ personSchema.methods.getType = function() {
  * @param next
  */
 personSchema.methods.notifyMissionCompleted = function(mission, next) {
-    // TODO: make this more easily configurable
-    // TODO: add new mission types
+    // TODO: the mission model should know how it affects the attributes
     var that = this;
     var INC = 1;
     var PIONEER_INC = INC;
@@ -182,7 +181,8 @@ personSchema.methods.notifyMissionCompleted = function(mission, next) {
 
     if (missionType === 'RateOptionsMission' ||
         missionType === 'OfferQualityMission' ||
-        missionType === 'EffortValueMission')
+        missionType === 'EffortValueMission' ||
+        missionType === 'UpdateProductMission')
     {
         evaluatorInc = EVALUATOR_INC;
     }

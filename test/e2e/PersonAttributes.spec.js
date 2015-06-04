@@ -261,6 +261,38 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
         });
     });
 
+    it('can submit updateProduct mission', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: locationId,
+                    type: 'updateProduct',
+                    outcome: {
+                        product: productId,
+                        field: 'name',
+                        value: 'test'
+                    },
+                    points: {team1: 5}
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    // Get new person data (via person/{id} to test if that is also correctly updated)
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
+                        expect(res.statusCode).toBe(200);
+
+                        var me = res.body;
+                        expect(me.attributes.pioneer).toEqual(pioneerCount , ' pioneer not changed when updateProduct mission completed');
+                        expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when updateProduct mission completed');
+                        expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when updateProduct mission completed');
+                        expect(me.attributes.gourmet).toEqual(gourmetCount, ' gourmet not changed when updateProduct mission completed');
+
+                        done();
+                    });
+                })
+            ;
+        });
+    });
+
     it('can submit giveFeedback mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
