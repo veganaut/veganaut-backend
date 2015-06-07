@@ -217,3 +217,89 @@ exports.getCompletedMissions = function(req, res, next) {
         })
     ;
 };
+
+/**
+ * Compiles a list of all missions that are available to the current user
+ * at a certain location. The last completed missions of that player are
+ * also included.
+ * @param req
+ * @param res
+ * @param next
+ * @returns {*}
+ */
+exports.getAvailableMissions = function(req, res, next) {
+    // TODO: should return a 404 when the location doesn't exist at all
+    var locationId = req.params.locationId;
+
+    // TODO: move this helper somewhere more central
+    var handleError = function(err) {
+        return next(err);
+    };
+
+    var locationMissions = {};
+    _.each(Missions.locationMissionModels, function(missionModel) {
+        locationMissions[missionModel.getIdentifier()] = {
+            points: missionModel.getPoints()
+        };
+    });
+
+    // Query to find all the products of this location
+    var productQuery = Product.find({
+        location: locationId
+    }, 'id').exec();
+
+    // Query to find all the completed missions at this location
+    var missionQuery = Missions.Mission.find({
+        location: locationId,
+        person: req.user.id
+    }, 'id completed outcome points type').sort({
+        completed: 'desc'
+    }).exec();
+
+    productQuery.then(function(products) {
+        // Create list of all available missions for every product
+        var productMissions = {};
+        _.each(products, function(product) {
+            productMissions[product.id] = {};
+            _.each(Missions.productMissionModel, function(missionModel) {
+                productMissions[product.id][missionModel.getIdentifier()] = {
+                    points: missionModel.getPoints()
+                };
+            });
+        });
+
+        // Get all the completed missions
+        // TODO: actually, we only need the last completed mission of every type
+        missionQuery.then(function(completedMissions) {
+            // Go through the completed missions
+            _.each(completedMissions, function(completedMission) {
+                // Find the corresponding available mission definition
+                var availableMission;
+                if (completedMission.isProductMission()) {
+                    // TODO: some missions still act on multiple products
+                    availableMission = productMissions[completedMission.outcome.product][completedMission.constructor.getIdentifier()];
+                }
+                else {
+                    availableMission = locationMissions[completedMission.constructor.getIdentifier()];
+                }
+
+                // Check if this available mission already has a last completed mission defined
+                if (typeof availableMission !== 'undefined' && typeof availableMission.lastCompleted === 'undefined') {
+                    // Set the completed mission as the last one completed for that available mission
+                    availableMission.lastCompleted = completedMission;
+
+                    // If the mission hasn't cooled down, set the points to zero
+                    if (!completedMission.isCooledDown()) {
+                        availableMission.points = 0;
+                    }
+                }
+            });
+
+            // Sent the available location and product missions
+            return res.send({
+                locationMissions: locationMissions,
+                productMissions: productMissions
+            });
+        }, handleError);
+    }, handleError);
+};

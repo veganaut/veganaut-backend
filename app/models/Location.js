@@ -78,7 +78,7 @@ locationSchema.methods.computeLastMissionDates = function(person, next) {
         // Map the results as mission identifier to last date
         var mapped = {};
         _.each(results, function(result) {
-            mapped[Missions.getIdentifierForModelName(result._id)] = result.date;
+            mapped[Missions[result._id].getIdentifier()] = result.date;
         });
 
         // Save the dates

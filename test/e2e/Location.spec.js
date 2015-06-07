@@ -129,7 +129,7 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.name).toBe('Reformhaus Ruprecht', 'correct name');
                     expect(typeof location.type).toBe('string', 'got a type');
                     expect(typeof location.lastMissionDates).toMatch('object', 'lastMissionDates is an object');
-                    expect(Object.keys(location.lastMissionDates).length).toMatch(3, 'has  lastMissionDates set');
+                    expect(Object.keys(location.lastMissionDates).length).toMatch(4, 'has  lastMissionDates set');
                     expect(typeof location.lastMissionDates.visitBonus).toMatch('string', 'got a last visitBonus date');
                     expect(typeof location.lastMissionDates.hasOptions).toMatch('string', 'got a last hasOptions date');
 
@@ -187,6 +187,58 @@ h.describe('Location API methods as logged in user alice', function() {
                         previousUpdatedAt = updatedAt;
 
                     });
+
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('can get available missions at a location', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'location/000000000000000000000007/availableMission/list')
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    var available = res.body;
+                    expect(typeof available).toBe('object', 'response is an object');
+                    expect(typeof available.locationMissions).toBe('object', 'has locationMissions');
+                    expect(Object.keys(available.locationMissions).length).toBe(8, 'has correct number of available location missions');
+
+                    _.each(available.locationMissions, function(mission, missionType) {
+                        expect(typeof mission).toBe('object', missionType + ' mission definition is an object');
+                        expect(typeof mission.points).toBe('number', missionType + ' mission definition has valid points');
+                    });
+
+                    expect(typeof available.productMissions).toBe('object', 'has productMissions');
+                    expect(Object.keys(available.productMissions).length).toBe(1, 'has correct number of products');
+
+                    _.each(available.productMissions, function(missions, product) {
+                        expect(typeof missions).toBe('object', product + ' product has a mission definition object');
+                        expect(Object.keys(missions).length).toBe(2, product + ' has correct number of available product missions');
+
+                        _.each(missions, function(mission, missionType) {
+                            expect(typeof mission).toBe('object', missionType + ' mission definition is an object');
+                            expect(typeof mission.points).toBe('number', missionType + ' mission definition has valid points');
+                        });
+                    });
+
+                    // Specific checks with basic fixture data
+                    var visitBonusMission = available.locationMissions.visitBonus;
+                    expect(typeof visitBonusMission.lastCompleted).toBe('object', 'has a last completed visitBonus mission');
+                    expect(visitBonusMission.points).toBeGreaterThan(0, 'visitBonus cool down period has expired');
+
+                    var hasOptionsMission = available.locationMissions.hasOptions;
+                    expect(typeof hasOptionsMission.lastCompleted).toBe('object', 'has a last completed hasOptions mission');
+                    expect(hasOptionsMission.points).toBeGreaterThan(0, 'hasOptions cool down period has expired');
+
+                    var whatOptionsMission = available.locationMissions.whatOptions;
+                    expect(typeof whatOptionsMission.lastCompleted).toBe('object', 'has a last completed whatOptions mission');
+                    expect(whatOptionsMission.points).toBeGreaterThan(0, 'whatOptions cool down period has expired');
+
+                    var updateProductMission = available.productMissions['000000000000000000000103'].updateProduct;
+                    expect(typeof updateProductMission.lastCompleted).toBe('object', 'has a last completed updateProduct mission');
+                    expect(updateProductMission.points).toBe(0, 'updateProduct cool down period has NOT expired');
 
                     done();
                 })

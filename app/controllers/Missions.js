@@ -11,7 +11,7 @@ exports.submit = function(req, res, next) {
     var location, mission, oldTeam;
 
     // Find the mission model to use
-    var MissionModel = Missions.getModelForIdentifier(req.body.type);
+    var MissionModel = Missions.Mission.getModelForIdentifier(req.body.type);
     if (typeof MissionModel === 'undefined') {
         return next(new Error('Could not find mission of type: ' + req.body.type));
     }

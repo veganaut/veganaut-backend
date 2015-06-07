@@ -196,6 +196,16 @@ var getFixtures = function() {
             }
         ]
     });
+    fix.aliceMission4Ruprect = new Missions.UpdateProductMission({
+        location: fix.ruprecht.id,
+        person: fix.alice.id,
+        completed: Date.now(),
+        outcome: {
+            product: fix.ruprechtTofu,
+            field: 'name',
+            value: 'Homemade Tofu'
+        }
+    });
 
     fix.aliceMission1Hollow = new Missions.VisitBonusMission({
         location: fix.hollow.id,

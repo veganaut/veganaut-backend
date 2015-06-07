@@ -106,6 +106,8 @@ app.get('/location/:locationId', cors(), Location.get);
 app.put('/location/:locationId', cors(), Session.restrict, Location.update);
 app.options('/location/:locationId/mission/list', cors());
 app.get('/location/:locationId/mission/list', cors(), Session.restrict, Location.getCompletedMissions);
+app.options('/location/:locationId/availableMission/list', cors());
+app.get('/location/:locationId/availableMission/list', cors(), Session.restrict, Location.getAvailableMissions);
 
 // Score
 app.options('/score', cors());
