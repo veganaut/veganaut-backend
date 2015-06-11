@@ -31,6 +31,7 @@ var POINTS_BY_TYPE = {
     BuyOptionsMission:   20,
     RateProductMission:   5,
     SetProductNameMission: 5,
+    SetProductAvailMission: 5,
     GiveFeedbackMission: 10,
     OfferQualityMission: 20,
     EffortValueMission:  20
@@ -38,8 +39,6 @@ var POINTS_BY_TYPE = {
 
 /**
  * Time in ms until a mission is available again
- * TODO: there is an identical list in the frontend, share this code!
- * TODO: Is there really still?
  * @type {{}}
  */
 var MISSION_COOL_DOWN_PERIOD = {
@@ -51,6 +50,7 @@ var MISSION_COOL_DOWN_PERIOD = {
     BuyOptionsMission:    1000 * 60 * 60 *  4, // 4 hours
     RateProductMission:   1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
     SetProductNameMission: 1000 * 60 * 60 * 24 * 30 * 6, // ~6 months
+    SetProductAvailMission: 1000 * 60 * 60 *  4, // 4 hours
     GiveFeedbackMission:  1000 * 60 * 60 * 24, // 1 day
     OfferQualityMission:  1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
     EffortValueMission:   1000 * 60 * 60 * 24 * 7 * 3  // 3 weeks
@@ -427,15 +427,20 @@ allMissions.SetProductNameMission = Mission.discriminator('SetProductNameMission
     }
 ));
 
-//// Special validation method for the outcome value
-//setProductNameSchema.path('outcome.value').validate(function(value) {
-//    if (this.outcome.field === 'availability') {
-//        // Only allow existing availabilities to be set
-//        return (constants.PRODUCT_AVAILABILITY_STRINGS.indexOf(value) >= 0);
-//    }
-//
-//    return true;
-//});
+allMissions.SetProductAvailMission = Mission.discriminator('SetProductAvailMission', new MissionSchema(
+    {
+        product: {
+            type: Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+        },
+        info: {
+            type: String,
+            enum: constants.PRODUCT_AVAILABILITY_STRINGS,
+            required: true
+        }
+    }
+));
 
 allMissions.GiveFeedbackMission = Mission.discriminator('GiveFeedbackMission', new MissionSchema(
     {
@@ -482,7 +487,8 @@ allMissions.locationMissionModels = [
  */
 allMissions.productMissionModels = [
     allMissions.RateProductMission,
-    allMissions.SetProductNameMission
+    allMissions.SetProductNameMission,
+    allMissions.SetProductAvailMission
 ];
 
 module.exports = allMissions;

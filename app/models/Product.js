@@ -65,7 +65,11 @@ productSchema.methods.notifyProductModifyingMissionCompleted = function(mission,
         this.name = mission.outcome.info;
         shouldSave = true;
     }
-    //this.availability = constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE[mission.outcome.value];
+    else if (mission instanceof Missions.SetProductAvailMission) {
+        // Update the availability
+        this.availability = constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE[mission.outcome.info];
+        shouldSave = true;
+    }
 
     if (shouldSave) {
         return this.save(next);

@@ -215,7 +215,7 @@ h.describe('Location API methods as logged in user alice', function() {
 
                     _.each(available.productMissions, function(missions, product) {
                         expect(typeof missions).toBe('object', product + ' product has a mission definition object');
-                        expect(Object.keys(missions).length).toBe(2, product + ' has correct number of available product missions');
+                        expect(Object.keys(missions).length).toBe(3, product + ' has correct number of available product missions');
 
                         _.each(missions, function(mission, missionType) {
                             expect(typeof mission).toBe('object', missionType + ' mission definition is an object');
@@ -239,6 +239,10 @@ h.describe('Location API methods as logged in user alice', function() {
                     var setProductNameMission = available.productMissions['000000000000000000000103'].setProductName;
                     expect(typeof setProductNameMission.lastCompleted).toBe('object', 'has a last completed setProductName mission');
                     expect(setProductNameMission.points).toBe(0, 'setProductName cool down period has NOT expired');
+
+                    var setProductAvailMission = available.productMissions['000000000000000000000103'].setProductAvail;
+                    expect(typeof setProductAvailMission.lastCompleted).toBe('undefined', 'has no last setProductAvail mission');
+                    expect(setProductAvailMission.points).toBe(5, 'setProductAvail cool down period has expired');
 
                     done();
                 })
