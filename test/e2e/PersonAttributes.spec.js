@@ -228,19 +228,17 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
         });
     });
 
-    it('can submit rateOptions mission', function() {
+    it('can submit rateProduct mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
                     location: locationId,
-                    type: 'rateOptions',
-                    outcome: [
-                        {
-                            product: productId,
-                            info: 5
-                        }
-                    ],
-                    points: {team1: 10}
+                    type: 'rateProduct',
+                    outcome: {
+                        product: productId,
+                        info: 5
+                    },
+                    points: {team1: 5}
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -249,10 +247,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-                        expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when rateOptions mission completed and isFirstOfType');
-                        expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when rateOptions mission completed');
-                        expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when rateOptions mission completed and isFirstOfType');
-                        expect(me.attributes.gourmet).toEqual(gourmetCount, ' gourmet not changed when rateOptions mission completed');
+                        expect(me.attributes.pioneer).toEqual(pioneerCount + 1, ' pioneer += 1 when rateProduct mission completed and isFirstOfType');
+                        expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when rateProduct mission completed');
+                        expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when rateProduct mission completed and isFirstOfType');
+                        expect(me.attributes.gourmet).toEqual(gourmetCount, ' gourmet not changed when rateProduct mission completed');
 
                         done();
                     });

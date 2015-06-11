@@ -140,20 +140,23 @@ var getFixtures = function() {
         completed: '2014-08-20',
         outcome: 'yes'
     });
-    fix.bobMission2Dosha = new Missions.RateOptionsMission({
+    fix.bobMission2Dosha = new Missions.RateProductMission({
         location: fix.dosha.id,
         person: fix.bob.id,
         completed: '2014-08-20',
-        outcome: [
-            {
-                product: fix.doshaCurry.id,
-                info: 4
-            },
-            {
-                product: fix.doshaSamosa.id,
-                info: 3
-            }
-        ]
+        outcome: {
+            product: fix.doshaCurry.id,
+            info: 4
+        }
+    });
+    fix.bobMission3Dosha = new Missions.RateProductMission({
+        location: fix.dosha.id,
+        person: fix.bob.id,
+        completed: '2014-08-20',
+        outcome: {
+            product: fix.doshaSamosa.id,
+            info: 3
+        }
     });
 
     fix.ruprechtTofu = new Product({

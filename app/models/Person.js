@@ -165,7 +165,7 @@ personSchema.methods.notifyMissionCompleted = function(mission, next) {
         missionType === 'HasOptionsMission' ||
         missionType === 'WantVeganMission' ||
         missionType === 'WhatOptionsMission' ||
-        missionType === 'RateOptionsMission' ||
+        missionType === 'RateProductMission' ||
         missionType === 'OfferQualityMission' ||
         missionType === 'EffortValueMission'))
     {
@@ -179,7 +179,7 @@ personSchema.methods.notifyMissionCompleted = function(mission, next) {
         diplomatInc = DIPLOMAT_INC;
     }
 
-    if (missionType === 'RateOptionsMission' ||
+    if (missionType === 'RateProductMission' ||
         missionType === 'OfferQualityMission' ||
         missionType === 'EffortValueMission' ||
         missionType === 'UpdateProductMission')

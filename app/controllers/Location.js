@@ -261,7 +261,7 @@ exports.getAvailableMissions = function(req, res, next) {
         var productMissions = {};
         _.each(products, function(product) {
             productMissions[product.id] = {};
-            _.each(Missions.productMissionModel, function(missionModel) {
+            _.each(Missions.productMissionModels, function(missionModel) {
                 productMissions[product.id][missionModel.getIdentifier()] = {
                     points: missionModel.getPoints()
                 };
@@ -275,8 +275,7 @@ exports.getAvailableMissions = function(req, res, next) {
             _.each(completedMissions, function(completedMission) {
                 // Find the corresponding available mission definition
                 var availableMission;
-                if (completedMission.isProductMission()) {
-                    // TODO: some missions still act on multiple products
+                if (completedMission.isProductModifyingMission()) {
                     availableMission = productMissions[completedMission.outcome.product][completedMission.constructor.getIdentifier()];
                 }
                 else {
@@ -289,6 +288,7 @@ exports.getAvailableMissions = function(req, res, next) {
                     availableMission.lastCompleted = completedMission;
 
                     // If the mission hasn't cooled down, set the points to zero
+                    // TODO: the cool down should depend on the last time this mission was done for more than 0 points
                     if (!completedMission.isCooledDown()) {
                         availableMission.points = 0;
                     }

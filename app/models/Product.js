@@ -47,26 +47,26 @@ productSchema.statics.getDefaultSorting = function() {
 };
 
 /**
- * Callback to notify the location that a new mission has been completed.
+ * Callback to notify the location that a new mission that modifies this
+ * product has been completed.
  * The product will update its score or other changed fields.
  * @param {Mission} mission The mission that was completed
- * @param {{}} productOutcome The outcome of the mission regarding this product
  * @param {Function} next
  */
-productSchema.methods.notifyProductMissionCompleted = function(mission, productOutcome, next) {
+productSchema.methods.notifyProductModifyingMissionCompleted = function(mission, next) {
     var shouldSave = false;
-    if (mission instanceof Missions.RateOptionsMission) {
+    if (mission instanceof Missions.RateProductMission) {
         // Add the new rating
-        this.addRating(productOutcome.info);
+        this.addRating(mission.outcome.info);
         shouldSave = true;
     }
     else if (mission instanceof Missions.UpdateProductMission) {
         // Update the given field. We trust the mission to only update allowed fields.
-        if (productOutcome.field === 'availability') {
-            this.availability = constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE[productOutcome.value];
+        if (mission.outcome.field === 'availability') {
+            this.availability = constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE[mission.outcome.value];
         }
         else {
-            this[productOutcome.field] = productOutcome.value;
+            this[mission.outcome.field] = mission.outcome.value;
         }
         shouldSave = true;
     }

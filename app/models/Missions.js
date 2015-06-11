@@ -29,7 +29,7 @@ var POINTS_BY_TYPE = {
     WantVeganMission:    10,
     WhatOptionsMission:  10,
     BuyOptionsMission:   20,
-    RateOptionsMission:  10,
+    RateProductMission:   5,
     UpdateProductMission: 5, // TODO: split this up in smaller missions
     GiveFeedbackMission: 10,
     OfferQualityMission: 20,
@@ -49,22 +49,12 @@ var MISSION_COOL_DOWN_PERIOD = {
     WantVeganMission:     1000 * 60 * 60 * 24, // 1 day
     WhatOptionsMission:   1000 * 60 * 60 *  4, // 4 hours
     BuyOptionsMission:    1000 * 60 * 60 *  4, // 4 hours
-    RateOptionsMission:   1000 * 60 * 60 *  4, // 4 hours
+    RateProductMission:   1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
     UpdateProductMission: 1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks TODO: how long should it be?
     GiveFeedbackMission:  1000 * 60 * 60 * 24, // 1 day
     OfferQualityMission:  1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
     EffortValueMission:   1000 * 60 * 60 * 24 * 7 * 3  // 3 weeks
 };
-
-/**
- * List of missions that act on products
- * @type {string[]}
- */
-var PRODUCT_MISSIONS = [
-    'BuyOptionsMission',
-    'RateOptionsMission',
-    'UpdateProductMission'
-];
 
 /**
  * Returns the Identifier for the given mission model name (type)
@@ -203,16 +193,15 @@ missionSchema.pre('save', function(next) {
 
             // Populate products products to notify of completed missions (if product mission)
             function(cb) {
-                // Check if this is a product mission
-                if (that.isProductMission()) {
+                // Check if this is a product modifying mission
+                if (that.isProductModifyingMission()) {
                     that.populate('outcome.product', function(err) {
                         if (err) {
                             return cb(err);
                         }
-                        var outcomes = _.isArray(that.outcome) ? that.outcome : [that.outcome];
-                        async.each(outcomes, function(outcome, innerCb) {
-                            outcome.product.notifyProductMissionCompleted(that, outcome, innerCb);
-                        }, cb);
+
+                        // Tell the product about it
+                        that.outcome.product.notifyProductModifyingMissionCompleted(that, cb);
                     });
                 }
                 else {
@@ -270,8 +259,8 @@ missionSchema.methods.isCooledDown = function() {
  * @returns {boolean}
  * @private
  */
-missionSchema.methods.isProductMission = function() {
-    return (PRODUCT_MISSIONS.indexOf(this.getType()) >= 0);
+missionSchema.methods.isProductModifyingMission = function() {
+    return (allMissions.productMissionModels.indexOf(this.constructor) >= 0);
 };
 
 /**
@@ -408,22 +397,19 @@ allMissions.BuyOptionsMission = Mission.discriminator('BuyOptionsMission', new M
     }
 ));
 
-allMissions.RateOptionsMission = Mission.discriminator('RateOptionsMission', new MissionSchema(
+allMissions.RateProductMission = Mission.discriminator('RateProductMission', new MissionSchema(
     {
-        type: [{
-            product: {
-                type: Schema.Types.ObjectId,
-                ref: 'Product',
-                required: true
-            },
-            info: {
-                type: Number,
-                min: 1.0,
-                max: 5.0,
-                required: true
-            }
-        }],
-        required: true
+        product: {
+            type: Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+        },
+        info: {
+            type: Number,
+            min: 1.0,
+            max: 5.0,
+            required: true
+        }
     }
 ));
 
@@ -482,22 +468,28 @@ allMissions.EffortValueMission = Mission.discriminator('EffortValueMission', new
     }
 ));
 
-// TODO: where to put these two lists of mission models? They are needed by Location controller to generate list of available missions
+/**
+ * List of missions that are specific to a location
+ * @type {*[]}
+ */
 allMissions.locationMissionModels = [
     allMissions.VisitBonusMission,
     allMissions.HasOptionsMission,
     allMissions.WantVeganMission,
     allMissions.WhatOptionsMission,
-    allMissions.BuyOptionsMission,  // TODO: this is a product mission
+    allMissions.BuyOptionsMission,
     allMissions.GiveFeedbackMission,
     allMissions.OfferQualityMission,
     allMissions.EffortValueMission
 ];
 
-allMissions.productMissionModel = [
-    allMissions.RateOptionsMission, // TODO: this mission should only act on one product at a time
+/**
+ * List of mission that act on (modify) single products.
+ * @type {*[]}
+ */
+allMissions.productMissionModels = [
+    allMissions.RateProductMission,
     allMissions.UpdateProductMission
-    // TODO: add other product missions
 ];
 
 module.exports = allMissions;
