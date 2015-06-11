@@ -30,7 +30,7 @@ var POINTS_BY_TYPE = {
     WhatOptionsMission:  10,
     BuyOptionsMission:   20,
     RateProductMission:   5,
-    UpdateProductMission: 5, // TODO: split this up in smaller missions
+    SetProductNameMission: 5,
     GiveFeedbackMission: 10,
     OfferQualityMission: 20,
     EffortValueMission:  20
@@ -50,7 +50,7 @@ var MISSION_COOL_DOWN_PERIOD = {
     WhatOptionsMission:   1000 * 60 * 60 *  4, // 4 hours
     BuyOptionsMission:    1000 * 60 * 60 *  4, // 4 hours
     RateProductMission:   1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
-    UpdateProductMission: 1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks TODO: how long should it be?
+    SetProductNameMission: 1000 * 60 * 60 * 24 * 30 * 6, // ~6 months
     GiveFeedbackMission:  1000 * 60 * 60 * 24, // 1 day
     OfferQualityMission:  1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
     EffortValueMission:   1000 * 60 * 60 * 24 * 7 * 3  // 3 weeks
@@ -413,36 +413,29 @@ allMissions.RateProductMission = Mission.discriminator('RateProductMission', new
     }
 ));
 
-var updateProductSchema = new MissionSchema(
+allMissions.SetProductNameMission = Mission.discriminator('SetProductNameMission', new MissionSchema(
     {
         product: {
             type: Schema.Types.ObjectId,
             ref: 'Product',
             required: true
         },
-        field: {
-            type: String,
-            required: true,
-            enum: ['name', 'description', 'availability']
-        },
-        value: {
+        info: {
             type: String,
             required: true
         }
     }
-);
+));
 
-// Special validation method for the outcome value
-updateProductSchema.path('outcome.value').validate(function(value) {
-    if (this.outcome.field === 'availability') {
-        // Only allow existing availabilities to be set
-        return (constants.PRODUCT_AVAILABILITY_STRINGS.indexOf(value) >= 0);
-    }
-
-    return true;
-});
-
-allMissions.UpdateProductMission = Mission.discriminator('UpdateProductMission', updateProductSchema);
+//// Special validation method for the outcome value
+//setProductNameSchema.path('outcome.value').validate(function(value) {
+//    if (this.outcome.field === 'availability') {
+//        // Only allow existing availabilities to be set
+//        return (constants.PRODUCT_AVAILABILITY_STRINGS.indexOf(value) >= 0);
+//    }
+//
+//    return true;
+//});
 
 allMissions.GiveFeedbackMission = Mission.discriminator('GiveFeedbackMission', new MissionSchema(
     {
@@ -489,7 +482,7 @@ allMissions.locationMissionModels = [
  */
 allMissions.productMissionModels = [
     allMissions.RateProductMission,
-    allMissions.UpdateProductMission
+    allMissions.SetProductNameMission
 ];
 
 module.exports = allMissions;

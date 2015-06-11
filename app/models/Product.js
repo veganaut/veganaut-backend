@@ -60,16 +60,12 @@ productSchema.methods.notifyProductModifyingMissionCompleted = function(mission,
         this.addRating(mission.outcome.info);
         shouldSave = true;
     }
-    else if (mission instanceof Missions.UpdateProductMission) {
-        // Update the given field. We trust the mission to only update allowed fields.
-        if (mission.outcome.field === 'availability') {
-            this.availability = constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE[mission.outcome.value];
-        }
-        else {
-            this[mission.outcome.field] = mission.outcome.value;
-        }
+    else if (mission instanceof Missions.SetProductNameMission) {
+        // Update the name
+        this.name = mission.outcome.info;
         shouldSave = true;
     }
+    //this.availability = constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE[mission.outcome.value];
 
     if (shouldSave) {
         return this.save(next);

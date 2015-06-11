@@ -259,16 +259,15 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
         });
     });
 
-    it('can submit updateProduct mission', function() {
+    it('can submit setProductName mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
                     location: locationId,
-                    type: 'updateProduct',
+                    type: 'setProductName',
                     outcome: {
                         product: productId,
-                        field: 'name',
-                        value: 'test'
+                        info: 'test'
                     },
                     points: {team1: 5}
                 })
@@ -279,10 +278,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
-                        expect(me.attributes.pioneer).toEqual(pioneerCount , ' pioneer not changed when updateProduct mission completed');
-                        expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when updateProduct mission completed');
-                        expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when updateProduct mission completed');
-                        expect(me.attributes.gourmet).toEqual(gourmetCount, ' gourmet not changed when updateProduct mission completed');
+                        expect(me.attributes.pioneer).toEqual(pioneerCount , ' pioneer not changed when setProductName mission completed');
+                        expect(me.attributes.diplomat).toEqual(diplomatCount, ' diplomat not changed when setProductName mission completed');
+                        expect(me.attributes.evaluator).toEqual(evaluatorCount + 1, ' evaluator += 1 when setProductName mission completed');
+                        expect(me.attributes.gourmet).toEqual(gourmetCount, ' gourmet not changed when setProductName mission completed');
 
                         done();
                     });

@@ -236,9 +236,9 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof whatOptionsMission.lastCompleted).toBe('object', 'has a last completed whatOptions mission');
                     expect(whatOptionsMission.points).toBeGreaterThan(0, 'whatOptions cool down period has expired');
 
-                    var updateProductMission = available.productMissions['000000000000000000000103'].updateProduct;
-                    expect(typeof updateProductMission.lastCompleted).toBe('object', 'has a last completed updateProduct mission');
-                    expect(updateProductMission.points).toBe(0, 'updateProduct cool down period has NOT expired');
+                    var setProductNameMission = available.productMissions['000000000000000000000103'].setProductName;
+                    expect(typeof setProductNameMission.lastCompleted).toBe('object', 'has a last completed setProductName mission');
+                    expect(setProductNameMission.points).toBe(0, 'setProductName cool down period has NOT expired');
 
                     done();
                 })

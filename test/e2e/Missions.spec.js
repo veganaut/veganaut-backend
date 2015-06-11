@@ -311,22 +311,21 @@ h.describe('Product missions referring to existing products.', function() {
         });
     });
 
-    it('can submit updateProduct mission', function() {
+    it('can submit setProductName mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
                     location: '000000000000000000000006',
-                    type: 'updateProduct',
+                    type: 'setProductName',
                     outcome: {
                         product: '000000000000000000000101',
-                        field: 'name',
-                        value: 'Indian Curry'
+                        info: 'Indian Curry'
                     },
                     points: { team1: 5 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    expect(res.body.type).toBe('updateProduct', 'type of mission');
+                    expect(res.body.type).toBe('setProductName', 'type of mission');
                     expect(res.body.points).toEqual({team1: 5}, 'points of mission');
                     done();
                 })
@@ -375,22 +374,21 @@ h.describe('Update of products.', function() {
         });
     });
 
-    it('can update product name with updateProduct mission.', function() {
+    it('can update product name with setProductName mission.', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
                     location: '000000000000000000000006',
-                    type: 'updateProduct',
+                    type: 'setProductName',
                     outcome: {
                         product: '000000000000000000000101',
-                        field: 'name',
-                        value: 'Indian Curry'
+                        info: 'Indian Curry'
                     },
                     points: { team1: 5 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
-                    expect(res.body.type).toBe('updateProduct', 'type of mission');
+                    expect(res.body.type).toBe('setProductName', 'type of mission');
                     expect(res.body.points).toEqual({team1: 5}, 'points of mission');
 
                     h.request('GET', h.baseURL + 'location/000000000000000000000006')
@@ -408,71 +406,71 @@ h.describe('Update of products.', function() {
         });
     });
 
-    it('can update product description with updateProduct mission.', function() {
-        h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'mission')
-                .send({
-                    location: '000000000000000000000006',
-                    type: 'updateProduct',
-                    outcome: {
-                        product: '000000000000000000000101',
-                        field: 'description',
-                        value: 'Test desc'
-                    },
-                    points: {team1: 5}
-                })
-                .end(function(res) {
-                    expect(res.statusCode).toBe(201);
-                    expect(res.body.type).toBe('updateProduct', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 5}, 'points of mission');
+    //it('can update product description with setProductName mission.', function() {
+    //    h.runAsync(function(done) {
+    //        h.request('POST', h.baseURL + 'mission')
+    //            .send({
+    //                location: '000000000000000000000006',
+    //                type: 'setProductName',
+    //                outcome: {
+    //                    product: '000000000000000000000101',
+    //                    field: 'description',
+    //                    value: 'Test desc'
+    //                },
+    //                points: {team1: 5}
+    //            })
+    //            .end(function(res) {
+    //                expect(res.statusCode).toBe(201);
+    //                expect(res.body.type).toBe('setProductName', 'type of mission');
+    //                expect(res.body.points).toEqual({team1: 5}, 'points of mission');
+    //
+    //                h.request('GET', h.baseURL + 'location/000000000000000000000006')
+    //                    .end(function(res) {
+    //                        var products = res.body.products;
+    //                        var curry = _.findWhere(products, {id: '000000000000000000000101'});
+    //
+    //                        expect(curry).toBeDefined('curry product is defined');
+    //                        expect(curry.description).toBe('Test desc', 'correctly updated description');
+    //                        done();
+    //                    })
+    //                ;
+    //            })
+    //        ;
+    //    });
+    //});
 
-                    h.request('GET', h.baseURL + 'location/000000000000000000000006')
-                        .end(function(res) {
-                            var products = res.body.products;
-                            var curry = _.findWhere(products, {id: '000000000000000000000101'});
-
-                            expect(curry).toBeDefined('curry product is defined');
-                            expect(curry.description).toBe('Test desc', 'correctly updated description');
-                            done();
-                        })
-                    ;
-                })
-            ;
-        });
-    });
-
-    it('can update product availability with updateProduct mission.', function() {
-        h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'mission')
-                .send({
-                    location: '000000000000000000000006',
-                    type: 'updateProduct',
-                    outcome: {
-                        product: '000000000000000000000101',
-                        field: 'availability',
-                        value: 'unavailable'
-                    },
-                    points: {team1: 5}
-                })
-                .end(function(res) {
-                    expect(res.statusCode).toBe(201);
-                    expect(res.body.type).toBe('updateProduct', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 5}, 'points of mission');
-
-                    h.request('GET', h.baseURL + 'location/000000000000000000000006')
-                        .end(function(res) {
-                            var products = res.body.products;
-                            var curry = _.findWhere(products, {id: '000000000000000000000101'});
-
-                            expect(curry).toBeDefined('curry product is defined');
-                            expect(curry.availability).toBe('unavailable', 'correctly updated availability');
-                            done();
-                        })
-                    ;
-                })
-            ;
-        });
-    });
+    //it('can update product availability with setProductName mission.', function() {
+    //    h.runAsync(function(done) {
+    //        h.request('POST', h.baseURL + 'mission')
+    //            .send({
+    //                location: '000000000000000000000006',
+    //                type: 'setProductName',
+    //                outcome: {
+    //                    product: '000000000000000000000101',
+    //                    field: 'availability',
+    //                    value: 'unavailable'
+    //                },
+    //                points: {team1: 5}
+    //            })
+    //            .end(function(res) {
+    //                expect(res.statusCode).toBe(201);
+    //                expect(res.body.type).toBe('setProductName', 'type of mission');
+    //                expect(res.body.points).toEqual({team1: 5}, 'points of mission');
+    //
+    //                h.request('GET', h.baseURL + 'location/000000000000000000000006')
+    //                    .end(function(res) {
+    //                        var products = res.body.products;
+    //                        var curry = _.findWhere(products, {id: '000000000000000000000101'});
+    //
+    //                        expect(curry).toBeDefined('curry product is defined');
+    //                        expect(curry.availability).toBe('unavailable', 'correctly updated availability');
+    //                        done();
+    //                    })
+    //                ;
+    //            })
+    //        ;
+    //    });
+    //});
 });
 
 h.describe('Mission API methods and their influence on locations.', function() {

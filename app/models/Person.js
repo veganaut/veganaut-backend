@@ -182,7 +182,7 @@ personSchema.methods.notifyMissionCompleted = function(mission, next) {
     if (missionType === 'RateProductMission' ||
         missionType === 'OfferQualityMission' ||
         missionType === 'EffortValueMission' ||
-        missionType === 'UpdateProductMission')
+        missionType === 'SetProductNameMission')
     {
         evaluatorInc = EVALUATOR_INC;
     }
