@@ -236,13 +236,6 @@ exports.getAvailableMissions = function(req, res, next) {
         return next(err);
     };
 
-    var locationMissions = {};
-    _.each(Missions.locationMissionModels, function(missionModel) {
-        locationMissions[missionModel.getIdentifier()] = {
-            points: missionModel.getPoints()
-        };
-    });
-
     // Query to find all the products of this location
     var productQuery = Product.find({
         location: locationId
@@ -257,6 +250,21 @@ exports.getAvailableMissions = function(req, res, next) {
     }).exec();
 
     productQuery.then(function(products) {
+        // Create the list of available location missions
+        var locationMissions = {};
+        _.each(Missions.locationMissionModels, function(missionModel) {
+            // Only add the BuyOptionsMission if there are products
+            // TODO: the mission should know itself when it's available
+            // TODO: this is untested
+            if (missionModel !== Missions.BuyOptionsMission ||
+                products.length > 0)
+            {
+                locationMissions[missionModel.getIdentifier()] = {
+                    points: missionModel.getPoints()
+                };
+            }
+        });
+
         // Create list of all available missions for every product
         var productMissions = {};
         _.each(products, function(product) {
@@ -288,7 +296,7 @@ exports.getAvailableMissions = function(req, res, next) {
                     availableMission.lastCompleted = completedMission;
 
                     // If the mission hasn't cooled down, set the points to zero
-                    // TODO: the cool down should depend on the last time this mission was done for more than 0 points
+                    // TODO NOW: the cool down should depend on the last time this mission was done for more than 0 points
                     if (!completedMission.isCooledDown()) {
                         availableMission.points = 0;
                     }
