@@ -269,7 +269,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                         product: productId,
                         info: 'test'
                     },
-                    points: {team1: 5}
+                    points: {team1: 0}
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);

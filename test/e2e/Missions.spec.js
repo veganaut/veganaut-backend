@@ -321,12 +321,12 @@ h.describe('Product missions referring to existing products.', function() {
                         product: '000000000000000000000101',
                         info: 'Indian Curry'
                     },
-                    points: { team1: 5 }
+                    points: { team1: 0 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('setProductName', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 5}, 'points of mission');
+                    expect(res.body.points).toEqual({team1: 0}, 'points of mission');
                     done();
                 })
             ;
@@ -406,12 +406,12 @@ h.describe('Update of products.', function() {
                         product: '000000000000000000000101',
                         info: 'Indian Curry'
                     },
-                    points: { team1: 5 }
+                    points: { team1: 0 }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('setProductName', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 5}, 'points of mission');
+                    expect(res.body.points).toEqual({team1: 0}, 'points of mission');
 
                     h.request('GET', h.baseURL + 'location/000000000000000000000006')
                         .end(function(res) {
