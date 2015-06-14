@@ -277,7 +277,7 @@ exports.getAvailableMissions = function(req, res, next) {
         });
 
         // Get all the completed missions
-        // TODO: actually, we only need the last completed mission of every type
+        // TODO: actually, we only need the last completed mission and last mission with more than 0 points of every type
         missionQuery.then(function(completedMissions) {
             // Go through the completed missions
             _.each(completedMissions, function(completedMission) {
@@ -295,9 +295,9 @@ exports.getAvailableMissions = function(req, res, next) {
                     // Set the completed mission as the last one completed for that available mission
                     availableMission.lastCompleted = completedMission;
 
-                    // If the mission hasn't cooled down, set the points to zero
-                    // TODO NOW: the cool down should depend on the last time this mission was done for more than 0 points
-                    if (!completedMission.isCooledDown()) {
+                    // If the user got points for completing this mission, take into account
+                    // the cool down period. If it's not cooled down yet, set the points to zero.
+                    if (completedMission.points > 0 && !completedMission.isCooledDown()) {
                         availableMission.points = 0;
                     }
                 }

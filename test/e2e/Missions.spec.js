@@ -495,3 +495,42 @@ h.describe('Mission API methods and their influence on locations.', function() {
         });
     });
 });
+
+fix = new FixtureCreator()
+    .user('alice', 'team1')
+    .location('alice', 'Tingelkringel')
+;
+
+h.describe('Mission cool down periods.', {fixtures: fix, user: 'alice@example.com'}, function() {
+    it('cool down is not affected when submitting mission with 0 points', function() {
+        // When a mission with 0 points is submitted, the cool down period should not be affected.
+        // This means that the next time we ask for available missions, we should still get points for that mission.
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: '000000000000000000000003',
+                    type: 'offerQuality',
+                    outcome: 3,
+                    points: { team1: 0 }
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+
+                    // Check the available missions
+                    h.request('GET', h.baseURL + 'location/000000000000000000000003/availableMission/list')
+                        .end(function(res) {
+                            expect(res.statusCode).toBe(200);
+
+                            var offerQualityMission = res.body.locationMissions.offerQuality;
+                            expect(offerQualityMission.points).toBeGreaterThan(0, 'still get points for the same mission');
+                            expect(typeof offerQualityMission.lastCompleted).toBe('object', 'has the last completed mission');
+                            expect(offerQualityMission.lastCompleted.points.team1).toBe(0, 'really got 0 points for mission');
+
+                            done();
+                        })
+                    ;
+                })
+            ;
+        });
+    });
+});
