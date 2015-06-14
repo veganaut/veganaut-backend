@@ -30,7 +30,9 @@ var POINTS_BY_TYPE = {
     WhatOptionsMission:  10,
     BuyOptionsMission:   20,
     RateProductMission:   5,
-    SetProductNameMission: 5,
+    SetProductNameMission: 0, // Give no points for this mission currently so it doesn't show up as a suggested mission
+    // TODO: should give points to confirm the existing name
+
     SetProductAvailMission: 5,
     GiveFeedbackMission: 10,
     OfferQualityMission: 20,
