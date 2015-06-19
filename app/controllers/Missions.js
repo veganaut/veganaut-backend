@@ -57,15 +57,21 @@ exports.submit = function(req, res, next) {
 
         // Create the new mission and save it
         function(cb) {
-            mission = new MissionModel(_.assign(
-                _.pick(req.body, ['location', 'points']),
-                {
-                    person: req.user.id,
-                    location: location.id,
-                    outcome: outcome,
-                    completed: Date.now()
-                }
-            ));
+            // Support submitting points as number or object.
+            // TODO: this will be easier once the points are always just a number
+            var points = req.body.points;
+            if (typeof points === 'number') {
+                points = {};
+                points[req.user.team] = req.body.points;
+            }
+
+            mission = new MissionModel({
+                points: points,
+                person: req.user.id,
+                location: location.id,
+                outcome: outcome,
+                completed: Date.now()
+            });
 
             mission.save(cb);
         },

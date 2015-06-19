@@ -95,7 +95,7 @@ h.describe('Product list method as anonymous user', { user: '' }, function() {
                     expect(res.body.products.length).toBe(1, 'returned 1 product');
 
                     var product = res.body.products[0];
-                    expect(product.name).toBe('Homemade Tofu', 'returned the correct retail product');
+                    expect(product.name).toBe('tofu', 'returned the correct retail product');
                     done();
                 })
             ;

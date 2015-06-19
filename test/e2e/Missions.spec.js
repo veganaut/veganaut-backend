@@ -438,7 +438,7 @@ h.describe('Update of products.', function() {
                         product: '000000000000000000000101',
                         info: 'unavailable'
                     },
-                    points: {team1: 5}
+                    points: 5
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -462,14 +462,14 @@ h.describe('Update of products.', function() {
 });
 
 h.describe('Mission API methods and their influence on locations.', function() {
-    it('location can change owner when new mission is submitted', function() {
+   it('location can change owner when new mission is submitted', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
                     location: '000000000000000000000006', // Mission in dosha
                     type: 'visitBonus',
                     outcome: true,
-                    points: { team1: 50 }
+                    points: 50
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);

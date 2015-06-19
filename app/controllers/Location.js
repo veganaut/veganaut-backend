@@ -260,7 +260,7 @@ exports.getAvailableMissions = function(req, res, next) {
                 products.length > 0)
             {
                 locationMissions[missionModel.getIdentifier()] = {
-                    points: missionModel.getPoints()
+                    points: missionModel.getMaxPoints()
                 };
             }
         });
@@ -271,7 +271,7 @@ exports.getAvailableMissions = function(req, res, next) {
             productMissions[product.id] = {};
             _.each(Missions.productMissionModels, function(missionModel) {
                 productMissions[product.id][missionModel.getIdentifier()] = {
-                    points: missionModel.getPoints()
+                    points: missionModel.getMaxPoints()
                 };
             });
         });
@@ -297,7 +297,7 @@ exports.getAvailableMissions = function(req, res, next) {
 
                     // If the user got points for completing this mission, take into account
                     // the cool down period. If it's not cooled down yet, set the points to zero.
-                    if (completedMission.points > 0 && !completedMission.isCooledDown()) {
+                    if (completedMission.getTotalAwardedPoints() > 0 && !completedMission.isCooledDown()) {
                         availableMission.points = 0;
                     }
                 }

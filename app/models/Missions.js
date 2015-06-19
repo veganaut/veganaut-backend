@@ -161,6 +161,7 @@ missionSchema.pre('save', function(next) {
             // No npc, validate and set correct points
             if (Object.keys(that.points.toObject()).length === 0) {
                 // If no points are defined, set the maximum for the given person
+                // TODO: this should only award points if the mission is cooled down
                 that.points = {};
                 that.points[person.team] = POINTS_BY_TYPE[missionType];
             }
@@ -241,10 +242,10 @@ missionSchema.statics.getIdentifier = function() {
 };
 
 /**
- * Returns the number of points the given mission gives
+ * Returns the maximum number of points the given mission gives
  * @returns {number}
  */
-missionSchema.statics.getPoints = function() {
+missionSchema.statics.getMaxPoints = function() {
     return POINTS_BY_TYPE[this.modelName];
 };
 
@@ -254,6 +255,19 @@ missionSchema.statics.getPoints = function() {
  */
 missionSchema.methods.isCooledDown = function() {
     return (Date.now() - this.completed.getTime()) > MISSION_COOL_DOWN_PERIOD[this.getType()];
+};
+
+/**
+ * Returns the total number of points that were awarded for this mission.
+ * TODO: this should be removed once "points" is not an object but a simple number.
+ * @returns {number}
+ */
+missionSchema.methods.getTotalAwardedPoints = function() {
+    var totalPoints = 0;
+    _.forOwn(this.points.toObject(), function(points) {
+        totalPoints += points;
+    });
+    return totalPoints;
 };
 
 /**

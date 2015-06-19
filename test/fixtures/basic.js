@@ -199,13 +199,13 @@ var getFixtures = function() {
             }
         ]
     });
-    fix.aliceMission4Ruprect = new Missions.SetProductNameMission({
+    fix.aliceMission4Ruprect = new Missions.SetProductAvailMission({
         location: fix.ruprecht.id,
         person: fix.alice.id,
         completed: Date.now(),
         outcome: {
             product: fix.ruprechtTofu,
-            info: 'Homemade Tofu'
+            info: 'available'
         }
     });
 
