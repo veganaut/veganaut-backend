@@ -27,7 +27,7 @@ var POINTS_BY_TYPE = {
     VisitBonusMission:   50,
     HasOptionsMission:   10,
     WantVeganMission:    10,
-    WhatOptionsMission:  10,
+    WhatOptionsMission:  10, // TODO: this should be renamed to something with "Product" and only work on one product
     BuyOptionsMission:   20,
     RateProductMission:   5,
     SetProductNameMission: 0, // Give no points for this mission currently so it doesn't show up as a suggested mission

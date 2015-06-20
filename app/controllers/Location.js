@@ -14,7 +14,13 @@ var Product = require('../models/Product');
  */
 var NUM_COMPLETED_MISSION_LIMIT = 10;
 
-exports.location = function(req, res, next) {
+/**
+ * Create a new location
+ * @param req
+ * @param res
+ * @param next
+ */
+exports.create = function(req, res, next) {
     var location = new Location(_.assign(
         _.pick(req.body, 'name', 'description', 'link', 'type'),
         {
@@ -36,18 +42,15 @@ exports.location = function(req, res, next) {
                 outcome: true
             });
             mission.save(cb);
-        },
-        function(cb) {
-            // We take the location instance from the mission, because that one has
-            // the correct points calculated
-            location = mission.location;
-            location.computeLastMissionDates(req.user, cb);
         }
     ], function(err) {
         if (err) {
             return next(err);
         }
-        return res.send(location);
+
+        // We take the location instance from the mission, because that one has
+        // the correct points calculated
+        return res.send(mission.location);
     });
 };
 
@@ -97,17 +100,6 @@ var updateLocation = function(obj, cb) {
     obj.location.save(function(err) {
         cb(err, obj);
     });
-};
-
-var computeVisitBonusDate = function(obj, cb) {
-    if (typeof obj.req.user !== 'undefined') {
-        obj.location.computeLastMissionDates(obj.req.user, function(err) {
-            cb(err, obj);
-        });
-    }
-    else {
-        cb(null, obj);
-    }
 };
 
 var findProducts = function(obj, cb) {
@@ -161,7 +153,6 @@ exports.get = function(req, res, next) {
         function(cb) {
             findLocation(obj, cb);
         },
-        computeVisitBonusDate,
         findProducts
     ], handleSingleLocationResult);
 };
@@ -184,7 +175,6 @@ exports.update = function(req, res, next) {
             findLocation(obj, cb);
         },
         updateLocation,
-        computeVisitBonusDate,
         findProducts
     ], handleSingleLocationResult);
 };

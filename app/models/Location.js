@@ -50,44 +50,6 @@ new Average('effort', -1, 1, locationSchema);
 
 
 /**
- * Loads the last time the person completed a mission of every type.
- * This is stored in a private variable. If this method is called
- * multiple times with different people, only the mission dates
- * for the last person are stored.
- * @param {Person} person
- * @param {function} next
- */
-locationSchema.methods.computeLastMissionDates = function(person, next) {
-    var that = this;
-    // Load the most recent mission of every type
-    Missions.Mission.aggregate([
-        // TODO: add $match to only get missions at most as old as the longest mission cool down period
-        { $match: {
-            location: this._id,
-            person: person._id
-        }},
-        { $group: {
-            _id: '$__t',
-            date: { $max: '$completed' }
-        }}
-    ]).exec(function(err, results) {
-        if (err) {
-            return next(err);
-        }
-
-        // Map the results as mission identifier to last date
-        var mapped = {};
-        _.each(results, function(result) {
-            mapped[Missions[result._id].getIdentifier()] = result.date;
-        });
-
-        // Save the dates
-        that._lastMissionDates = mapped;
-        return next();
-    });
-};
-
-/**
  * Computes the points for this location as of now.
  * Points are stored in the database as of time updatedAt; whenever we need the
  * current score, we need to compute the changes since then.
@@ -183,11 +145,6 @@ locationSchema.options.toJSON = {
             average: doc.efforts.average,
             numRatings: doc.efforts.count
         };
-
-        // Add lastMissionDates if they are available
-        if (typeof doc._lastMissionDates !== 'undefined') {
-            ret.lastMissionDates = doc._lastMissionDates;
-        }
 
         return ret;
     }
