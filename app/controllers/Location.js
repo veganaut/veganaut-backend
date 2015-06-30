@@ -55,8 +55,21 @@ exports.create = function(req, res, next) {
 };
 
 exports.list = function(req, res, next) {
+    // Create the query based on the bounding box. If they are not provided,
+    // all locations are loaded
+    var query = {};
+    try {
+        var coordinates = Location.getBoundingBoxQuery(req.query.bounds);
+        if (coordinates) {
+            query.coordinates = coordinates;
+        }
+    }
+    catch (e) {
+        return next(e);
+    }
+
     // Load the locations, but only the data we actually want to send
-    Location.find({}, 'name type coordinates team updatedAt quality efforts',
+    Location.find(query, 'name type coordinates team updatedAt quality efforts',
         function(err, locations) {
             if (err) {
                 return next(err);

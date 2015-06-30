@@ -12,7 +12,6 @@ var LIMIT_MIN_VALUE = 1;
 var LIMIT_DEFAULT_VALUE = LIMIT_MAX_VALUE;
 var SKIP_MIN_VALUE = 0;
 var SKIP_DEFAULT_VALUE = SKIP_MIN_VALUE;
-var BOUNDING_BOX_MAX_LNG = 180;
 
 exports.list = function(req, res, next) {
     // Check if we got a limit in the request
@@ -52,38 +51,19 @@ exports.list = function(req, res, next) {
         locationQuery.type = req.query.locationType;
     }
 
-    // Checks if coordinates are sent
-    var bounds = req.query.bounds;
-    if (typeof bounds === 'string') {
-        bounds = bounds.split(',');
-
-        // Checks if every item is a valid number
-        var invalidBounds = false;
-        bounds = _.map(bounds, function(x) {
-            var b = parseFloat(x);
-            if (isNaN(b)) {
-                invalidBounds = true;
-            }
-            return b;
-        });
-
-        if (invalidBounds) {
-            return next(new Error('Bounds are invalid'));
-        }
-
-        // Only set the coordinates if the bounding box is not too big
-        if (Math.abs(bounds[2] - bounds[0]) < BOUNDING_BOX_MAX_LNG) {
-            var box = [
-                [bounds[0], bounds[1]],
-                [bounds[2], bounds[3]]
-            ];
-            locationQuery.coordinates = {
-                $within: {$box: box}
-            };
+    // Create the query based on the bounding box
+    try {
+        var coordinatesQuery = Location.getBoundingBoxQuery(req.query.bounds);
+        if (coordinatesQuery) {
+            locationQuery.coordinates = coordinatesQuery;
 
             // We have a coords query, so not including the whole world
             response.includesWholeWorld = false;
+
         }
+    }
+    catch (e) {
+        return next(e);
     }
 
     /**

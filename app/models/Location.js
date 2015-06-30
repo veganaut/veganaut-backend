@@ -26,6 +26,9 @@ var EFFORT_VALUES = {
     no: -1.0
 };
 
+// Maximum longitude over which one can get the locations by bounding box
+var BOUNDING_BOX_MAX_LNG = 180;
+
 var locationSchema = new Schema({
     coordinates: {type: [Number], index: '2d'},
     name: String,
@@ -148,6 +151,46 @@ locationSchema.options.toJSON = {
 
         return ret;
     }
+};
+
+/**
+ * Returns the filter to use on 'coordinates' to limit results by a bounding box.
+ * Will throw an error if the given bounds are invalid, but not if no bounds are given.
+ * @param {string} [boundingBoxString] In the format 'southwest_lng,southwest_lat,northeast_lng,northeast_lat'
+ * @returns {{}|undefined}
+ */
+locationSchema.statics.getBoundingBoxQuery = function(boundingBoxString) {
+    var query;
+    if (typeof boundingBoxString === 'string') {
+        var bounds = boundingBoxString.split(',');
+
+        // Checks if every item is a valid number
+        var invalidBounds = false;
+        bounds = _.map(bounds, function(x) {
+            var b = parseFloat(x);
+            if (isNaN(b)) {
+                invalidBounds = true;
+            }
+            return b;
+        });
+
+        if (invalidBounds) {
+            throw new Error('Bounds are invalid');
+        }
+
+        // Only set the coordinates if the bounding box is not too big
+        if (Math.abs(bounds[2] - bounds[0]) < BOUNDING_BOX_MAX_LNG) {
+            var box = [
+                [bounds[0], bounds[1]],
+                [bounds[2], bounds[3]]
+            ];
+            query = {
+                $within: {$box: box}
+            };
+        }
+    }
+
+    return query;
 };
 
 

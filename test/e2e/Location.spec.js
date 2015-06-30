@@ -72,6 +72,22 @@ h.describe('Location API methods as logged in user alice', function() {
         });
     });
 
+    it('can list locations within a bounding box', function() {
+        h.runAsync(function(done) {
+            h.request(h.baseURL + 'location/list?bounds=7.436,46.943,7.442,46.950')
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+                    expect(typeof res.body).toBe('object', 'returns an array of locations');
+                    expect(res.body.length).toBe(1, 'returns only the location in the bounding box');
+
+                    var location = res.body[0];
+                    expect(location.name).toBe('Reformhaus Ruprecht', 'returned the correct location');
+                    done();
+                })
+            ;
+        });
+    });
+
     it('can get an individual location with products', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/000000000000000000000006')
