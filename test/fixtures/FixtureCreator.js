@@ -7,25 +7,19 @@ var _ = require('lodash');
 var mongoose = require('mongoose');
 var constants = require('../../app/utils/constants');
 var FixtureLoader = require('./FixtureLoader');
-var activities = require('./activities');
 var Missions = require('../../app/models/Missions');
 var Product = require('../../app/models/Product');
 
 var Person = mongoose.model('Person');
-var ActivityLink = mongoose.model('ActivityLink');
 var Location = mongoose.model('Location');
 
 /**
  * FixtureCreator constructor. Helper for creating fixtures.
- * Will add the Activity fixtures by default.
  * @param fixtures
  * @constructor
  */
 var FixtureCreator = function(fixtures) {
     this._fixtures = fixtures || {};
-
-    // Add the basic activities if not set yet
-    _.defaults(this._fixtures, activities.getFixtures());
 };
 
 // Converts an integer into a mongoose-style object id.
@@ -61,54 +55,6 @@ FixtureCreator.prototype.user = function(name, team) {
         nickname: capitalize(name),
         fullName: capitalize(name) + ' Example',
         team: team
-    });
-
-    return this;
-};
-
-/**
- * Adds a 'maybe' to the fixtures
- *
- * @param {string} name
- * @returns {FixtureCreator}
- */
-FixtureCreator.prototype.maybe = function(name) {
-    this._fixtures[name] = new Person({
-        _id: intToId(_.size(this._fixtures)),
-        nickname: capitalize(name)
-    });
-
-    return this;
-};
-
-/**
- * Adds an activity link to the fixtures
- * @param {string} source Name of the source
- * @param {string} target Name of the target
- * @param {boolean} [completed=true] Whether the link is completed
- * @returns {FixtureCreator}
- */
-FixtureCreator.prototype.activityLink = function(source, target, completed) {
-    // Set default value
-    var completedAt;
-    if (typeof completed === 'undefined' || completed === true) {
-        completedAt = Date.now();
-    }
-    var linkName = source + 'DoesSomethingFor' + capitalize(target);
-    var suffix = 0;
-
-    // There can be multiple links between the same pair of people
-    while (_.has(this._fixtures, linkName)) {
-        suffix += 1;
-        linkName = linkName.replace(/\d+$/, '') + suffix;
-    }
-
-    this._fixtures[linkName] = new ActivityLink({
-        activity: this._fixtures.buyActivity.id,
-        source: this._fixtures[source].id,
-        target: this._fixtures[target].id,
-        completedAt: completedAt,
-        referenceCode: linkName
     });
 
     return this;

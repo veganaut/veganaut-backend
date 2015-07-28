@@ -70,32 +70,6 @@ h.describe('Person API methods', function() {
         });
     });
 
-    it('can register as a full user from partial user (that already entered reference code)', function() {
-        h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'person')
-                .send({
-                    id: '000000000000000000000003',
-                    email: 'carol@carol.ca',
-                    fullName: 'Carol Curie',
-                    password: 'oh. yeah.'
-                })
-                .end(function(res) {
-                    expect(res.statusCode).toBe(201);
-
-                    // Some sanity checks on the returned person
-                    expect(res.body.id).toEqual('000000000000000000000003');
-                    expect(res.body.email).toEqual('carol@carol.ca');
-                    expect(res.body.fullName).toEqual('Carol Curie');
-
-                    // make sure the team was not overwritten (TODO: make this test deterministic)
-                    expect(res.body.team).toEqual('team1');
-
-                    done();
-                })
-            ;
-        });
-    });
-
     it('cannot register with an already used e-mail address', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'person')
@@ -107,23 +81,6 @@ h.describe('Person API methods', function() {
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(400);
-                    done();
-                })
-            ;
-        });
-    });
-
-    it('cannot re-register already registered person', function() {
-        h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'person')
-                .send({
-                    id: '000000000000000000000001',
-                    email: 'a@b.ch',
-                    fullName: 'Hacker DeHack',
-                    password: 'ups'
-                })
-                .end(function(res) {
-                    expect(res.statusCode).toBe(403);
                     done();
                 })
             ;
@@ -143,7 +100,6 @@ h.describe('Person API methods for logged in user', function() {
                 expect(me.nickname).toEqual('Alice');
                 expect(me.fullName).toEqual('Alice Alison');
                 expect(me.team).toEqual('team1');
-                expect(me.type).toEqual('user');
                 expect(me.locale).toEqual('en');
                 expect(me.completedMissions).toBeGreaterThan(1, 'did a few missions');
                 expect(typeof me.password).toEqual('undefined', 'password should not be returned');
@@ -203,12 +159,21 @@ h.describe('Person API methods for logged in user trying naughty things', functi
         h.runAsync(function(done) {
             h.request('PUT', h.baseURL + 'person/me')
                 .send({
-                    type: 'maybe'
+                    attributes: {
+                        pioneer: 100,
+                        diplomat: 100,
+                        evaluator: 100,
+                        gourmet: 100
+                    }
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(200);
 
-                    expect(res.body.type).toEqual('user', 'type has not changed');
+                    var attributes = res.body.attributes;
+                    expect(attributes.pioneer).not.toEqual(100, 'pioneer has not changed');
+                    expect(attributes.diplomat).not.toEqual(100, 'diplomat has not changed');
+                    expect(attributes.evaluator).not.toEqual(100, 'evaluator has not changed');
+                    expect(attributes.gourmet).not.toEqual(100, 'gourmet has not changed');
 
                     done();
                 })

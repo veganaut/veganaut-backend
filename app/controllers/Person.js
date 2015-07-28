@@ -19,68 +19,12 @@ var cryptoUtils = require('../utils/cryptoUtils');
  * @param next
  */
 exports.register = function(req, res, next) {
-    // TODO: This needs to work as follows:
-    // - If the user already entered a reference code, (s)he has a session. In
-    //   this case, we take the user from the session, and update it.
-    // - If the user is new, we create a new user. The person model should
-    //   automatically complain about duplicate emails and other invalidities
-    //   in this case.
-
-
     // Pick the posted data
-    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'id', 'locale');
-    var person;
-
-    var getOrCreatePerson = function(cb) {
-        if (typeof personData.id === 'string') {
-            Person.findById(personData.id, function(err, existingPerson) {
-                if (err) {
-                    return cb(err);
-                }
-
-                // Check if the given id points to an existing person
-                if (!existingPerson) {
-                    res.status(404);
-                    err = new Error('Could not find any user with the given id.');
-                    return cb(err);
-                }
-
-                // Check if the person is already a full user
-                if (existingPerson.isUser()) {
-                    res.status(403);
-                    err = new Error('This user is already registered.');
-                    return cb(err);
-                }
-
-                // All good, use the found person
-                person = existingPerson;
-                return cb();
-            });
-        }
-        else {
-            // No person id given, create completely new user
-            person = new Person();
-            return cb();
-        }
-    };
-
-    var updatePerson = function(cb) {
-        // Assign a random team
-        if (typeof person.team === 'undefined') {
-            person.team = _.sample(constants.PLAYER_TEAMS);
-        }
-
-        _.assign(person, personData);
-        person.save(cb);
-    };
-
-    async.series([
-        getOrCreatePerson,
-        updatePerson,
-        function(cb) {
-            person.populateActivityLinks(cb);
-        }
-    ], function(err) {
+    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'locale');
+    var person = new Person(personData);
+    // Assign a random team
+    person.team = _.sample(constants.PLAYER_TEAMS);
+    person.save(function(err) {
         if (err) {
             // Send a 400 status if the email address is already used
             if (err.name === 'MongoError' && err.code === 11000) {
@@ -97,23 +41,16 @@ exports.register = function(req, res, next) {
  * Return the logged in user data
  * @param req
  * @param res
- * @param next
  */
-exports.getMe = function(req, res, next) {
-    req.user.populateActivityLinks(function(err) {
-        if (err) {
-            return next(err);
-        }
-
-        // Count number of missions of this player
-        Mission.count({person: req.user})
-            .exec(function(err, numMissions) {
-                var resObj = req.user.toJSON();
-                resObj.completedMissions = numMissions;
-                return res.status(200).send(resObj);
-            })
-        ;
-    });
+exports.getMe = function(req, res) {
+    // Count number of missions of this player
+    Mission.count({person: req.user})
+        .exec(function(err, numMissions) {
+            var resObj = req.user.toJSON();
+            resObj.completedMissions = numMissions;
+            return res.status(200).send(resObj);
+        })
+    ;
 };
 
 /**

@@ -6,17 +6,15 @@
 var mongoose = require('mongoose');
 var constants = require('../../app/utils/constants');
 var FixtureLoader = require('./FixtureLoader');
-var activities = require('./activities');
 
 var Person = mongoose.model('Person');
-var ActivityLink = mongoose.model('ActivityLink');
 var Location = mongoose.model('Location');
 var Missions = require('../../app/models/Missions');
 var Product = require('../../app/models/Product');
 
 var getFixtures = function() {
-    var fix = activities.getFixtures();
-    // TODO: add users of other teams
+    var fix = {};
+
     fix.alice = new Person({
         _id: '000000000000000000000001',
         email: 'foo@bar.baz',
@@ -36,22 +34,6 @@ var getFixtures = function() {
         gender: 'male'
     });
 
-    fix.carol = new Person({
-        _id: '000000000000000000000003',
-        team: 'team1',
-        nickname: 'Carol'
-    });
-
-    fix.dave = new Person({
-        _id: '000000000000000000000004',
-        nickname: 'Dave Donaldsson'
-    });
-
-    fix.eve = new Person({
-        _id: '000000000000000000000005',
-        nickname: 'Eve'
-    });
-
     fix.npc = new Person({
         _id: '000000000000000000000010',
         email: 'npc@example.com',
@@ -61,40 +43,6 @@ var getFixtures = function() {
         fullName: 'Non Player Character'
     });
 
-
-    fix.aliceBuysSomethingForBob = new ActivityLink({
-        activity: fix.buyActivity.id,
-        source: fix.alice.id,
-        target: fix.bob.id,
-        location: 'Bern, Switzerland',
-        createdAt: '2014-01-10',
-        completedAt: '2014-01-11',
-        referenceCode: 'Ff8tEQ'
-    });
-
-    fix.aliceCooksSomethingForCarol = new ActivityLink({
-        activity: fix.cookActivity.id,
-        source: fix.alice.id,
-        target: fix.carol.id,
-        location: 'Bern',
-        createdAt: '2014-02-20',
-        completedAt: '2014-01-22',
-        referenceCode: '30Ajak'
-    });
-
-    fix.aliceWantsToBuySomethingForDave = new ActivityLink({
-        activity: fix.buyActivity.id,
-        source: fix.alice.id,
-        target: fix.dave.id,
-        referenceCode: 'OiWCrB'
-    });
-
-    fix.bobWantsToBuySomethingForEve = new ActivityLink({
-        activity: fix.buyActivity.id,
-        source: fix.bob.id,
-        target: fix.eve.id,
-        referenceCode: 'AK92oj'
-    });
 
     fix.dosha = new Location({
         _id: '000000000000000000000006',

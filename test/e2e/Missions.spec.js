@@ -10,12 +10,14 @@ fix
     .location('alice', 'Tingelkringel')
 ;
 
+var locationId = fix.getFixtures()['Tingelkringel'].id;
+
 h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user: 'alice@example.com'}, function() {
     it('can submit a mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'hasOptions',
                     outcome: 'yes',
                     points: { team1: 10 }
@@ -41,7 +43,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'visitBonus',
                     outcome: true,
                     points: { team1: 50 }
@@ -60,7 +62,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'hasOptions',
                     outcome: 'yes',
                     points: { team1: 10 }
@@ -79,7 +81,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'wantVegan',
                     outcome: [
                         { expression: 'vegan', expressionType: 'builtin' },
@@ -102,7 +104,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'whatOptions',
                     outcome: [
                         {
@@ -135,7 +137,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'giveFeedback',
                     outcome: 'Moar sauce',
                     points: { team1: 10 }
@@ -154,7 +156,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'offerQuality',
                     outcome: 4,
                     points: { team1: 20 }
@@ -173,7 +175,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'effortValue',
                     outcome: 'no',
                     points: { team1: 20 }
@@ -193,7 +195,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'visitBonus',
                     // missing outcome
                     points: { team1: 100 }
@@ -210,7 +212,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'wantVegan',
                     outcome: { bogusValue: 'this is not an array' },
                     points: { team1: 10 }
@@ -227,7 +229,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'wantVegan',
                     outcome: [
                         { expression: 'bogus', expressionType: 'bogusValue' }
@@ -246,7 +248,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'offerQuality',
                     outcome: 100,  // That's way too large for a 1-5 rating
                     points: { team1: 10 }
@@ -508,7 +510,7 @@ h.describe('Mission cool down periods.', {fixtures: fix, user: 'alice@example.co
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
-                    location: '000000000000000000000003',
+                    location: locationId,
                     type: 'offerQuality',
                     outcome: 3,
                     points: { team1: 0 }
@@ -517,7 +519,7 @@ h.describe('Mission cool down periods.', {fixtures: fix, user: 'alice@example.co
                     expect(res.statusCode).toBe(201);
 
                     // Check the available missions
-                    h.request('GET', h.baseURL + 'location/000000000000000000000003/availableMission/list')
+                    h.request('GET', h.baseURL + 'location/' + locationId + '/availableMission/list')
                         .end(function(res) {
                             expect(res.statusCode).toBe(200);
 

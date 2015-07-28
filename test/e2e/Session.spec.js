@@ -6,7 +6,7 @@ h.describe('Session API methods', function() {
 
     it('cannot access restricted areas when not logged in', function() {
         h.runAsync(function(done) {
-            h.request('GET', h.baseURL + 'graph/me')
+            h.request('GET', h.baseURL + 'person/me')
                 .set('Authorization', null)
                 .end(function(res) {
                     expect(res.statusCode).toBe(401);

@@ -25,7 +25,12 @@ describe('A person', function() {
             });
         });
 
-        var p = new Person({email: 'mynewperson@example.com'});
+        var p = new Person({
+            email: 'mynewperson@example.com',
+            fullName: 'Test',
+            nickname: 'nick',
+            password: 'secure'
+        });
         expect(p.email).toBe('mynewperson@example.com');
         expect(p.id).toBeTruthy();
 
@@ -39,25 +44,9 @@ describe('A person', function() {
         h.runAsync(function(done) {
             Person.findById(p.id).exec(function(err, person) {
                 expect(err).toBeNull();
-                expect(person.email).toBe('mynewperson@example.com');
+                expect(person.email).toBe('mynewperson@example.com', 'set e-mail');
+                expect(person.password).not.toBe('secure', 'encrypted the password');
                 done();
-            });
-        });
-    });
-
-    it('can populate its activities', function() {
-        h.runAsync(function(done) {
-            h.setupFixtures(function(err) {
-                expect(err).toBeUndefined();
-
-                Person.findOne({email: 'foo@bar.baz'}).exec(function(err, person) {
-                    expect(err).toBeNull();
-                    person.populateActivityLinks(function(err) {
-                        expect(err).toBeNull();
-                        expect(person._activityLinks.length).toBe(3);
-                        done();
-                    });
-                });
             });
         });
     });

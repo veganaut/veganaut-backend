@@ -13,23 +13,20 @@ var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
 var config = require('../config');
 
-require('./ActivityLink');
-var ActivityLink = mongoose.model('ActivityLink');
-
 var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
 var cryptoUtils = require('../utils/cryptoUtils');
 
 
 var personSchema = new Schema({
-    email: {type: String, unique: true, sparse: true},
-    password: String,
-    nickname: String,
+    email: {type: String, unique: true, sparse: true, required: true},
+    password: {type: String, required: true},
+    nickname: {type: String, required: true},
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
 
-    fullName: String,
+    fullName: {type: String, required: true},
     // dateOfBirth can be just a year, year-month, or year-month-day
     dateOfBirth: {type: String, matches: /^\d{4}(?:-\d\d){0,2}$/},
 
@@ -55,14 +52,6 @@ var personSchema = new Schema({
 
 personSchema.pre('save', function(next) {
     var user = this;
-
-    if (this.isUser()) {
-        _.each(['fullName', 'nickname', 'email', 'team'], function(key) {
-            if (typeof user[key] === 'undefined') {
-                return next(new Error('Required field ' + key + ' missing for Person of type user.'));
-            }
-        });
-    }
 
     async.series([
         function(cb) {
@@ -95,41 +84,6 @@ personSchema.pre('save', function(next) {
 
 personSchema.methods.verify = function(candidatePassword, next) {
     bcrypt.compare(candidatePassword, this.password, next);
-};
-
-
-personSchema.methods.populateActivityLinks = function(next) {
-    var that = this;
-    ActivityLink.find()
-        .or([{source: that.id}, {target: that.id}])
-        .populate('source target')
-        .exec(function(err, activityLinks) {
-            if (err) {
-                return next(err);
-            }
-            that._activityLinks = activityLinks;
-            return next(null);
-        });
-};
-
-personSchema.methods.isUser = function() {
-    return (typeof this.password !== 'undefined');
-};
-
-personSchema.methods.getType = function() {
-    if (typeof(this._activityLinks) === 'undefined') {
-        throw 'Must call populateActivityLinks before calling getType';
-    }
-
-    if (this.isUser()) {
-        return 'user';
-    }
-    else if (_.some(this._activityLinks, 'completedAt')) {
-        return 'baby';
-    }
-    else {
-        return 'maybe';
-    }
 };
 
 /**
@@ -226,11 +180,6 @@ personSchema.options.toJSON = {
             typeof doc.attributes.gourmet !== 'undefined')
         {
             ret.attributes = doc.attributes;
-        }
-
-        // Add type if the activity links have been loaded
-        if (doc._activityLinks) {
-            ret.type = doc.getType();
         }
 
         return ret;

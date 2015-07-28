@@ -19,7 +19,7 @@ app.get('/', function(req, res) {
     res.send({ status: 'OK' });
 });
 
-// Graph
+// Fixtures
 app.options('/fixtures/:fixtureName', cors());
 app.post('/fixtures/:fixtureName', cors(), function(req, res) {
     var fixtureName = req.params.fixtureName;

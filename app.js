@@ -6,18 +6,12 @@ var morgan = require('morgan');
 var bodyParser = require('body-parser');
 
 // Models
-require('./app/models/Activity.js');
-require('./app/models/ActivityLink.js');
-require('./app/models/GraphNode.js');
 require('./app/models/Person.js');
 require('./app/models/Missions.js');
 require('./app/models/Location.js');
 
 // Controllers
-var Activity = require('./app/controllers/Activity');
-var ActivityLink = require('./app/controllers/ActivityLink');
 var GeoIP = require('./app/controllers/GeoIP');
-var Graph = require('./app/controllers/Graph');
 var Location = require('./app/controllers/Location');
 var Missions = require('./app/controllers/Missions');
 var Person = require('./app/controllers/Person');
@@ -54,30 +48,10 @@ app.get('/', function(req, res) {
 
 // TODO: add e2e tests that unauthenticated users can't access methods they shouldn't
 
-// Graph
-app.options('/graph/me', cors());
-app.options('/graph/:personId', cors());
-app.options('/graph', cors());
-app.get('/graph/me', cors(), Session.restrict, Graph.view);
-app.get('/graph/:personId', cors(), Graph.viewById);
-app.put('/graph/me', cors(), Session.restrict, Graph.update);
-
 // Session
 app.options('/session', cors());
 app.post('/session', cors(), Session.create);
 app.delete('/session', cors(), Session.restrict, Session.delete);
-
-// Activity
-app.options('/activity', cors());
-app.get('/activity', cors(), Session.restrict, Activity.list);
-
-// ActivityLink
-app.options('/activityLink/reference', cors());
-app.options('/activityLink', cors());
-app.options('/activityLink/mine/open', cors());
-app.post('/activityLink/reference', cors(), ActivityLink.referenceCode);
-app.post('/activityLink', cors(), Session.restrict, ActivityLink.link);
-app.get('/activityLink/mine/open', cors(), Session.restrict, ActivityLink.openList);
 
 // Person
 app.options('/person', cors());
