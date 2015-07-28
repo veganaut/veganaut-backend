@@ -86,10 +86,8 @@ exports.stats = function(req, res, next) {
         // Get number of people by team
         function(cb) {
             Person.aggregate([
-                // TODO: this selects only people that actually have an account. This implementation details should stay in the Person model
                 {
                     $match: {
-                        password: {$exists: true},
                         // Only select people in actual player teams
                         team: {
                             $in: constants.PLAYER_TEAMS

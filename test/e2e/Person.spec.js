@@ -104,8 +104,6 @@ h.describe('Person API methods for logged in user', function() {
                 expect(me.completedMissions).toBeGreaterThan(1, 'did a few missions');
                 expect(typeof me.password).toEqual('undefined', 'password should not be returned');
                 expect(typeof me.nickname).toEqual('string', 'should have a nickname');
-                expect(typeof me.capture).toEqual('object', 'should have a capture object');
-                expect(typeof me.capture.active).toEqual('boolean', 'should have a capture.active flag');
 
                 done();
             });

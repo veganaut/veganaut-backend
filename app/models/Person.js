@@ -36,12 +36,6 @@ var personSchema = new Schema({
     locale: {type: String, default: config.locale.default, enum: config.locale.available},
 
     team: {type: String, enum: constants.ALL_TEAMS},
-    capture: {
-        active: {type: Boolean, default: false},
-        person: {type: Schema.Types.ObjectId, ref: 'Person'},
-        team: {type: String, enum: constants.PLAYER_TEAMS},
-        pointsUntilFree: {type: Number}
-    },
     attributes: {
         pioneer: {type: Number, default: 0},
         diplomat: {type: Number, default: 0},
@@ -166,11 +160,6 @@ personSchema.options.toJSON = {
             'id', 'email', 'nickname', 'fullName', 'gender', 'locale',
             'dateOfBirth', 'phone', 'address', 'team'
         );
-
-        // Attach capture if it has been loaded
-        if (typeof doc.capture.active !== 'undefined') {
-            ret.capture = doc.capture;
-        }
 
         // Attach attributes if they have been loaded
         // TODO: there should be a better way of checking whether that was loaded
