@@ -53,8 +53,8 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
     });
 });
 
-h.describe('NPCs viewed from player team member', function() {
-    it('cannot get the details of a member of the npc team', function() {
+h.describe('NPCs viewed from player accounts', function() {
+    it('cannot get the details of an npc', function() {
         h.runAsync(function(done) {
             // Try to get npc@example.com
             h.request('GET', h.baseURL + 'person/000000000000000000000010')

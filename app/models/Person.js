@@ -35,7 +35,12 @@ var personSchema = new Schema({
     gender: {type: String, enum: ['male', 'female', 'other']},
     locale: {type: String, default: config.locale.default, enum: config.locale.available},
 
-    team: {type: String, enum: constants.ALL_TEAMS},
+    accountType: {
+        type: String,
+        default: constants.ACCOUNT_TYPES.PLAYER,
+        enum: _.values(constants.ACCOUNT_TYPES)
+    },
+
     attributes: {
         pioneer: {type: Number, default: 0},
         diplomat: {type: Number, default: 0},
@@ -158,7 +163,7 @@ personSchema.options.toJSON = {
         // Pick basic properties
         var ret = _.pick(doc,
             'id', 'email', 'nickname', 'fullName', 'gender', 'locale',
-            'dateOfBirth', 'phone', 'address', 'team'
+            'dateOfBirth', 'phone', 'address'
         );
 
         // Attach attributes if they have been loaded

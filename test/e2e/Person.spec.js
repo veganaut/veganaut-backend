@@ -25,9 +25,6 @@ h.describe('Person API methods', function() {
                     expect(person.nickname).toEqual('Doger');
                     expect(person.locale).toEqual('de', 'has correct locale');
 
-                    // Team is randomly assigned, but it should always be one of the 5 player teams
-                    expect(person.team).toMatch(/^team[1-5]$/, 'has valid team');
-
                     // Make sure password is not returned
                     expect(typeof person.password).toEqual('undefined');
 
@@ -47,7 +44,7 @@ h.describe('Person API methods', function() {
                     password: 'much safe. so security. wow.',
 
                     // These values shouldn't be writable
-                    team: 'npc',
+                    accountType: 'npc',
                     attributes: {
                         pioneer: 100,
                         diplomat: 10,
@@ -59,7 +56,7 @@ h.describe('Person API methods', function() {
                     expect(res.statusCode).toBe(201);
 
                     var person = res.body;
-                    expect(person.team).toMatch(/^team[1-5]$/, 'team was not set to npc');
+                    expect(person.accountType).toEqual('player', 'accountType was not set to npc');
                     expect(person.attributes.pioneer).toEqual(0, 'could not set pioneer attribute');
                     expect(person.attributes.diplomat).toEqual(0, 'could not set diplomat attribute');
                     expect(person.attributes.evaluator).toEqual(0, 'could not set evaluator attribute');
@@ -99,7 +96,6 @@ h.describe('Person API methods for logged in user', function() {
                 expect(me.email).toEqual('foo@bar.baz');
                 expect(me.nickname).toEqual('Alice');
                 expect(me.fullName).toEqual('Alice Alison');
-                expect(me.team).toEqual('team1');
                 expect(me.locale).toEqual('en');
                 expect(me.completedMissions).toBeGreaterThan(1, 'did a few missions');
                 expect(typeof me.password).toEqual('undefined', 'password should not be returned');
@@ -190,7 +186,6 @@ h.describe('Person API methods for person/:id', function() {
                 expect(res.body.nickname).toBeDefined();
                 expect(res.body.fullName).toBeUndefined();
                 expect(res.body.locale).toBeUndefined();
-                expect(res.body.team).toBeDefined();
                 expect(res.body.completedMissions).toBeDefined();
                 expect(typeof res.body.attributes).toEqual('object', 'attributes is a object');
                 expect(res.body.attributes.pioneer).toBeDefined();

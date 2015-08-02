@@ -27,8 +27,7 @@ h.describe('A VisitBonusMission', function() {
             Missions.VisitBonusMission.findById(m.id).exec(function(err, mission) {
                 expect(err).toBeNull();
                 expect(mission instanceof Missions.VisitBonusMission).toBe(true, 'found the created mission');
-                expect(mission.points).toBeDefined('points is defined');
-                expect(mission.points.team1).toBe(50, 'points for team1 are 50');
+                expect(mission.points).toBe(50, 'points are 50');
                 expect(mission.person.toString()).toBe('000000000000000000000001', 'got correct person');
                 expect(mission.location.toString()).toBe('000000000000000000000006', 'got correct location');
                 expect(mission.isNpcMission).toBe(false, 'by default is not an npc mission');

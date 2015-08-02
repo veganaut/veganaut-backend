@@ -8,7 +8,7 @@ var Missions = require('../models/Missions');
 var Product = require('../models/Product');
 
 exports.submit = function(req, res, next) {
-    var location, mission, oldTeam;
+    var location, mission, oldOwner;
 
     // Find the mission model to use
     var MissionModel = Missions.Mission.getModelForIdentifier(req.body.type);
@@ -29,7 +29,7 @@ exports.submit = function(req, res, next) {
                 }
                 else {
                     location = l;
-                    oldTeam = l.team;
+                    oldOwner = l.owner;
                 }
                 return cb(err);
             });
@@ -57,16 +57,8 @@ exports.submit = function(req, res, next) {
 
         // Create the new mission and save it
         function(cb) {
-            // Support submitting points as number or object.
-            // TODO: this will be easier once the points are always just a number
-            var points = req.body.points;
-            if (typeof points === 'number') {
-                points = {};
-                points[req.user.team] = req.body.points;
-            }
-
             mission = new MissionModel({
-                points: points,
+                points: req.user.points,
                 person: req.user.id,
                 location: location.id,
                 outcome: outcome,
@@ -92,7 +84,7 @@ exports.submit = function(req, res, next) {
             return next(err);
         }
 
-        var causedOwnerChange = (location.team !== oldTeam);
+        var causedOwnerChange = (location.owner !== oldOwner);
 
         // De-populate the person
         mission.person = mission.person.id;

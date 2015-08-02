@@ -24,8 +24,8 @@ exports.create = function(req, res, next) {
     var location = new Location(_.assign(
         _.pick(req.body, 'name', 'description', 'link', 'type'),
         {
-            coordinates: [req.body.lng, req.body.lat],
-            team: req.user.team
+            coordinates: [req.body.lng, req.body.lat]
+            // TODO NOW: set the requesting user as owner?
         }
     ));
 
@@ -69,7 +69,7 @@ exports.list = function(req, res, next) {
     }
 
     // Load the locations, but only the data we actually want to send
-    Location.find(query, 'name type coordinates team updatedAt quality efforts',
+    Location.find(query, 'name type coordinates updatedAt quality efforts',
         function(err, locations) {
             if (err) {
                 return next(err);
@@ -207,7 +207,7 @@ exports.getCompletedMissions = function(req, res, next) {
             location: locationId,
             isNpcMission: false
         }, 'person location points outcome')
-        .populate('person', 'team nickname')
+        .populate('person', 'nickname')
         .sort({completed: 'desc'})
         .limit(NUM_COMPLETED_MISSION_LIMIT)
         .exec(function(err, missions) {
@@ -300,7 +300,7 @@ exports.getAvailableMissions = function(req, res, next) {
 
                     // If the user got points for completing this mission, take into account
                     // the cool down period. If it's not cooled down yet, set the points to zero.
-                    if (completedMission.getTotalAwardedPoints() > 0 && !completedMission.isCooledDown()) {
+                    if (completedMission.points > 0 && !completedMission.isCooledDown()) {
                         availableMission.points = 0;
                     }
                 }

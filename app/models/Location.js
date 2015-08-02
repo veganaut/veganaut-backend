@@ -8,7 +8,6 @@ var util = require('util');
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var constants = require('../utils/constants');
 var Average = require('../utils/Average');
 var Missions = require('./Missions');
 
@@ -36,12 +35,11 @@ var locationSchema = new Schema({
     link: String,
     type: {type: String, enum: ['gastronomy', 'retail']},
 
-    // Maps team names to their points at time updatedAt.
+    // Maps person ids to their points at time updatedAt.
     points: {type: Schema.Types.Mixed, default: {}},
 
-    // The team that last conquered this place. Used to break ties if teams
-    // have the same number of points.
-    team: {type: String, enum: constants.ALL_TEAMS, default: constants.NPC_TEAM},
+    // The person that currently has the most points
+    owner: {type: Schema.Types.ObjectId, ref: 'Person', required: true},
 
     // When the points were last calculated and stored
     updatedAt: {type: Date, default: Date.now}
@@ -62,16 +60,11 @@ locationSchema.methods.computeCurrentPoints = function() {
     var points = {};
     var elapsed = Date.now() - this.updatedAt.getTime();
 
-    // Ensure the result contains points for every team
-    _.each(constants.PLAYER_TEAMS, function(team) {
-        points[team] = 0;
-    });
-
-    // Points for each team diminish exponentially
-    // TODO: exponential decrease gets too slow after some time... we should
-    // have a minimal rate of decrease.
-    _.forOwn(that.points, function(teamPoints, team) {
-        points[team] = Math.round(teamPoints * Math.pow(POINTS_DECREASE_FACTOR, elapsed));
+    // Points for each person diminish exponentially
+    // TODO: exponential decrease gets too slow after some time... we should have a minimal rate of decrease.
+    _.forOwn(that.points, function(personPoints, personId) {
+        points[personId] = Math.round(personPoints * Math.pow(POINTS_DECREASE_FACTOR, elapsed));
+        // TODO NOW: remove entries with a too small number, but make sure the owner always has some points
     });
 
     return points;
@@ -84,22 +77,17 @@ locationSchema.methods.computeCurrentPoints = function() {
 locationSchema.methods.notifyMissionCompleted = function(mission, next) {
     // Update the score of the location
     var points = this.computeCurrentPoints();
-    var team = this.team;
-    var teamPoints = points[team] || 0;
+    var owner = this.owner;
+    var ownerPoints = points[owner] || 0;
 
-    // Add up all the new points
-    _.forOwn(mission.points.toObject(), function(p, t) {
-        points[t] += p;
-    });
+    // Add the points from the completed mission
+    var missionPerson = mission.person.id; // TODO NOW: is person always populated?
+    points[missionPerson] = (points[missionPerson] || 0) + mission.points;
 
-    // Check if a new team has the most points
-    _.forOwn(points, function(p, t) {
-        // Only if you make more points, do you get to be the new owner
-        if (p > teamPoints) {
-            team = t;
-            teamPoints = p;
-        }
-    });
+    // Check if the new person has the most points
+    if (points[missionPerson] > ownerPoints) {
+        owner = missionPerson;
+    }
 
     // For offerQuality missions, the average quality changes
     if (mission instanceof Missions.OfferQualityMission) {
@@ -113,8 +101,8 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
 
     // Save the new state
     this.points = points;
-    this.markModified('points');
-    this.team = team;
+    this.markModified('points'); // TODO NOW: is this still needed?
+    this.owner = owner;
     this.updatedAt = Date.now();
     this.save(next);
 };
@@ -126,7 +114,7 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
  */
 locationSchema.options.toJSON = {
     transform: function(doc) {
-        var ret = _.pick(doc, ['name', 'description', 'link', 'type', 'id', 'team', 'updatedAt']);
+        var ret = _.pick(doc, ['name', 'description', 'link', 'type', 'id', 'owner', 'updatedAt']);
 
         // Add lat/lng in the format the frontend expects
         if (util.isArray(doc.coordinates)) {

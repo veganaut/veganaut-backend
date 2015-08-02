@@ -5,7 +5,6 @@
 
 var _ = require('lodash');
 var mongoose = require('mongoose');
-var constants = require('../../app/utils/constants');
 var FixtureLoader = require('./FixtureLoader');
 var Missions = require('../../app/models/Missions');
 var Product = require('../../app/models/Product');
@@ -39,22 +38,15 @@ var capitalize = function(s) {
  * Adds a user to the fixtures
  *
  * @param {string} name
- * @param {string} [team]
  * @returns {FixtureCreator}
  */
-FixtureCreator.prototype.user = function(name, team) {
-    // Assign random values when they are not provided
-    if (typeof team === 'undefined') {
-        team = _.sample(constants.PLAYER_TEAMS);
-    }
-
+FixtureCreator.prototype.user = function(name) {
     this._fixtures[name] = new Person({
         _id: intToId(_.size(this._fixtures)),
         email: name + '@example.com',
         password: name,
         nickname: capitalize(name),
-        fullName: capitalize(name) + ' Example',
-        team: team
+        fullName: capitalize(name) + ' Example'
     });
 
     return this;

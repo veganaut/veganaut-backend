@@ -19,7 +19,6 @@ var getFixtures = function() {
         _id: '000000000000000000000001',
         email: 'foo@bar.baz',
         password: 'foobar',
-        team: 'team1',
         nickname: 'Alice',
         fullName: 'Alice Alison'
     });
@@ -28,7 +27,6 @@ var getFixtures = function() {
         _id: '000000000000000000000002',
         email: 'im@stoop.id',
         password: 'bestpasswordever',
-        team: 'team2',
         nickname: 'Bob',
         fullName: 'Bob Burton',
         gender: 'male'
@@ -38,7 +36,7 @@ var getFixtures = function() {
         _id: '000000000000000000000010',
         email: 'npc@example.com',
         password: 'npc',
-        team: 'npc',
+        accountType: 'npc',
         nickname: 'Npc',
         fullName: 'Non Player Character'
     });

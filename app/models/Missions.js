@@ -79,19 +79,11 @@ var allMissions = {};
  * @constructor
  */
 var MissionSchema = function(outcomeType) {
-    // Prepare the points schema
-    var points = {};
-    _.each(constants.PLAYER_TEAMS, function(team) {
-        points[team] = {
-            type: Number
-        };
-    });
-
     // Create the base schema
     Schema.call(this, {
         person: {type: Schema.Types.ObjectId, ref: 'Person', required: true},
         location: {type: Schema.Types.ObjectId, ref: 'Location', required: true},
-        points: points,
+        points: {type: Number, default: 0, required: true}, // TODO NOW: set a default of 0 or not?
         completed: {type: Date},
         isFirstOfType: {type: Boolean},
         isNpcMission: {type: Boolean, default: false}
@@ -152,34 +144,15 @@ missionSchema.pre('save', function(next) {
         }
 
         // Check if it's an npc
-        if (person.team === constants.NPC_TEAM) {
-            // No points for npc team
-            that.points = {};
+        if (person.accountType === constants.ACCOUNT_TYPES.NPC) {
+            // No points for npcs
+            that.points = 0;
             that.isNpcMission = true;
         }
-        else {
-            // No npc, validate and set correct points
-            if (Object.keys(that.points.toObject()).length === 0) {
-                // If no points are defined, set the maximum for the given person
-                // TODO: this should only award points if the mission is cooled down
-                that.points = {};
-                that.points[person.team] = POINTS_BY_TYPE[missionType];
-            }
-            else if (typeof that.points !== 'object') {
-                return next(new Error('Mission points must be an object, but found: ' + that.points));
-            }
-            else {
-                // If points are defined, make sure they are valid
-                _.forOwn(that.points.toObject(), function(p, t) {
-                    if (p < 0 || p > POINTS_BY_TYPE[missionType] || p !== Math.round(p)) {
-                        return next(new Error('Invalid points for ' + missionType + ': ' + p));
-                    }
-                    if (p > 0 && t !== person.team) {
-                        return next(new Error('Mission points attributed to wrong team: ' + t + ' instead of ' + person.team));
-                    }
-                });
-            }
-        }
+        //else {
+        //    // No npc, validate and set correct points
+        //    // TODO: should ask the mission model how much points it can give to this user
+        //}
 
         // Notify location and products of this mission
         async.series([
@@ -258,19 +231,6 @@ missionSchema.methods.isCooledDown = function() {
 };
 
 /**
- * Returns the total number of points that were awarded for this mission.
- * TODO: this should be removed once "points" is not an object but a simple number.
- * @returns {number}
- */
-missionSchema.methods.getTotalAwardedPoints = function() {
-    var totalPoints = 0;
-    _.forOwn(this.points.toObject(), function(points) {
-        totalPoints += points;
-    });
-    return totalPoints;
-};
-
-/**
  * Returns whether the given mission model is a mission that acts on Products
  * @returns {boolean}
  * @private
@@ -313,11 +273,6 @@ missionSchema.options.toJSON = {
                 id: ret._id,
                 type: doc.constructor.getIdentifier() // TODO: there should be a direct way to access the statics
             });
-
-            // Mongoose converts empty subdocs to null instead of an empty object, we don't like it
-            if (_.isNull(newRet.points)) {
-                newRet.points = {};
-            }
 
             return newRet;
         }

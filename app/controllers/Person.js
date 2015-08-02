@@ -19,11 +19,10 @@ var cryptoUtils = require('../utils/cryptoUtils');
  * @param next
  */
 exports.register = function(req, res, next) {
-    // Pick the posted data
-    var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'locale');
-    var person = new Person(personData);
-    // Assign a random team
-    person.team = _.sample(constants.PLAYER_TEAMS);
+    // Create person from the posted data
+    var person = new Person(_.pick(req.body,
+        'email', 'fullName', 'password', 'nickname', 'locale')
+    );
     person.save(function(err) {
         if (err) {
             // Send a 400 status if the email address is already used
@@ -71,9 +70,8 @@ exports.getById = function(req, res, next) {
                 return cb(err);
             }
 
-            // Check if the given id points to an existing person
-            // And that person belong to a player team
-            if (!existingPerson || constants.PLAYER_TEAMS.indexOf(existingPerson.team) === -1) {
+            // Check if the given id points to an existing person that is a player
+            if (!existingPerson || existingPerson.accountType === constants.ACCOUNT_TYPES.PLAYER) {
                 res.status(404);
                 err = new Error('Could not find any user with the given id.');
                 return cb(err);
@@ -100,7 +98,7 @@ exports.getById = function(req, res, next) {
             return next(err);
         }
         var resObj = _.pick(person,
-            'id', 'nickname', 'team', 'attributes'
+            'id', 'nickname', 'attributes'
         );
         resObj.completedMissions = completedMissions;
         return res.status(200).send(resObj);

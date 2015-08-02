@@ -31,7 +31,7 @@ describe('A location', function() {
         h.runAsync(function(done) {
             Location.findById(p.id).exec(function(err, location) {
                 expect(location instanceof Location).toBe(true, 'found the created location');
-                expect(location.team).toBe('npc', 'set the correct default team');
+                expect(location.accountType).toBe('player', 'set the correct default account type');
                 expect(err).toBeNull();
                 done();
             });

@@ -5,7 +5,7 @@ var FixtureCreator = require('../fixtures/FixtureCreator');
 
 var fix = new FixtureCreator();
 fix
-    .user('alice', 'team1')
+    .user('alice')
     .location('alice', 'Tingelkringel')
     .product('Tingelkringel', 'Bagel')
 ;
@@ -76,7 +76,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     location: locationId,
                     type: 'hasOptions',
                     outcome: 'yes',
-                    points: {team1: 10}
+                    points: 10
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -104,7 +104,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     location: locationId,
                     type: 'visitBonus',
                     outcome: true,
-                    points: {team1: 50}
+                    points: 50
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -136,7 +136,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                         {expression: 'noMeat', expressionType: 'builtin'},
                         {expression: 'ganz vegetarisch', expressionType: 'custom'}
                     ],
-                    points: {team1: 10}
+                    points: 10
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -175,7 +175,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                             }
                         }
                     ],
-                    points: {team1: 10}
+                    points: 10
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -207,7 +207,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                             product: productId
                         }
                     ],
-                    points: {team1: 20}
+                    points: 20
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -238,7 +238,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                         product: productId,
                         info: 5
                     },
-                    points: {team1: 5}
+                    points: 5
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -269,7 +269,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                         product: productId,
                         info: 'test'
                     },
-                    points: {team1: 0}
+                    points: 0
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -300,7 +300,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                         product: productId,
                         info: 'temporarilyUnavailable'
                     },
-                    points: {team1: 5}
+                    points: 5
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -327,7 +327,7 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     location: locationId,
                     type: 'giveFeedback',
                     outcome: 'Moar sauce',
-                    points: {team1: 10}
+                    points: 10
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -355,12 +355,12 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     location: locationId,
                     type: 'offerQuality',
                     outcome: 4,
-                    points: {team1: 20}
+                    points: 20
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('offerQuality', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
+                    expect(res.body.points).toEqual(20, 'points of mission');
                     // Get new person data (via person/{id} to test if that is also correctly updated)
                     h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
                         expect(res.statusCode).toBe(200);
@@ -385,12 +385,12 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     location: locationId,
                     type: 'effortValue',
                     outcome: 'no',
-                    points: {team1: 20}
+                    points: 20
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('effortValue', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
+                    expect(res.body.points).toEqual(20, 'points of mission');
                     // Get new person data (via person/{id} to test if that is also correctly updated)
                     h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
                         expect(res.statusCode).toBe(200);
@@ -422,12 +422,12 @@ h.describe('Person Attributes E2E Test with basic fixtures.', function() {
                     location: '000000000000000000000009',
                     type: 'offerQuality',
                     outcome: 4,
-                    points: {team1: 20}
+                    points: 20
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('offerQuality', 'type of mission');
-                    expect(res.body.points).toEqual({team1: 20}, 'points of mission');
+                    expect(res.body.points).toEqual(20, 'points of mission');
 
                     // Get new person data (via person/{id} to test if that is also correctly updated)
                     h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
