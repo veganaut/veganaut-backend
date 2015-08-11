@@ -2,9 +2,7 @@
 
 var h = require('../helpers_');
 
-// TODO test person/me
-
-h.describe('Person API methods', function() {
+h.describe('Person API methods when not logged in', { user: '' }, function() {
     it('can register new user', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'person')
@@ -24,6 +22,7 @@ h.describe('Person API methods', function() {
                     expect(person.fullName).toEqual('Doge MacDog');
                     expect(person.nickname).toEqual('Doger');
                     expect(person.locale).toEqual('de', 'has correct locale');
+                    expect(person.accountType).toBe('player', 'has correct account type');
 
                     // Make sure password is not returned
                     expect(typeof person.password).toEqual('undefined');
@@ -81,6 +80,15 @@ h.describe('Person API methods', function() {
                     done();
                 })
             ;
+        });
+    });
+
+    it('cannot get person by id', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                expect(res.statusCode).toBe(401);
+                done();
+            });
         });
     });
 });
@@ -146,6 +154,28 @@ h.describe('Person API methods for logged in user', function() {
             });
         });
     });
+
+    it('can get person by id', function() {
+        h.runAsync(function(done) {
+            h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                expect(res.statusCode).toBe(200);
+
+                var person = res.body;
+                expect(person.email).toBeUndefined();
+                expect(person.nickname).toBeDefined();
+                expect(person.fullName).toBeUndefined();
+                expect(person.locale).toBeUndefined();
+                expect(person.completedMissions).toBeDefined();
+                expect(typeof person.attributes).toEqual('object', 'attributes is a object');
+                expect(person.attributes.pioneer).toBeDefined();
+                expect(person.attributes.diplomat).toBeDefined();
+                expect(person.attributes.evaluator).toBeDefined();
+                expect(person.attributes.gourmet).toBeDefined();
+
+                done();
+            });
+        });
+    });
 });
 
 h.describe('Person API methods for logged in user trying naughty things', function() {
@@ -172,29 +202,6 @@ h.describe('Person API methods for logged in user trying naughty things', functi
                     done();
                 })
             ;
-        });
-    });
-});
-
-h.describe('Person API methods for person/:id', function() {
-    it('Person API methods for person/:id', function() {
-        h.runAsync(function(done) {
-            h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
-                expect(res.statusCode).toBe(200);
-
-                expect(res.body.email).toBeUndefined();
-                expect(res.body.nickname).toBeDefined();
-                expect(res.body.fullName).toBeUndefined();
-                expect(res.body.locale).toBeUndefined();
-                expect(res.body.completedMissions).toBeDefined();
-                expect(typeof res.body.attributes).toEqual('object', 'attributes is a object');
-                expect(res.body.attributes.pioneer).toBeDefined();
-                expect(res.body.attributes.diplomat).toBeDefined();
-                expect(res.body.attributes.evaluator).toBeDefined();
-                expect(res.body.attributes.gourmet).toBeDefined();
-
-                done();
-            });
         });
     });
 });

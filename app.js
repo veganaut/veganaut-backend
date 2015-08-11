@@ -56,7 +56,7 @@ app.delete('/session', cors(), Session.restrict, Session.delete);
 // Person
 app.options('/person', cors());
 app.options('/person/me', cors());
-app.options('person/isValidToken/:token', cors());
+app.options('/person/isValidToken/:token', cors());
 app.options('/person/reset', cors());
 app.options('/person/:id', cors());
 app.post('/person', cors(), Person.register);
@@ -64,7 +64,7 @@ app.get('/person/me', cors(), Session.restrict, Person.getMe);
 app.put('/person/me', cors(), Session.restrict, Person.updateMe);
 app.get('/person/isValidToken/:token', cors(), Person.isValidToken);
 app.post('/person/reset', cors(), Person.resetPassword);
-app.get('/person/:id', cors(), Person.getById);
+app.get('/person/:id', cors(), Session.restrict, Person.getById);
 
 // Mission
 app.options('/mission', cors());

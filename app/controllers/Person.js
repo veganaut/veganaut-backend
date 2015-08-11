@@ -71,7 +71,7 @@ exports.getById = function(req, res, next) {
             }
 
             // Check if the given id points to an existing person that is a player
-            if (!existingPerson || existingPerson.accountType === constants.ACCOUNT_TYPES.PLAYER) {
+            if (!existingPerson || existingPerson.accountType !== constants.ACCOUNT_TYPES.PLAYER) {
                 res.status(404);
                 err = new Error('Could not find any user with the given id.');
                 return cb(err);

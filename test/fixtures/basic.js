@@ -46,25 +46,29 @@ var getFixtures = function() {
         _id: '000000000000000000000006',
         coordinates: [7.452544, 46.957113],
         name: '3dosha',
-        type: 'gastronomy'
+        type: 'gastronomy',
+        owner: fix.bob.id
     });
     fix.ruprecht = new Location({
         _id: '000000000000000000000007',
         coordinates: [7.441016, 46.946757],
         name: 'Reformhaus Ruprecht',
-        type: 'retail'
+        type: 'retail',
+        owner: fix.bob.id
     });
     fix.hollow = new Location({
         _id: '000000000000000000000008',
         coordinates: [7.446611, 46.953880],
         name: 'Kremoby Hollow',
-        type: 'gastronomy'
+        type: 'gastronomy',
+        owner: fix.alice.id
     });
     fix.shop = new Location({
         _id: '000000000000000000000009',
         coordinates: [7.444621, 46.957212],
         name: 'Shop',
-        type: 'retail'
+        type: 'retail',
+        owner: fix.npc.id
     });
 
     fix.doshaCurry = new Product({

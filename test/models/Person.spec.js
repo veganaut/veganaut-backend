@@ -46,6 +46,7 @@ describe('A person', function() {
                 expect(err).toBeNull();
                 expect(person.email).toBe('mynewperson@example.com', 'set e-mail');
                 expect(person.password).not.toBe('secure', 'encrypted the password');
+                expect(person.accountType).toBe('player', 'set the correct default account type');
                 done();
             });
         });

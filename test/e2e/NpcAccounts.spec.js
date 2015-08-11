@@ -17,13 +17,9 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
 
                     var loc = res.body;
                     expect(loc.name, 'TingelKringel', 'correct name');
-                    expect(typeof loc.points.npc).toBe('undefined', 'no points for npc team');
-                    expect(loc.points.team1).toBe(0, 'no points for team1');
-                    expect(loc.points.team2).toBe(0, 'no points for team2');
-                    expect(loc.points.team3).toBe(0, 'no points for team3');
-                    expect(loc.points.team4).toBe(0, 'no points for team4');
-                    expect(loc.points.team5).toBe(0, 'no points for team5');
-                    expect(loc.team).toBe('npc', 'location belongs to npc');
+                    expect(loc.owner.nickname).toBe('Npc', 'has correct owner');
+                    expect(loc.points[loc.owner.id]).toBe(0, '0 points for npc');
+                    expect(Object.keys(loc.points).length).toBe(1, 'no point entries for anyone else');
                     done();
                 })
             ;
@@ -37,7 +33,7 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
                     location: '000000000000000000000006', // Mission in dosha
                     type: 'visitBonus',
                     outcome: true,
-                    points: { npc: 50 }
+                    points: 50
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -45,7 +41,7 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
                     var mission = res.body;
                     expect(mission.type).toBe('visitBonus', 'sanity check on mission type');
                     expect(mission.causedOwnerChange).toBe(false, 'should not have affected owner');
-                    expect(mission.points).toEqual({}, 'should have given no points');
+                    expect(mission.points).toEqual(0, 'should have given no points');
                     done();
                 })
             ;
@@ -55,6 +51,7 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
 
 h.describe('NPCs viewed from player accounts', function() {
     it('cannot get the details of an npc', function() {
+        // TODO NOW: given that NPC owners are exposed currently, it doesn't really work that you can't get the account info
         h.runAsync(function(done) {
             // Try to get npc@example.com
             h.request('GET', h.baseURL + 'person/000000000000000000000010')

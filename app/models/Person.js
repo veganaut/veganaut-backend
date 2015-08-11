@@ -163,7 +163,7 @@ personSchema.options.toJSON = {
         // Pick basic properties
         var ret = _.pick(doc,
             'id', 'email', 'nickname', 'fullName', 'gender', 'locale',
-            'dateOfBirth', 'phone', 'address'
+            'dateOfBirth', 'phone', 'address', 'accountType'
         );
 
         // Attach attributes if they have been loaded

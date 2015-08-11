@@ -58,7 +58,7 @@ exports.submit = function(req, res, next) {
         // Create the new mission and save it
         function(cb) {
             mission = new MissionModel({
-                points: req.user.points,
+                points: req.body.points,
                 person: req.user.id,
                 location: location.id,
                 outcome: outcome,
@@ -84,7 +84,7 @@ exports.submit = function(req, res, next) {
             return next(err);
         }
 
-        var causedOwnerChange = (location.owner !== oldOwner);
+        var causedOwnerChange = !location.owner.equals(oldOwner);
 
         // De-populate the person
         mission.person = mission.person.id;

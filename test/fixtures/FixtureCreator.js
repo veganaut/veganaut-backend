@@ -21,16 +21,27 @@ var FixtureCreator = function(fixtures) {
     this._fixtures = fixtures || {};
 };
 
-// Converts an integer into a mongoose-style object id.
-var intToId = function(id) {
-    var result = id.toString(16);
-    while (result.length < 24) {
-        result = ' ' + result;
+/**
+ * Returns the id to be used for the next fixture element
+ * @returns {string}
+ * @private
+ */
+FixtureCreator.prototype._getNextId = function() {
+    // Create a string based on the fixture size
+    var id = _.size(this._fixtures + 1).toString(16);
+    while (id.length < 24) {
+        id = ' ' + id;
     }
-    return result;
+    return id;
 };
 
-var capitalize = function(s) {
+/**
+ * Capitalises the given string
+ * @param {string} s
+ * @returns {string}
+ * @private
+ */
+FixtureCreator.prototype._capitalize = function(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
@@ -42,11 +53,11 @@ var capitalize = function(s) {
  */
 FixtureCreator.prototype.user = function(name) {
     this._fixtures[name] = new Person({
-        _id: intToId(_.size(this._fixtures)),
+        _id: this._getNextId(),
         email: name + '@example.com',
         password: name,
-        nickname: capitalize(name),
-        fullName: capitalize(name) + ' Example'
+        nickname: this._capitalize(name),
+        fullName: this._capitalize(name) + ' Example'
     });
 
     return this;
@@ -54,10 +65,11 @@ FixtureCreator.prototype.user = function(name) {
 
 FixtureCreator.prototype.location = function(user, name, coordinates, type) {
     this._fixtures[name] = new Location({
-        _id: intToId(_.size(this._fixtures)),
+        _id: this._getNextId(),
         name: name,
         coordinates: coordinates,
-        type: type
+        type: type,
+        owner: this._fixtures[user].id
     });
 
     this._fixtures[name + 'FirstMission'] = new Missions.AddLocationMission({
@@ -72,7 +84,7 @@ FixtureCreator.prototype.location = function(user, name, coordinates, type) {
 
 FixtureCreator.prototype.product = function(location, name) {
     this._fixtures['product.' + name] = new Product({
-        _id: intToId(_.size(this._fixtures)),
+        _id: this._getNextId(),
         location: this._fixtures[location].id,
         name: name
     });

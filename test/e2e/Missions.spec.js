@@ -13,7 +13,7 @@ fix
 var locationId = fix.getFixtures()['Tingelkringel'].id;
 
 h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user: 'alice@example.com'}, function() {
-    it('can submit a mission', function() {
+    it('can submit a hasOptions mission', function() {
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
@@ -29,10 +29,28 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     expect(typeof mission.person).toBe('string', 'person is a string');
                     expect(typeof mission.location).toBe('string', 'location is a string');
                     expect(typeof mission.completed).toBe('string', 'completed is a string');
-                    expect(typeof mission.points).toBe('number', 'points is a number');
+                    expect(mission.points).toBe(10, 'points of mission');
                     expect(mission.type).toBe('hasOptions', 'type is hasOptions');
                     expect(mission.causedOwnerChange).toBe(false, 'did not cause an owner change');
                     expect(mission.outcome).toBe('yes', 'outcome of the mission');
+                    done();
+                })
+            ;
+        });
+    });
+
+    it('hasOptions has a cool down period and gives 0 points when submitted again', function() {
+        h.runAsync(function(done) {
+            h.request('POST', h.baseURL + 'mission')
+                .send({
+                    location: locationId,
+                    type: 'hasOptions',
+                    outcome: 'yes',
+                    points: 10 // Try to submit with 10 points, but should be corrected to 0
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(201);
+                    expect(res.body.points).toEqual(0, 'got 0 points');
                     done();
                 })
             ;
@@ -52,25 +70,6 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('visitBonus', 'type of mission');
                     expect(res.body.points).toEqual(50, 'points of mission');
-                    done();
-                })
-            ;
-        });
-    });
-
-    it('can submit hasOptions mission', function() {
-        h.runAsync(function(done) {
-            h.request('POST', h.baseURL + 'mission')
-                .send({
-                    location: locationId,
-                    type: 'hasOptions',
-                    outcome: 'yes',
-                    points: 10
-                })
-                .end(function(res) {
-                    expect(res.statusCode).toBe(201);
-                    expect(res.body.type).toBe('hasOptions', 'type of mission');
-                    expect(res.body.points).toEqual(10, 'points of mission');
                     done();
                 })
             ;
@@ -484,10 +483,13 @@ h.describe('Mission API methods and their influence on locations.', function() {
 
                             var dosha = res.body;
                             expect(dosha).toBeDefined('returned dosha');
-                            expect(dosha.team).toBe('team1', 'owner is now team1');
-                            expect(typeof dosha.points.team1).toBe('number', 'has team1 points');
-                            expect(typeof dosha.points.team2).toBe('number', 'has team2 points');
-                            expect(dosha.points.team1).toBeGreaterThan(dosha.points.team2, 'has more team1 than team2 points');
+                            expect(dosha.owner.id).toBe('000000000000000000000001', 'Alice is now owner');
+                            expect(dosha.owner.nickname).toBe('Alice', 'Got correct owner nickname');
+                            var alicePoints = dosha.points['000000000000000000000001'];
+                            var bobPoints = dosha.points['000000000000000000000002'];
+                            expect(alicePoints).toBeGreaterThan(0, 'Alice has points');
+                            expect(bobPoints).toBeGreaterThan(0, 'Bob has points');
+                            expect(alicePoints).toBeGreaterThan(bobPoints, 'Alice hsa more points than Bob');
 
                             done();
                         })
@@ -504,16 +506,18 @@ fix = new FixtureCreator()
 ;
 
 h.describe('Mission cool down periods.', {fixtures: fix, user: 'alice@example.com'}, function() {
-    it('cool down is not affected when submitting mission with 0 points', function() {
-        // When a mission with 0 points is submitted, the cool down period should not be affected.
-        // This means that the next time we ask for available missions, we should still get points for that mission.
+    it('cool down is not cancelled when submitting a mission with 0 points', function() {
+        // When a mission with 0 points is submitted (because the mission is cooling down)
+        // Then the mission should still be cooling down afterwards, since it should take
+        // the initial mission with more than 0 points into account.
+        // TODO: Should find a way to test that the mission with 0 point doesn't reset the cool down (so that it would take longer to cool down)
         h.runAsync(function(done) {
             h.request('POST', h.baseURL + 'mission')
                 .send({
                     location: locationId,
                     type: 'offerQuality',
                     outcome: 3,
-                    points: 0
+                    points: 20
                 })
                 .end(function(res) {
                     expect(res.statusCode).toBe(201);
@@ -524,11 +528,37 @@ h.describe('Mission cool down periods.', {fixtures: fix, user: 'alice@example.co
                             expect(res.statusCode).toBe(200);
 
                             var offerQualityMission = res.body.locationMissions.offerQuality;
-                            expect(offerQualityMission.points).toBeGreaterThan(0, 'still get points for the same mission');
+                            expect(offerQualityMission.points).toBe(0, 'get no more points for the mission');
                             expect(typeof offerQualityMission.lastCompleted).toBe('object', 'has the last completed mission');
-                            expect(offerQualityMission.lastCompleted.points.team1).toBe(0, 'really got 0 points for mission');
+                            expect(offerQualityMission.lastCompleted.points).toBe(20, 'got points for this mission');
 
-                            done();
+                            // Submit the mission again
+                            h.request('POST', h.baseURL + 'mission')
+                                .send({
+                                    location: locationId,
+                                    type: 'offerQuality',
+                                    outcome: 2,
+                                    points: 0
+                                })
+                                .end(function(res) {
+                                    expect(res.statusCode).toBe(201);
+
+                                    // Check the available missions again
+                                    h.request('GET', h.baseURL + 'location/' + locationId + '/availableMission/list')
+                                        .end(function(res) {
+                                            expect(res.statusCode).toBe(200);
+
+                                            var offerQualityMission = res.body.locationMissions.offerQuality;
+                                            expect(offerQualityMission.points).toBe(0, 'still get no points for the mission');
+                                            expect(typeof offerQualityMission.lastCompleted).toBe('object', 'has the last completed mission');
+                                            expect(offerQualityMission.lastCompleted.points).toBe(0, 'really got 0 points for mission');
+
+                                            done();
+                                        })
+                                    ;
+                                })
+                            ;
+
                         })
                     ;
                 })

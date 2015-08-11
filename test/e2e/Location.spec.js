@@ -27,9 +27,12 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(location.lng).toBe(7, 'set correct lng');
                     expect(location.type).toBe('gastronomy', 'set correct type');
                     expect(typeof location.id).toBe('string', 'has an id');
-                    expect(location.team).toBe('team1', 'team is team1');
+                    expect(typeof location.owner).toBe('object', 'has an owner set');
+                    expect(location.owner.id).toBe('000000000000000000000001', 'alice is owner');
+                    expect(location.owner.nickname).toBe('Alice', 'owner has correct nickname');
+                    expect(Object.keys(location.owner).length).toBe(2, 'not exposing any other owner details');
                     expect(typeof location.points).toBe('object', 'points is an object');
-                    expect(location.points.team1).toBeGreaterThan(0, 'has some team1 points');
+                    expect(location.points['000000000000000000000001']).toBeGreaterThan(0, 'alice has some points');
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(location.quality.average).toBe(0, 'quality is at 0 by default');
                     expect(location.quality.numRatings).toBe(0, 'quality numRatings is at 0 by default');
@@ -60,7 +63,11 @@ h.describe('Location API methods as logged in user alice', function() {
                             'updatedAt can be parsed as a valid date'
                         );
 
-                        expect(location.team).toMatch(/^(team[1-5]|npc)$/, 'team is valid');
+                        expect(typeof location.owner).toBe('object', 'has an owner set');
+                        expect(typeof location.owner.id).toBe('string', 'owner has an id');
+                        expect(typeof location.owner.nickname).toBe('string', 'owner has a nickname');
+                        expect(Object.keys(location.owner).length).toBe(2, 'not exposing any other owner details');
+
                         expect(typeof location.points).toBe('undefined', 'points are not set');
                         expect(typeof location.quality).toBe('object', 'has a quality');
                         expect(typeof location.quality.average).toBe('number', 'has a quality average');
@@ -103,9 +110,14 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(isNaN(updatedAt.getTime())).toBe(false,
                         'updatedAt can be parsed as a valid date'
                     );
-                    expect(typeof location.team).toBe('string', 'team is a string');
+
+                    expect(typeof location.owner).toBe('object', 'has an owner set');
+                    expect(typeof location.owner.id).toBe('string', 'owner has an id');
+                    expect(typeof location.owner.nickname).toBe('string', 'owner has a nickname');
+                    expect(Object.keys(location.owner).length).toBe(2, 'not exposing any other owner details');
+
                     expect(typeof location.points).toBe('object', 'points is an object');
-                    expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
+                    expect(location.points[location.owner.id]).toBeGreaterThan(0, 'owner has some points');
                     expect(typeof location.products).toBe('object', 'got an array of products');
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
@@ -148,9 +160,8 @@ h.describe('Location API methods as logged in user alice', function() {
                         expect(typeof mission.person).toBe('object', 'person is an object');
                         expect(typeof mission.person.id).toBe('string', 'person has an id');
                         expect(typeof mission.person.nickname).toBe('string', 'person has a nickname');
-                        expect(mission.person.team).toMatch(/^team[1-5]$/, 'person has a valid team');
-                        expect(Object.keys(mission.person).length).toBe(3, 'only 3 properties of the person are exposed');
-                        expect(typeof mission.points).toBe('object', 'points is an object');
+                        expect(Object.keys(mission.person).length).toBe(2, 'only 2 properties of the person are exposed');
+                        expect(typeof mission.points).toBe('number', 'points is a number');
                         expect(typeof mission.completed).toMatch('undefined', 'does not expose when the mission was done');
 
                         // Should be ordered from newest to oldest
@@ -315,7 +326,11 @@ h.describe('Location API methods when not logged in', { user: '' }, function() {
                     expect(typeof location.lat).toBe('number', 'has lat');
                     expect(typeof location.lng).toBe('number', 'has lng');
                     expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
-                    expect(location.team).toMatch(/^(team[1-5]|npc)$/, 'has a valid team');
+                    expect(typeof location.owner).toBe('object', 'has an owner');
+                    // TODO: should the id be hidden for logged out users?
+                    expect(typeof location.owner.id).toBe('string', 'owner has an id');
+                    expect(typeof location.owner.nickname).toBe('string', 'owner has a nickname');
+                    expect(Object.keys(location.owner).length).toBe(2, 'only 2 properties of the owner are exposed');
                     expect(typeof location.points).toBe('undefined', 'points are not set');
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
@@ -337,9 +352,13 @@ h.describe('Location API methods when not logged in', { user: '' }, function() {
                     expect(location.id).toBe('000000000000000000000006', 'correct location id');
                     expect(location.name).toBe('3dosha', 'correct name');
                     expect(typeof location.type).toBe('string', 'got a type');
-                    expect(typeof location.team).toBe('string', 'team is a string');
+                    expect(typeof location.owner).toBe('object', 'has an owner');
+                    // TODO: should the id be hidden for logged out users?
+                    expect(typeof location.owner.id).toBe('string', 'owner has an id');
+                    expect(typeof location.owner.nickname).toBe('string', 'owner has a nickname');
+                    expect(Object.keys(location.owner).length).toBe(2, 'only 2 properties of the owner are exposed');
                     expect(typeof location.points).toBe('object', 'points is an object');
-                    expect(typeof location.points.team1).toBe('number', 'points.team1 is a number');
+                    expect(location.points[location.owner.id]).toBeGreaterThan(0, 'owner has some points');
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');

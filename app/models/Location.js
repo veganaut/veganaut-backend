@@ -125,6 +125,7 @@ locationSchema.options.toJSON = {
         // Compute and include points if the are present (= were loaded from db)
         if (typeof doc.points !== 'undefined') {
             ret.points = doc.computeCurrentPoints();
+            // TODO: only expose points of owner and current user?
         }
 
         // Add the quality and effort

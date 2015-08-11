@@ -15,24 +15,71 @@ var Product = require('../models/Product');
 var NUM_COMPLETED_MISSION_LIMIT = 10;
 
 /**
+ * Helper method to populate the owner of a location.
+ * @param {object} obj Should have a "location" poperty holding the location to populate
+ * @param {function} cb
+ */
+var populateOwner = function(obj, cb) {
+    obj.location.populate('owner', 'id nickname', function(err) {
+        cb(err, obj);
+    });
+};
+
+/**
+ * Helper method that send a location as a response with the
+ * data aggregated on obj.
+ * @param err
+ * @param obj
+ */
+var handleSingleLocationResult = function(err, obj) {
+    if (err) {
+        return obj.next(err);
+    }
+    var returnObj = obj.location.toJSON();
+
+    // Add the products
+    returnObj.products = obj.products;
+
+    // Remove the back reference to the location
+    _.each(returnObj.products, function(product) {
+        product.location = undefined;
+    });
+
+    return obj.res.send(returnObj);
+};
+
+/**
  * Create a new location
  * @param req
  * @param res
  * @param next
  */
 exports.create = function(req, res, next) {
+    // This is called 'obj' because it's just nothing really. Need to find a better
+    // way to compose these async methods. TODO: Probably just need to switch to promises
+    var obj = {
+        req: req,
+        res: res,
+        next: next
+    };
+
     var location = new Location(_.assign(
         _.pick(req.body, 'name', 'description', 'link', 'type'),
         {
-            coordinates: [req.body.lng, req.body.lat]
-            // TODO NOW: set the requesting user as owner?
+            coordinates: [req.body.lng, req.body.lat],
+            owner: req.user
         }
     ));
 
     var mission;
-    async.series([
-        location.save.bind(location),
+    async.waterfall([
         function(cb) {
+            location.save(function(err) {
+                obj.location = location;
+                cb(err, obj);
+            });
+        },
+        function(obj, cb) {
             // Create the completed addLocation mission
             // TODO: this should probably go in the Location Model pre save or something, then one can also change FixtureCreator.location
             mission = new Missions.AddLocationMission({
@@ -41,17 +88,15 @@ exports.create = function(req, res, next) {
                 completed: new Date(),
                 outcome: true
             });
-            mission.save(cb);
-        }
-    ], function(err) {
-        if (err) {
-            return next(err);
-        }
-
-        // We take the location instance from the mission, because that one has
-        // the correct points calculated
-        return res.send(mission.location);
-    });
+            mission.save(function(err) {
+                // We take the location instance from the mission, because that one has
+                // the correct points calculated
+                obj.location = mission.location;
+                cb(err, obj);
+            });
+        },
+        populateOwner
+    ], handleSingleLocationResult);
 };
 
 exports.list = function(req, res, next) {
@@ -69,8 +114,9 @@ exports.list = function(req, res, next) {
     }
 
     // Load the locations, but only the data we actually want to send
-    Location.find(query, 'name type coordinates updatedAt quality efforts',
-        function(err, locations) {
+    Location.find(query, 'name type coordinates updatedAt quality efforts owner')
+        .populate('owner', 'id nickname')
+        .exec(function(err, locations) {
             if (err) {
                 return next(err);
             }
@@ -129,23 +175,6 @@ var findProducts = function(obj, cb) {
     ;
 };
 
-var handleSingleLocationResult = function(err, obj) {
-    if (err) {
-        return obj.next(err);
-    }
-    var returnObj = obj.location.toJSON();
-
-    // Add the products
-    returnObj.products = obj.products;
-
-    // Remove the back reference to the location
-    _.each(returnObj.products, function(product) {
-        product.location = undefined;
-    });
-
-    return obj.res.send(returnObj);
-};
-
 /**
  * Returns an individual Location with the id given in
  * req.params.locationId
@@ -166,6 +195,7 @@ exports.get = function(req, res, next) {
         function(cb) {
             findLocation(obj, cb);
         },
+        populateOwner,
         findProducts
     ], handleSingleLocationResult);
 };
@@ -225,6 +255,7 @@ exports.getCompletedMissions = function(req, res, next) {
  * Compiles a list of all missions that are available to the current user
  * at a certain location. The last completed missions of that player are
  * also included.
+ * TODO: this whole code should be merged with the Mission model code to calculate the points for a single mission
  * @param req
  * @param res
  * @param next
@@ -293,10 +324,13 @@ exports.getAvailableMissions = function(req, res, next) {
                     availableMission = locationMissions[completedMission.constructor.getIdentifier()];
                 }
 
-                // Check if this available mission already has a last completed mission defined
-                if (typeof availableMission !== 'undefined' && typeof availableMission.lastCompleted === 'undefined') {
-                    // Set the completed mission as the last one completed for that available mission
-                    availableMission.lastCompleted = completedMission;
+                // Check if we found an available mission
+                if (typeof availableMission !== 'undefined') {
+                    // Check if this available mission already has a last completed mission defined
+                    if (typeof availableMission.lastCompleted === 'undefined') {
+                        // Set the completed mission as the last one completed for that available mission
+                        availableMission.lastCompleted = completedMission;
+                    }
 
                     // If the user got points for completing this mission, take into account
                     // the cool down period. If it's not cooled down yet, set the points to zero.

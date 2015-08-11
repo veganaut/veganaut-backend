@@ -142,20 +142,27 @@ missionSchema.pre('save', function(next) {
         if (err) {
             return next(err);
         }
-
-        // Check if it's an npc
-        if (person.accountType === constants.ACCOUNT_TYPES.NPC) {
-            // No points for npcs
-            that.points = 0;
-            that.isNpcMission = true;
-        }
-        //else {
-        //    // No npc, validate and set correct points
-        //    // TODO: should ask the mission model how much points it can give to this user
-        //}
-
-        // Notify location and products of this mission
         async.series([
+            // Calculate the points for this mission
+            function(cb) {
+                // Check if it's an npc
+                if (person.accountType === constants.ACCOUNT_TYPES.NPC) {
+                    // No points for npcs
+                    that.points = 0;
+                    that.isNpcMission = true;
+                    return cb();
+                }
+
+                // No NPC, calculate the points
+                that.getCurrentPoints(function(err, points) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    that.points = points;
+                    return cb();
+                });
+            },
+
             // Populate the location to notify it of the new mission
             function(cb) {
                 // TODO: should only populate if not already done?
@@ -182,7 +189,7 @@ missionSchema.pre('save', function(next) {
                 }
                 else {
                     // Not a product mission, nothing to do
-                    cb();
+                    return cb();
                 }
             }
         ], next);
@@ -237,6 +244,51 @@ missionSchema.methods.isCooledDown = function() {
  */
 missionSchema.methods.isProductModifyingMission = function() {
     return (allMissions.productMissionModels.indexOf(this.constructor) >= 0);
+};
+
+/**
+ * Calculates the points that should be awarded for this mission
+ * at the current time. This depends on when the user last did this
+ * mission at this location and the cool down period of the mission.
+ * TODO NOW: test this thoroughly
+ * TODO: this needs to be merged somehow with the code in the Location controller that does the same calculation for many misions
+ * @param {function} callback
+ */
+missionSchema.methods.getCurrentPoints = function(callback) {
+    // If this mission gives 0 max points, return that immediately
+    var maxPoints = this.constructor.getMaxPoints();
+    if (maxPoints === 0) {
+        return callback(null, 0);
+    }
+
+    // Put together the query to find out if the mission is cooled down and should give points
+    var query = {
+        person: this.person,
+        location: this.location,
+        completed: {
+            $gt: Date.now() - MISSION_COOL_DOWN_PERIOD[this.constructor.modelName]
+        },
+        points: {
+            $gt: 0
+        }
+    };
+
+    // If it's a product mission, it also needs to be for the same product to be not cooled down
+    if (this.isProductModifyingMission()) {
+        query['outcome.product'] = this.outcome.product;
+    }
+
+
+    // Otherwise we have to query to see if there is a mission that is not cooled down yet
+    this.constructor.find(query, function(err, count) {
+        if (err) {
+            return callback(err);
+        }
+
+        // Give max points if we didn't find any mission that is not cooled down
+        var points = (count <= 0) ? maxPoints : 0;
+        callback(null, points);
+    });
 };
 
 /**
