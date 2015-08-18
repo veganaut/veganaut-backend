@@ -120,7 +120,7 @@ h.describe('Person API methods for logged in user', function() {
                 .send({
                     email: 'alice@bar.baz',
                     fullName: 'Alice Alisonja',
-                    nickname: 'Al',
+                    nickname: 'Ali',
                     locale: 'de',
                     password: 'even better password'
                 })
@@ -130,11 +130,40 @@ h.describe('Person API methods for logged in user', function() {
                     expect(res.body.id).toEqual('000000000000000000000001', 'user id should not change');
                     expect(res.body.email).toEqual('alice@bar.baz');
                     expect(res.body.fullName).toEqual('Alice Alisonja');
-                    expect(res.body.nickname).toEqual('Al');
+                    expect(res.body.nickname).toEqual('Ali');
                     expect(res.body.locale).toEqual('de');
                     expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
 
                     done();
+                })
+            ;
+        });
+    });
+
+    it('does not fail when providing empty password in an update', function() {
+        h.runAsync(function(done) {
+            h.request('PUT', h.baseURL + 'person/me')
+                .send({
+                    nickname: 'Al',
+                    password: ''
+                })
+                .end(function(res) {
+                    expect(res.statusCode).toBe(200);
+
+                    expect(res.body.nickname).toEqual('Al');
+                    expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
+
+                    // Check that the password was not changed
+                    h.request('POST', h.baseURL + 'session')
+                        .send({
+                            email: 'alice@bar.baz',
+                            password: 'even better password'
+                        })
+                        .end(function(res) {
+                            expect(res.statusCode).toBe(200, 'old password is still set');
+                            done();
+                        })
+                    ;
                 })
             ;
         });

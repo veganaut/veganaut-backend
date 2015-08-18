@@ -115,6 +115,13 @@ exports.getById = function(req, res, next) {
 exports.updateMe = function(req, res, next) {
     // Get the values that can be updated and set them on the user
     var personData = _.pick(req.body, 'email', 'fullName', 'password', 'nickname', 'locale');
+
+    // If an empty password was provided, ignore it
+    if (personData.password === '') {
+        delete personData.password;
+    }
+
+    // Assign the data to the user
     _.assign(req.user, personData);
 
     // Save the user
