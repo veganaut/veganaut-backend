@@ -18,8 +18,8 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
                     var loc = res.body;
                     expect(loc.name, 'TingelKringel', 'correct name');
                     expect(loc.owner.nickname).toBe('Npc', 'has correct owner');
-                    expect(loc.points[loc.owner.id]).toBe(0, '0 points for npc');
-                    expect(Object.keys(loc.points).length).toBe(1, 'no point entries for anyone else');
+                    expect(typeof loc.points[loc.owner.id]).toBe('undefined', 'no points for npc');
+                    expect(Object.keys(loc.points).length).toBe(0, 'no point entries for anyone else');
                     done();
                 })
             ;
@@ -51,7 +51,6 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
 
 h.describe('NPCs viewed from player accounts', function() {
     it('cannot get the details of an npc', function() {
-        // TODO NOW: given that NPC owners are exposed currently, it doesn't really work that you can't get the account info
         h.runAsync(function(done) {
             // Try to get npc@example.com
             h.request('GET', h.baseURL + 'person/000000000000000000000010')

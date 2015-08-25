@@ -63,8 +63,17 @@ locationSchema.methods.computeCurrentPoints = function() {
     // Points for each person diminish exponentially
     // TODO: exponential decrease gets too slow after some time... we should have a minimal rate of decrease.
     _.forOwn(that.points, function(personPoints, personId) {
-        points[personId] = Math.round(personPoints * Math.pow(POINTS_DECREASE_FACTOR, elapsed));
-        // TODO NOW: remove entries with a too small number, but make sure the owner always has some points
+        // Calculate the new points
+        var newPoints = personPoints * Math.pow(POINTS_DECREASE_FACTOR, elapsed);
+
+        if (newPoints < 1) {
+            // If there is less than 1 point left, remove the person from the list of points
+            delete points[personId];
+        }
+        else {
+            // Still enough points, round it and set it
+            points[personId] = Math.round(newPoints);
+        }
     });
 
     return points;
@@ -80,13 +89,17 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
     var owner = this.owner;
     var ownerPoints = points[owner] || 0;
 
-    // Add the points from the completed mission
-    var missionPerson = mission.populated('person') ? mission.person.id : mission.person;
-    points[missionPerson] = (points[missionPerson] || 0) + mission.points;
+    // Check if this mission gave any points
+    var missionPerson;
+    if (mission.points > 0) {
+        // Add the points from the completed mission
+        missionPerson = mission.populated('person') ? mission.person.id : mission.person;
+        points[missionPerson] = (points[missionPerson] || 0) + mission.points;
 
-    // Check if the new person has the most points
-    if (points[missionPerson] > ownerPoints) {
-        owner = missionPerson;
+        // Check if the new person has the most points
+        if (points[missionPerson] > ownerPoints) {
+            owner = missionPerson;
+        }
     }
 
     // For offerQuality missions, the average quality changes
