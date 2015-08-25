@@ -36,7 +36,7 @@ var locationSchema = new Schema({
     type: {type: String, enum: ['gastronomy', 'retail']},
 
     // Maps person ids to their points at time updatedAt.
-    points: {type: Schema.Types.Mixed, default: {}},
+    points: {type: Schema.Types.Mixed, default: {}}, // TODO: replace this with a more specific schema
 
     // The person that currently has the most points
     owner: {type: Schema.Types.ObjectId, ref: 'Person', required: true},
@@ -81,7 +81,7 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
     var ownerPoints = points[owner] || 0;
 
     // Add the points from the completed mission
-    var missionPerson = mission.person.id; // TODO NOW: is person always populated?
+    var missionPerson = mission.populated('person') ? mission.person.id : mission.person;
     points[missionPerson] = (points[missionPerson] || 0) + mission.points;
 
     // Check if the new person has the most points
@@ -101,7 +101,7 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
 
     // Save the new state
     this.points = points;
-    this.markModified('points'); // TODO NOW: is this still needed?
+    this.markModified('points');
     this.owner = owner;
     this.updatedAt = Date.now();
     this.save(next);

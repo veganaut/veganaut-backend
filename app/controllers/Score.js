@@ -48,7 +48,6 @@ exports.stats = function(req, res, next) {
                         }
                     });
                     cb(null, {
-                        // TODO NOW: should we flatten the response now that teams are gone?
                         people: {
                             missions: stats
                         }

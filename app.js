@@ -78,6 +78,7 @@ app.get('/location/list', cors(), Location.list);
 app.options('/location/:locationId', cors());
 app.get('/location/:locationId', cors(), Location.get);
 app.put('/location/:locationId', cors(), Session.restrict, Location.update);
+// The /mission/list method is currently unused by the frontend
 app.options('/location/:locationId/mission/list', cors()); // TODO: rename this method to be clearly distinguishable from availableMission/list
 app.get('/location/:locationId/mission/list', cors(), Session.restrict, Location.getCompletedMissions);
 app.options('/location/:locationId/availableMission/list', cors());

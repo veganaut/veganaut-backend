@@ -13,9 +13,6 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
 
-require('./Person');
-var Person = mongoose.model('Person');
-
 /**
  * Map of mission types to the number of points it gives
  * TODO: there is an identical list in the frontend, share this code!
@@ -83,7 +80,7 @@ var MissionSchema = function(outcomeType) {
     Schema.call(this, {
         person: {type: Schema.Types.ObjectId, ref: 'Person', required: true},
         location: {type: Schema.Types.ObjectId, ref: 'Location', required: true},
-        points: {type: Number, default: 0, required: true}, // TODO NOW: set a default of 0 or not?
+        points: {type: Number, default: 0, required: true}, // TODO: don't set a default of 0, points should be set in pre-validate
         completed: {type: Date},
         isFirstOfType: {type: Boolean},
         isNpcMission: {type: Boolean, default: false}
@@ -137,8 +134,8 @@ missionSchema.pre('save', function(next) {
         return next(new Error('Missions cannot be edited (' + missionType + ', ' + that.id + ')'));
     }
 
-    // Validate points
-    Person.findById(that.person, function(err, person) {
+    // Get the person of the mission
+    that.populate('person', function(err) {
         if (err) {
             return next(err);
         }
@@ -146,7 +143,7 @@ missionSchema.pre('save', function(next) {
             // Calculate the points for this mission
             function(cb) {
                 // Check if it's an npc
-                if (person.accountType === constants.ACCOUNT_TYPES.NPC) {
+                if (that.person.accountType === constants.ACCOUNT_TYPES.NPC) {
                     // No points for npcs
                     that.points = 0;
                     that.isNpcMission = true;
@@ -174,7 +171,7 @@ missionSchema.pre('save', function(next) {
                 });
             },
 
-            // Populate products products to notify of completed missions (if product mission)
+            // Populate products to notify of completed missions (if product mission)
             function(cb) {
                 // Check if this is a product modifying mission
                 if (that.isProductModifyingMission()) {
