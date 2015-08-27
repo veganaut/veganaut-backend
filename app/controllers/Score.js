@@ -4,12 +4,60 @@ var _ = require('lodash');
 var async = require('async');
 var mongoose = require('mongoose');
 var Missions = require('../models/Missions');
+var Location = mongoose.model('Location');
 var Person = mongoose.model('Person');
 var constants = require('../utils/constants');
 
-// TODO: add new types of stats (now that we don't have teams any longer)
+// TODO NOW: add tests for the new scores
 exports.stats = function(req, res, next) {
     async.parallel([
+        // Get number of locations by type
+        function(cb) {
+            Location.aggregate([
+                {
+                    $group: {
+                        _id: '$type',
+                        sum: {$sum: 1}
+                    }
+                },
+                {
+                    $sort: {
+                        sum: -1,
+                        _id: 1
+                    }
+                }
+            ]).exec(function(err, locationStats) {
+                var stats = [];
+                if (!err) {
+                    _.each(locationStats, function(stat) {
+                        stats.push({
+                            type: stat._id,
+                            locations: stat.sum
+                        });
+                    });
+                }
+
+                cb(err, {
+                    locationTypes: {
+                        locations: stats
+                    }
+                });
+            });
+        },
+
+        // Get number of people
+        function(cb) {
+            Person.count({
+                accountType: 'player'
+            }).exec(function(err, count) {
+                cb(err, {
+                    people: {
+                        count: count || 0
+                    }
+                });
+            });
+        },
+
         // Get number of missions by person
         function(cb) {
             Missions.Mission.aggregate([
