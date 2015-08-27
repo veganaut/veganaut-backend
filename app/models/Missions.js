@@ -45,7 +45,7 @@ var MISSION_COOL_DOWN_PERIOD = {
     VisitBonusMission:    1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
     HasOptionsMission:    1000 * 60 * 60 * 24, // 1 day
     WantVeganMission:     1000 * 60 * 60 * 24, // 1 day
-    WhatOptionsMission:   1000 * 60 * 60 *  4, // 4 hours
+    WhatOptionsMission:   0, // none
     BuyOptionsMission:    1000 * 60 * 60 *  4, // 4 hours
     RateProductMission:   1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
     SetProductNameMission: 1000 * 60 * 60 * 24 * 30 * 6, // ~6 months
