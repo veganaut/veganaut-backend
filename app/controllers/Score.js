@@ -8,7 +8,6 @@ var Location = mongoose.model('Location');
 var Person = mongoose.model('Person');
 var constants = require('../utils/constants');
 
-// TODO NOW: add tests for the new scores
 exports.stats = function(req, res, next) {
     async.parallel([
         // Get number of locations by type
