@@ -1,112 +1,175 @@
 'use strict';
 
 var _ = require('lodash');
-var async = require('async');
+var BPromise = require('bluebird');
 var mongoose = require('mongoose');
 var Missions = require('../models/Missions');
 var Location = mongoose.model('Location');
 var Person = mongoose.model('Person');
 var constants = require('../utils/constants');
 
-exports.stats = function(req, res, next) {
-    async.parallel([
-        // Get number of locations by type
-        function(cb) {
-            Location.aggregate([
-                {
-                    $group: {
-                        _id: '$type',
-                        sum: {$sum: 1}
-                    }
-                },
-                {
-                    $sort: {
-                        sum: -1,
-                        _id: 1
-                    }
-                }
-            ]).exec(function(err, locationStats) {
-                var stats = [];
-                if (!err) {
-                    _.each(locationStats, function(stat) {
-                        stats.push({
-                            type: stat._id,
-                            locations: stat.sum
-                        });
-                    });
-                }
+var findPeople = BPromise.promisify(Person.find, Person);
 
-                cb(err, {
-                    locationTypes: {
-                        locations: stats
-                    }
-                });
-            });
+/**
+ * Returns all people of accountType player indexed by id.
+ * Only the nickname and id is returned.
+ */
+var getPlayersById = function() {
+    return findPeople({
+        // Only select actual players
+        accountType: constants.ACCOUNT_TYPES.PLAYER
+    }, 'nickname')
+        .then(function(people) {
+            return _.indexBy(people, '_id');
+        })
+    ;
+};
+
+/**
+ * Gets the number of locations by type.
+ * @return {Promise}
+ */
+var getLocationCountByType = function() {
+    var query = Location.aggregate([
+        {
+            $group: {
+                _id: '$type',
+                sum: {$sum: 1}
+            }
         },
-
-        // Get number of people
-        function(cb) {
-            Person.count({
-                accountType: 'player'
-            }).exec(function(err, count) {
-                cb(err, {
-                    people: {
-                        count: count || 0
-                    }
-                });
-            });
-        },
-
-        // Get number of missions by person
-        function(cb) {
-            Missions.Mission.aggregate([
-                {
-                    $group: {
-                        _id: '$person',
-                        sum: {$sum: 1}
-                    }
-                },
-                {
-                    $sort: {
-                        sum: -1,
-                        _id: 1
-                    }
-                }
-            ]).exec(function(err, peopleStats) {
-                if (err) {
-                    return cb(err);
-                }
-
-                Person.find({
-                    // Only select actual players
-                    accountType: constants.ACCOUNT_TYPES.PLAYER
-                }, 'nickname', function(err, people) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    var peopleById = _.indexBy(people, '_id');
-                    var stats = [];
-                    _.each(peopleStats, function(stat) {
-                        if (typeof peopleById[stat._id] !== 'undefined') {
-                            stats.push({
-                                person: _.pick(peopleById[stat._id], ['id', 'nickname']),
-                                missions: stat.sum
-                            });
-                        }
-                    });
-                    cb(null, {
-                        people: {
-                            missions: stats
-                        }
-                    });
-                });
-            });
+        {
+            $sort: {
+                sum: -1,
+                _id: 1
+            }
         }
-    ], function(err, results) {
-        if (err) {
-            return next(err);
-        }
+    ]);
 
-        res.send(_.merge.apply(_, results));
+    return BPromise.promisify(query.exec, query)().then(function(locationStats) {
+        var stats = [];
+        _.each(locationStats, function(stat) {
+            stats.push({
+                type: stat._id,
+                locations: stat.sum
+            });
+        });
+        return stats;
     });
+};
+
+/**
+ * Returns the number of players.
+ * The returned object can be merged to be returned in the stats API call.
+ * @param playerByIdPromise
+ * @return {Promise}
+ */
+var getPlayerCount = function(playerByIdPromise) {
+    return playerByIdPromise.then(function(playersById) {
+        return Object.keys(playersById).length;
+    });
+};
+
+/**
+ * Gets the ranking of the players by completed missions.
+ * @param playerByIdPromise
+ * @return {Promise}
+ */
+var getMissionsCountByPlayer = function(playerByIdPromise) {
+    var query = Missions.Mission.aggregate([
+        {
+            $group: {
+                _id: '$person',
+                sum: {$sum: 1}
+            }
+        },
+        {
+            $sort: {
+                sum: -1,
+                _id: 1
+            }
+        }
+    ]);
+
+    return BPromise.join(
+        BPromise.promisify(query.exec, query)(), playerByIdPromise,
+        function(peopleStats, playersById) {
+            var stats = [];
+            _.each(peopleStats, function(stat) {
+                if (typeof playersById[stat._id] !== 'undefined') {
+                    stats.push({
+                        person: _.pick(playersById[stat._id], ['id', 'nickname']),
+                        missions: stat.sum
+                    });
+                }
+            });
+
+            return stats;
+        }
+    );
+};
+
+/**
+ * Gets the ranking of the players by owned locations.
+ * @param playerByIdPromise
+ * @return {Promise}
+ */
+var getLocationCountByPlayer = function(playerByIdPromise) {
+    var query = Location.aggregate([
+        {
+            $group: {
+                _id: '$owner',
+                sum: {$sum: 1}
+            }
+        },
+        {
+            $sort: {
+                sum: -1,
+                _id: 1
+            }
+        }
+    ]);
+
+    return BPromise.join(
+        BPromise.promisify(query.exec, query)(), playerByIdPromise,
+        function(ownerStats, playersById) {
+            var stats = [];
+            _.each(ownerStats, function(stat) {
+                if (typeof playersById[stat._id] !== 'undefined') {
+                    stats.push({
+                        person: _.pick(playersById[stat._id], ['id', 'nickname']),
+                        locations: stat.sum
+                    });
+                }
+            });
+
+            return stats;
+        }
+    );
+};
+
+exports.stats = function(req, res, next) {
+    var playerByIdPromise = getPlayersById();
+
+    BPromise.join(
+        getLocationCountByType(),
+        getPlayerCount(playerByIdPromise),
+        getMissionsCountByPlayer(playerByIdPromise),
+        getLocationCountByPlayer(playerByIdPromise),
+        function(locationCount, playerCount, missionsByPlayer, locationsByPlayer) {
+            // Assemble it all up
+            return {
+                locationTypes: {
+                    locations: locationCount
+                },
+                people: {
+                    count: playerCount,
+                    missions: missionsByPlayer,
+                    locations: locationsByPlayer
+                }
+            };
+        }
+    )
+        .then(res.send.bind(res))
+        .catch(next)
+    ;
 };
