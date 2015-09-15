@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 /**
  * Migration script to add isNpcMission=false (the default value)
  * to all existing missions

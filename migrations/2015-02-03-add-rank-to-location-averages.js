@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 /**
  * Migration script to add the rank property to the averages (quality, efforts)
  * of the location model.

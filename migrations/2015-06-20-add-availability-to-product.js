@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 /**
  * Migration script to add availability=100 (the default value)
  * to all existing products

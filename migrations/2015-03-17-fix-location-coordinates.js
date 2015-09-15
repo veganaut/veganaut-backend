@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 /**
  * Migration script to swap the coordinates of a location.
  * It was initially stored as [lat, lng], but should be stored as [lng, lat].

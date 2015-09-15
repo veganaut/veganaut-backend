@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 db.locations.find().forEach(function(location) {
     'use strict';
     var effort = {

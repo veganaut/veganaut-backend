@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 /**
  * Migrations script to remove available points from all locations
  */

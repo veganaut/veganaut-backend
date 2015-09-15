@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 /**
  * Migration script to add ratings (rank, count, total) to the products.
  * The ratings are created from the RateOptionsMissions.

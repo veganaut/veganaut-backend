@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 /**
  * Migration script to remove teams and change location ownership to be
  * person-based instead of team-based.

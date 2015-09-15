@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 /**
  * Migrations script to remove all social graph related collections
  * and properties.

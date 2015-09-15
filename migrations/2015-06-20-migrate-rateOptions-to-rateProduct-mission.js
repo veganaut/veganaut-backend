@@ -1,4 +1,4 @@
-/* global db */
+/* global db, print */
 /**
  * Migrations script to remove the "info" field from all whatOptions mission
  * outcomes.
