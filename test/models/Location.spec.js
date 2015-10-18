@@ -1,10 +1,10 @@
-/**
+/**JASMINE_CONFIG_PATH
  * A spec for the Location model
  */
 
 'use strict';
 
-var h = require('../helpers_');
+require('../helpers_');
 
 var mongoose = require('mongoose');
 require('../../app/models/Location');
@@ -12,52 +12,50 @@ var Person = mongoose.model('Person');
 var Location = mongoose.model('Location');
 
 describe('A location', function() {
-    h.beforeAll(function() {
-        h.runAsync(function(done) {
-            mongoose.connect('mongodb://localhost/veganaut', done);
+    var person, location;
+    beforeAll(function(done) {
+        mongoose.connect('mongodb://localhost/veganaut', done);
+    });
+
+    beforeAll(function() {
+        person = new Person();
+        location = new Location({
+            owner: person.id
         });
     });
 
-    it('can be created and removed', function() {
-        var p = new Person();
-        var l = new Location({
-            owner: p.id
-        });
-        expect(l.id).toBeTruthy();
+    it('can be be saved', function(done) {
+        expect(location.id).toBeTruthy();
 
-        h.runAsync(function(done) {
-            l.save(function(err) {
+        location.save(function(err) {
+            expect(err).toBeNull();
+            done();
+        });
+    });
+
+    it('can be found', function(done) {
+        Location.findById(location.id).exec(function(err, foundLocation) {
+            expect(foundLocation instanceof Location).toBe(true, 'found the created location');
+            expect(foundLocation.owner.toString()).toBe(person.id, 'correct owner');
+            expect(typeof foundLocation.updatedAt).toBe('object', 'set an updatedAt date');
+            expect(Math.abs(Date.now() - foundLocation.updatedAt.getTime())).toBeLessThan(5000, 'date is about now');
+            done();
+        });
+    });
+
+    it('can be removed', function(done) {
+        Location.remove(location).exec(function(err) {
+            expect(err).toBeNull();
+
+            Location.findById(location.id).exec(function(err, location) {
+                expect(location).toBeNull('removed the location');
                 expect(err).toBeNull();
                 done();
             });
         });
-
-        h.runAsync(function(done) {
-            Location.findById(l.id).exec(function(err, location) {
-                expect(location instanceof Location).toBe(true, 'found the created location');
-                expect(location.owner.toString()).toBe(p.id, 'correct owner');
-                expect(typeof location.updatedAt).toBe('object', 'set an updatedAt date');
-                expect(Math.abs(Date.now() - location.updatedAt.getTime())).toBeLessThan(5000, 'date is about now');
-                done();
-            });
-        });
-
-        h.runAsync(function(done) {
-            Location.remove(l).exec(function(err) {
-                expect(err).toBeNull();
-
-                Location.findById(l.id).exec(function(err, location) {
-                    expect(location).toBeNull('removed the location');
-                    expect(err).toBeNull();
-                    done();
-                });
-            });
-        });
     });
 
-    h.afterAll(function() {
-        h.runAsync(function(done) {
-            mongoose.disconnect(done);
-        });
+    afterAll(function(done) {
+        mongoose.disconnect(done);
     });
 });

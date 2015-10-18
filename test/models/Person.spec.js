@@ -4,57 +4,51 @@
 
 'use strict';
 
-var h = require('../helpers_');
+require('../helpers_');
 
 var mongoose = require('mongoose');
 require('../../app/models/Person');
 var Person = mongoose.model('Person');
 
 describe('A person', function() {
-    h.beforeAll(function() {
-        h.runAsync(function(done) {
-            mongoose.connect('mongodb://localhost/veganaut', done);
-        });
+    var person;
+    beforeAll(function(done) {
+        mongoose.connect('mongodb://localhost/veganaut', done);
     });
 
-    it('can be created', function() {
-        h.runAsync(function(done) {
-            Person.remove().exec(function(err) {
-                expect(err).toBeNull();
-                done();
-            });
-        });
-
-        var p = new Person({
+    beforeAll(function(done) {
+        person = new Person({
             email: 'mynewperson@example.com',
             fullName: 'Test',
             nickname: 'nick',
             password: 'secure'
         });
-        expect(p.email).toBe('mynewperson@example.com');
-        expect(p.id).toBeTruthy();
 
-        h.runAsync(function(done) {
-            p.save(function(err) {
-                expect(err).toBeNull();
-                done();
-            });
-        });
+        // TODO: why is this necessary?
+        Person.remove(done);
+    });
 
-        h.runAsync(function(done) {
-            Person.findById(p.id).exec(function(err, person) {
-                expect(err).toBeNull();
-                expect(person.email).toBe('mynewperson@example.com', 'set e-mail');
-                expect(person.password).not.toBe('secure', 'encrypted the password');
-                expect(person.accountType).toBe('player', 'set the correct default account type');
-                done();
-            });
+    it('can be saved', function(done) {
+        expect(person.email).toBe('mynewperson@example.com');
+        expect(person.id).toBeTruthy();
+
+        person.save(function(err) {
+            expect(err).toBeNull();
+            done();
         });
     });
 
-    h.afterAll(function() {
-        h.runAsync(function(done) {
-            mongoose.disconnect(done);
+    it('can be found', function(done) {
+        Person.findById(person.id).exec(function(err, foundPerson) {
+            expect(err).toBeNull();
+            expect(foundPerson.email).toBe('mynewperson@example.com', 'set e-mail');
+            expect(foundPerson.password).not.toBe('secure', 'encrypted the password');
+            expect(foundPerson.accountType).toBe('player', 'set the correct default account type');
+            done();
         });
+    });
+
+    afterAll(function(done) {
+        mongoose.disconnect(done);
     });
 });

@@ -12,11 +12,6 @@ var _ = require('lodash');
 var port = 3001;
 exports.baseURL = 'http://localhost:' + port + '/';
 
-// Export beforeAll and afterAll
-require('jasmine-before-all');
-exports.beforeAll = beforeAll;
-exports.afterAll = afterAll;
-
 // Set up a mock mailer
 var mockMailer = {
     sentMails: []
@@ -77,23 +72,6 @@ exports.request = function(method, url) {
 var fixtures = require('./fixtures/basic');
 exports.setupFixtures = fixtures.setupFixtures;
 
-/** Runs the given command synchronously */
-var runAsync = function(block) {
-    var done = false;
-    var complete = function() {
-        done = true;
-    };
-
-    runs(function(){
-        block(complete);
-    });
-
-    waitsFor(function(){
-        return done;
-    });
-};
-exports.runAsync = runAsync;
-
 // Sessions
 var mongoose = require('mongoose');
 var Person = mongoose.model('Person');
@@ -146,27 +124,25 @@ exports.describe = function(what, options, how) {
     var wrapper = function() {
         // Start a server and initialize fixtures
         var server;
-        beforeAll(function () {
-            runAsync(function(done) {
-                mongoose.connect('mongodb://localhost/veganaut', function(err) {
+        beforeAll(function(done) {
+            mongoose.connect('mongodb://localhost/veganaut', function(err) {
+                if (err) { console.log(err); }
+                server = app.listen(port, function(err) {
                     if (err) { console.log(err); }
-                    server = app.listen(port, function(err) {
+                    fixtures.setupFixtures(function(err) {
                         if (err) { console.log(err); }
-                        fixtures.setupFixtures(function(err) {
-                            if (err) { console.log(err); }
-                            // Make sure session is not set
-                            exports.sessionId = undefined;
-                            if (options.user) {
-                                createSessionFor(options.user, function(err, sid) {
-                                    if (err) { console.log(err); }
-                                    exports.sessionId = sid;
-                                    done();
-                                });
-                            }
-                            else {
+                        // Make sure session is not set
+                        exports.sessionId = undefined;
+                        if (options.user) {
+                            createSessionFor(options.user, function(err, sid) {
+                                if (err) { console.log(err); }
+                                exports.sessionId = sid;
                                 done();
-                            }
-                        });
+                            });
+                        }
+                        else {
+                            done();
+                        }
                     });
                 });
             });
@@ -176,14 +152,12 @@ exports.describe = function(what, options, how) {
         how();
 
         // Tear down the server
-        afterAll(function() {
-            runAsync(function(done) {
-                server.close(function(err) {
+        afterAll(function(done) {
+            server.close(function(err) {
+                if (err) { console.log(err); }
+                mongoose.disconnect(function(err) {
                     if (err) { console.log(err); }
-                    mongoose.disconnect(function(err) {
-                        if (err) { console.log(err); }
-                        done();
-                    });
+                    done();
                 });
             });
         });

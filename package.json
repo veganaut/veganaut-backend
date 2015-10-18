@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "if [ ! -f app/config.js ]; then cp app/config-example.js app/config.js; fi",
     "start": "node app.js",
-    "test": "./node_modules/.bin/jasmine-node --captureExceptions test"
+    "test": "NODE_ENV=test ./node_modules/.bin/jasmine JASMINE_CONFIG_PATH=test/jasmine.json"
   },
   "dependencies": {
     "async": "1.4.2",
@@ -23,8 +23,7 @@
   },
   "devDependencies": {
     "mockery": "1.4.0",
-    "jasmine-node": "1.14.5",
-    "jasmine-before-all": "0.1.0",
+    "jasmine": "2.3.2",
     "superagent": "1.4.0",
     "jshint": "2.8.0",
     "supervisor": "0.9.1"
