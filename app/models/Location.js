@@ -147,8 +147,8 @@ locationSchema.options.toJSON = {
             numRatings: doc.quality.count
         };
         ret.effort = {
-            average: doc.efforts.average,
-            numRatings: doc.efforts.count
+            average: doc.effort.average,
+            numRatings: doc.effort.count
         };
 
         return ret;

@@ -43,7 +43,7 @@ new Average('rating', 1, 5, productSchema);
  * @returns {string}
  */
 productSchema.statics.getDefaultSorting = function() {
-    return '-availability -ratings.rank -ratings.count name';
+    return '-availability -rating.rank -rating.count name';
 };
 
 /**
@@ -88,8 +88,8 @@ productSchema.methods.toJSON = function() {
         {
             id: this.id,
             rating: {
-                average: this.ratings.average,
-                numRatings: this.ratings.count
+                average: this.rating.average,
+                numRatings: this.rating.count
             },
             availability: constants.PRODUCT_AVAILABILITIES_VALUE_TO_STRING[this.availability]
         }

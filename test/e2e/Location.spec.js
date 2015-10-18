@@ -36,6 +36,9 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(location.quality.average).toBe(0, 'quality is at 0 by default');
                     expect(location.quality.numRatings).toBe(0, 'quality numRatings is at 0 by default');
+                    expect(typeof location.effort).toBe('object', 'has an effort');
+                    expect(location.effort.average).toBe(0, 'effort is at 0 by default');
+                    expect(location.effort.numRatings).toBe(0, 'effort numRatings is at 0 by default');
 
                     done();
                 })
@@ -72,6 +75,9 @@ h.describe('Location API methods as logged in user alice', function() {
                         expect(typeof location.quality).toBe('object', 'has a quality');
                         expect(typeof location.quality.average).toBe('number', 'has a quality average');
                         expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
+                        expect(typeof location.effort).toBe('object', 'has an effort');
+                        expect(typeof location.effort.average).toBe('number', 'has an effort average');
+                        expect(typeof location.effort.numRatings).toBe('number', 'has an effort rating amount');
                     });
                     done();
                 })
@@ -122,6 +128,9 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
+                    expect(typeof location.effort).toBe('object', 'has an effort');
+                    expect(typeof location.effort.average).toBe('number', 'has an effort average');
+                    expect(typeof location.effort.numRatings).toBe('number', 'has an effort rating amount');
                     expect(location.products.length).toBeGreaterThan(0, 'got some products');
 
                     // Expected order: samosa should be before curry because curry is temporarilyUnavailable
@@ -335,6 +344,9 @@ h.describe('Location API methods when not logged in', { user: '' }, function() {
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
+                    expect(typeof location.effort).toBe('object', 'has am effort');
+                    expect(typeof location.effort.average).toBe('number', 'has am effort average');
+                    expect(typeof location.effort.numRatings).toBe('number', 'has am effort rating amount');
                 });
                 done();
             })
@@ -362,6 +374,9 @@ h.describe('Location API methods when not logged in', { user: '' }, function() {
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
+                    expect(typeof location.effort).toBe('object', 'has an effort');
+                    expect(typeof location.effort.average).toBe('number', 'has an effort average');
+                    expect(typeof location.effort.numRatings).toBe('number', 'has an effort rating amount');
                     expect(typeof location.products).toBe('object', 'got an array of products');
                     expect(location.products.length).toBeGreaterThan(0, 'got some products');
 

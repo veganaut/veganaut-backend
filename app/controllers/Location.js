@@ -114,7 +114,7 @@ exports.list = function(req, res, next) {
     }
 
     // Load the locations, but only the data we actually want to send
-    Location.find(query, 'name type coordinates updatedAt quality efforts owner')
+    Location.find(query, 'name type coordinates updatedAt quality effort owner')
         .populate('owner', 'id nickname')
         .exec(function(err, locations) {
             if (err) {

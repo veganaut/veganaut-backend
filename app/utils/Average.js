@@ -6,16 +6,16 @@
  * new Average('score', locationSchema);
  *
  * This will add
- *   - a property called 'scores' that is saved in the database.
+ *   - a property called 'score' that is saved in the database.
  *     Consider this private and opaque.
- *   - a getter called 'scores.average',
+ *   - a getter called 'score.average',
  *   - a method 'addScore' to add a value
  *   - a pre-save hook that validates this property
  */
 
 'use strict';
 
-var inflection = require('inflection');
+var _ = require('lodash');
 
 /**
  * We calculate a "rank" of the average that can be used for
@@ -41,9 +41,9 @@ var Average = function(name, min, max, schema) {
     that.maxValue = max;
     that.averageValue = (min + max) / 2;
 
-    that.propertyName = inflection.pluralize(name);
+    that.propertyName = name;
     that.virtualName = that.propertyName + '.average';
-    that.addMethodName = 'add' + inflection.classify(name);
+    that.addMethodName = 'add' + _.capitalize(name);
 
     // A property used to compute our average
     var averageProperty = {};
