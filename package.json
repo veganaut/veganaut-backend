@@ -8,7 +8,7 @@
     "test": "./node_modules/.bin/jasmine-node --captureExceptions test"
   },
   "dependencies": {
-    "async": "0.9.0",
+    "async": "1.4.2",
     "bcrypt": "0.8.5",
     "cors": "2.7.1",
     "express": "4.13.3",
