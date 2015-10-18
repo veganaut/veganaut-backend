@@ -16,7 +16,7 @@ h.describe('Location API methods as logged in user alice', function() {
                     lng: 7,
                     type: 'gastronomy'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
 
                     var location = res.body;
@@ -46,7 +46,7 @@ h.describe('Location API methods as logged in user alice', function() {
     it('can list locations', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/list')
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
                     expect(typeof res.body).toBe('object', 'returns an array of locations');
                     expect(res.body.length).toBe(5, '5 locations (4 from fixtures, one from previous test)');
@@ -82,7 +82,7 @@ h.describe('Location API methods as logged in user alice', function() {
     it('can list locations within a bounding box', function() {
         h.runAsync(function(done) {
             h.request(h.baseURL + 'location/list?bounds=7.436,46.943,7.442,46.950')
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
                     expect(typeof res.body).toBe('object', 'returns an array of locations');
                     expect(res.body.length).toBe(1, 'returns only the location in the bounding box');
@@ -98,7 +98,7 @@ h.describe('Location API methods as logged in user alice', function() {
     it('can get an individual location with products', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/000000000000000000000006')
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
                     var location = res.body;
                     expect(typeof location).toBe('object', 'response is an object');
@@ -145,7 +145,7 @@ h.describe('Location API methods as logged in user alice', function() {
     it('can get mission list of a location', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/000000000000000000000007/mission/list')
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
                     var missions = res.body;
 
@@ -181,7 +181,7 @@ h.describe('Location API methods as logged in user alice', function() {
     it('can get available missions at a location', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/000000000000000000000007/availableMission/list')
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
 
                     var available = res.body;
@@ -233,7 +233,7 @@ h.describe('Location API methods as logged in user alice', function() {
     it('returns 404 for location that does not exist', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/999999999999999999999999')
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(404);
                     expect(typeof res.body.error).toBe('string', 'got an error message');
                     done();
@@ -253,7 +253,7 @@ h.describe('Location API methods as logged in user alice', function() {
                     lat: 47.3,
                     lng: 7.1
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
                     var location = res.body;
                     expect(typeof location).toBe('object', 'response is an object');
@@ -267,7 +267,7 @@ h.describe('Location API methods as logged in user alice', function() {
 
                     // Check that it was really saved
                     h.request('GET', h.baseURL + 'location/000000000000000000000006')
-                        .end(function(res) {
+                        .end(function(err, res) {
                             var location = res.body;
                             expect(location.name).toBe('3-Dosha', 'correct name');
                             expect(location.description).toBe('Ayurvedic Cuisine', 'correct description');
@@ -292,7 +292,7 @@ h.describe('Location update methods as logged in user alice', function() {
                 .send({
                     description: 'test'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
                     var location = res.body;
                     expect(typeof location).toBe('object', 'response is an object');
@@ -316,7 +316,7 @@ h.describe('Location API methods when not logged in', { user: '' }, function() {
     it('can list locations', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/list')
-            .end(function(res) {
+            .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
                 expect(typeof res.body).toBe('object', 'returns an array of locations');
                 expect(res.body.length).toBe(4, 'has 4 locations');
@@ -345,7 +345,7 @@ h.describe('Location API methods when not logged in', { user: '' }, function() {
     it('can get an individual location', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'location/000000000000000000000006')
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
                     var location = res.body;
                     expect(typeof location).toBe('object', 'response is an object');
@@ -387,7 +387,7 @@ h.describe('Location API methods when not logged in', { user: '' }, function() {
                 .send({
                     name: 'test'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(401);
                     expect(typeof res.body.error).toBe('string');
                     done();

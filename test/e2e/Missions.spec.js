@@ -22,7 +22,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     outcome: 'yes',
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     var mission = res.body;
                     expect(typeof mission.id).toBe('string', 'id is a string');
@@ -48,7 +48,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     outcome: 'yes',
                     points: 10 // Try to submit with 10 points, but should be corrected to 0
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.points).toEqual(0, 'got 0 points');
                     done();
@@ -66,7 +66,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     outcome: true,
                     points: 50
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('visitBonus', 'type of mission');
                     expect(res.body.points).toEqual(50, 'points of mission');
@@ -89,7 +89,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     ],
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('wantVegan', 'type of mission');
                     expect(res.body.points).toEqual(10, 'points of mission');
@@ -119,7 +119,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     ],
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('whatOptions', 'type of mission');
                     expect(res.body.points).toEqual(10, 'points of mission');
@@ -141,7 +141,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     outcome: 'Moar sauce',
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('giveFeedback', 'type of mission');
                     expect(res.body.points).toEqual(10, 'points of mission');
@@ -160,7 +160,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     outcome: 4,
                     points: 20
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('offerQuality', 'type of mission');
                     expect(res.body.points).toEqual(20, 'points of mission');
@@ -179,7 +179,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     outcome: 'no',
                     points: 20
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('effortValue', 'type of mission');
                     expect(res.body.points).toEqual(20, 'points of mission');
@@ -199,7 +199,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     // missing outcome
                     points: 100
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(500);
                     done();
                 })
@@ -216,7 +216,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     outcome: { bogusValue: 'this is not an array' },
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(500);
                     done();
                 })
@@ -235,7 +235,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     ],
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(500);
                     done();
                 })
@@ -252,7 +252,7 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
                     outcome: 100,  // That's way too large for a 1-5 rating
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(500);
                     done();
                 })
@@ -276,7 +276,7 @@ h.describe('Product missions referring to existing products.', function() {
                     },
                     points: 5
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('rateProduct', 'type of mission');
                     expect(res.body.points).toEqual(5, 'points of mission');
@@ -302,7 +302,7 @@ h.describe('Product missions referring to existing products.', function() {
                     ],
                     points: 20
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('buyOptions', 'type of mission');
                     expect(res.body.points).toEqual(20, 'points of mission');
@@ -324,7 +324,7 @@ h.describe('Product missions referring to existing products.', function() {
                     },
                     points: 0
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('setProductName', 'type of mission');
                     expect(res.body.points).toEqual(0, 'points of mission');
@@ -346,7 +346,7 @@ h.describe('Product missions referring to existing products.', function() {
                     },
                     points: 5
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('setProductAvail', 'type of mission');
                     expect(res.body.points).toEqual(5, 'points of mission');
@@ -370,13 +370,13 @@ h.describe('Update of products.', function() {
                     },
                     points: 5
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('rateProduct', 'type of mission');
                     expect(res.body.points).toEqual(5, 'points of mission');
 
                     h.request('GET', h.baseURL + 'location/000000000000000000000006')
-                        .end(function(res) {
+                        .end(function(err, res) {
                             var products = res.body.products;
                             var curry =_.findWhere(products, { id: '000000000000000000000101' });
                             expect(curry).toBeDefined('curry product is defined');
@@ -409,13 +409,13 @@ h.describe('Update of products.', function() {
                     },
                     points: 0
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('setProductName', 'type of mission');
                     expect(res.body.points).toEqual(0, 'points of mission');
 
                     h.request('GET', h.baseURL + 'location/000000000000000000000006')
-                        .end(function(res) {
+                        .end(function(err, res) {
                             var products = res.body.products;
                             var curry =_.findWhere(products, { id: '000000000000000000000101' });
 
@@ -441,13 +441,13 @@ h.describe('Update of products.', function() {
                     },
                     points: 5
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('setProductAvail', 'type of mission');
                     expect(res.body.points).toEqual(5, 'points of mission');
 
                     h.request('GET', h.baseURL + 'location/000000000000000000000006')
-                        .end(function(res) {
+                        .end(function(err, res) {
                             var products = res.body.products;
                             var curry = _.findWhere(products, {id: '000000000000000000000101'});
 
@@ -472,13 +472,13 @@ h.describe('Mission API methods and their influence on locations.', function() {
                     outcome: true,
                     points: 50
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.causedOwnerChange).toBe(true, 'mission caused an owner change');
 
                     // Check how the location looks now
                     h.request('GET', h.baseURL + 'location/000000000000000000000006')
-                        .end(function(res) {
+                        .end(function(err, res) {
                             expect(res.statusCode).toBe(200);
 
                             var dosha = res.body;
@@ -519,12 +519,12 @@ h.describe('Mission cool down periods.', {fixtures: fix, user: 'alice@example.co
                     outcome: 3,
                     points: 20
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
 
                     // Check the available missions
                     h.request('GET', h.baseURL + 'location/' + locationId + '/availableMission/list')
-                        .end(function(res) {
+                        .end(function(err, res) {
                             expect(res.statusCode).toBe(200);
 
                             var offerQualityMission = res.body.locationMissions.offerQuality;
@@ -540,12 +540,12 @@ h.describe('Mission cool down periods.', {fixtures: fix, user: 'alice@example.co
                                     outcome: 2,
                                     points: 0
                                 })
-                                .end(function(res) {
+                                .end(function(err, res) {
                                     expect(res.statusCode).toBe(201);
 
                                     // Check the available missions again
                                     h.request('GET', h.baseURL + 'location/' + locationId + '/availableMission/list')
-                                        .end(function(res) {
+                                        .end(function(err, res) {
                                             expect(res.statusCode).toBe(200);
 
                                             var offerQualityMission = res.body.locationMissions.offerQuality;

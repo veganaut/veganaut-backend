@@ -14,7 +14,7 @@ h.describe('Password reset.', function() {
                 .send({
                     email: 'foo@bar.baz'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200, 'successful request');
                     var sentMails = h.mockMailer.sentMails;
                     expect(sentMails.length).toBe(1, 'sent one e-mail');
@@ -34,7 +34,7 @@ h.describe('Password reset.', function() {
     it('can validate token', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'person/isValidToken/' + resetToken)
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200, 'token is valid');
                     done();
                 })
@@ -49,7 +49,7 @@ h.describe('Password reset.', function() {
                     token: resetToken,
                     password: 'newPw1234'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200, 'successfully reset password');
                     done();
                 })
@@ -64,7 +64,7 @@ h.describe('Password reset.', function() {
                     email: 'foo@bar.baz',
                     password: 'newPw1234'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200, 'created session with new pw');
                     expect(typeof res.body.sessionId).toBe('string', 'got a session id');
                     done();
@@ -76,7 +76,7 @@ h.describe('Password reset.', function() {
     it('can no longer validate token', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'person/isValidToken/' + resetToken)
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(400, 'token is invalid');
                     expect(typeof res.body.error).toBe('string', 'has an error message');
                     done();
@@ -92,7 +92,7 @@ h.describe('Password reset.', function() {
                     token: resetToken,
                     password: 'anotherNewPw'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(400, 'failed to reset password');
                     expect(typeof res.body.error).toBe('string', 'has an error message');
                     done();

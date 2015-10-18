@@ -6,7 +6,7 @@ h.describe('GeoIP', function() {
     it('can get map zoom from IP', function() {
         h.runAsync(function(done) {
             h.request('GET', h.baseURL + 'geoip')
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
                     expect(typeof res.body).toBe('object', 'returns object');
 

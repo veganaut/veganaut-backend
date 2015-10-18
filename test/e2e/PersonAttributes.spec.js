@@ -21,7 +21,7 @@ var gourmetCount;
 
 var getAttributeValues = function() {
     h.runAsync(function(done) {
-        h.request('GET', h.baseURL + 'person/me').end(function(res) {
+        h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
             expect(res.statusCode).toBe(200);
 
             var me = res.body;
@@ -49,11 +49,11 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     lng: 7,
                     type: 'gastronomy'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
 
                     // Get the new person data (via person/me)
-                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
+                    h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -78,10 +78,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     outcome: 'yes',
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     // Get the new person data (via person/me)
-                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
+                    h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -106,10 +106,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     outcome: true,
                     points: 50
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     // Get the new person data (via person/me)
-                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
+                    h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -138,10 +138,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     ],
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     // Get the new person data (via person/me)
-                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
+                    h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -177,10 +177,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     ],
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     // Get the new person data (via person/me)
-                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
+                    h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -209,10 +209,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     ],
                     points: 20
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     // Get new person data (via person/{id} to test if that is also correctly updated)
-                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -240,10 +240,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     },
                     points: 5
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     // Get new person data (via person/{id} to test if that is also correctly updated)
-                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -271,10 +271,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     },
                     points: 0
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     // Get new person data (via person/{id} to test if that is also correctly updated)
-                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -302,9 +302,9 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     },
                     points: 5
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
-                    h.request('GET', h.baseURL + 'person/me').end(function(res) {
+                    h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -329,10 +329,10 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     outcome: 'Moar sauce',
                     points: 10
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     // Get new person data (via person/{id} to test if that is also correctly updated)
-                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -357,12 +357,12 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     outcome: 4,
                     points: 20
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('offerQuality', 'type of mission');
                     expect(res.body.points).toEqual(20, 'points of mission');
                     // Get new person data (via person/{id} to test if that is also correctly updated)
-                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -387,12 +387,12 @@ h.describe('Person Attributes E2E Test.', {fixtures: fix, user: 'alice@example.c
                     outcome: 'no',
                     points: 20
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('effortValue', 'type of mission');
                     expect(res.body.points).toEqual(20, 'points of mission');
                     // Get new person data (via person/{id} to test if that is also correctly updated)
-                    h.request('GET', h.baseURL + 'person/' + userId).end(function(res) {
+                    h.request('GET', h.baseURL + 'person/' + userId).end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;
@@ -424,13 +424,13 @@ h.describe('Person Attributes E2E Test with basic fixtures.', function() {
                     outcome: 4,
                     points: 20
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
                     expect(res.body.type).toBe('offerQuality', 'type of mission');
                     expect(res.body.points).toEqual(20, 'points of mission');
 
                     // Get new person data (via person/{id} to test if that is also correctly updated)
-                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+                    h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(err, res) {
                         expect(res.statusCode).toBe(200);
 
                         var me = res.body;

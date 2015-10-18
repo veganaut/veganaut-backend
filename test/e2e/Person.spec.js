@@ -13,7 +13,7 @@ h.describe('Person API methods when not logged in', { user: '' }, function() {
                     locale: 'de',
                     password: 'wow. such secure. so protect.'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
 
                     // Some sanity checks on the returned person
@@ -51,7 +51,7 @@ h.describe('Person API methods when not logged in', { user: '' }, function() {
                         gourmet: 30
                     }
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
 
                     var person = res.body;
@@ -75,7 +75,7 @@ h.describe('Person API methods when not logged in', { user: '' }, function() {
                     nickname: 'Dude',
                     password: 'already has an account but forgot 2 months ago'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(400);
                     done();
                 })
@@ -85,7 +85,7 @@ h.describe('Person API methods when not logged in', { user: '' }, function() {
 
     it('cannot get person by id', function() {
         h.runAsync(function(done) {
-            h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+            h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(err, res) {
                 expect(res.statusCode).toBe(401);
                 done();
             });
@@ -96,7 +96,7 @@ h.describe('Person API methods when not logged in', { user: '' }, function() {
 h.describe('Person API methods for logged in user', function() {
     it('can get own profile information', function() {
         h.runAsync(function(done) {
-            h.request('GET', h.baseURL + 'person/me').end(function(res) {
+            h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
                 expect(res.statusCode).toBe(200);
 
                 var me = res.body;
@@ -124,7 +124,7 @@ h.describe('Person API methods for logged in user', function() {
                     locale: 'de',
                     password: 'even better password'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
 
                     expect(res.body.id).toEqual('000000000000000000000001', 'user id should not change');
@@ -147,7 +147,7 @@ h.describe('Person API methods for logged in user', function() {
                     nickname: 'Al',
                     password: ''
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
 
                     expect(res.body.nickname).toEqual('Al');
@@ -159,7 +159,7 @@ h.describe('Person API methods for logged in user', function() {
                             email: 'alice@bar.baz',
                             password: 'even better password'
                         })
-                        .end(function(res) {
+                        .end(function(err, res) {
                             expect(res.statusCode).toBe(200, 'old password is still set');
                             done();
                         })
@@ -171,7 +171,7 @@ h.describe('Person API methods for logged in user', function() {
 
     it('gets new profile info after profile update', function() {
         h.runAsync(function(done) {
-            h.request('GET', h.baseURL + 'person/me').end(function(res) {
+            h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
                 expect(res.statusCode).toBe(200);
 
                 expect(res.body.email).toEqual('alice@bar.baz');
@@ -186,7 +186,7 @@ h.describe('Person API methods for logged in user', function() {
 
     it('can get person by id', function() {
         h.runAsync(function(done) {
-            h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(res) {
+            h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(err, res) {
                 expect(res.statusCode).toBe(200);
 
                 var person = res.body;
@@ -219,7 +219,7 @@ h.describe('Person API methods for logged in user trying naughty things', functi
                         gourmet: 100
                     }
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
 
                     var attributes = res.body.attributes;

@@ -12,7 +12,7 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
                     lng: 7,
                     type: 'gastronomy'
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(200);
 
                     var loc = res.body;
@@ -35,7 +35,7 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
                     outcome: true,
                     points: 50
                 })
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(201);
 
                     var mission = res.body;
@@ -54,7 +54,7 @@ h.describe('NPCs viewed from player accounts', function() {
         h.runAsync(function(done) {
             // Try to get npc@example.com
             h.request('GET', h.baseURL + 'person/000000000000000000000010')
-                .end(function(res) {
+                .end(function(err, res) {
                     expect(res.statusCode).toBe(404, 'npc not found');
                     expect(typeof res.body.error).toBe('string', 'got an error message');
                     done();
@@ -67,7 +67,7 @@ h.describe('NPCs viewed from player accounts', function() {
         h.runAsync(function(done) {
             // Get the location where only the NPC did any missions
             h.request('GET', h.baseURL + 'location/000000000000000000000009/mission/list')
-                .end(function(res) {
+                .end(function(err, res) {
 
                     expect(res.statusCode).toBe(200);
 

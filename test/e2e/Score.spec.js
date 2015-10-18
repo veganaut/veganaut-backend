@@ -6,7 +6,7 @@ var h = require('../helpers_');
 h.describe('Score controller', function() {
     it('returns score stats', function() {
         h.runAsync(function(done) {
-            h.request('GET', h.baseURL + 'score').end(function(res) {
+            h.request('GET', h.baseURL + 'score').end(function(err, res) {
                 expect(res.statusCode).toBe(200);
 
                 var stats = res.body;
