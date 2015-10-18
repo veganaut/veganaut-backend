@@ -16,7 +16,7 @@
     "body-parser": "1.14.1",
     "geoip-lite": "1.1.6",
     "inflection": "1.5.1",
-    "lodash": "2.4.1",
+    "lodash": "3.10.1",
     "mongoose": "3.8.35",
     "password-generator": "0.2.3",
     "nodemailer": "1.8.0",
