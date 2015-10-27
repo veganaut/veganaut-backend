@@ -103,8 +103,15 @@ exports.list = function(req, res, next) {
     // Create the query based on the bounding box. If they are not provided,
     // all locations are loaded
     var query = {};
+    var coordinates;
+
     try {
-        var coordinates = Location.getBoundingBoxQuery(req.query.bounds);
+        coordinates = Location.getBoundingBoxQuery(req.query.bounds);
+        if (!coordinates) {
+            // TODO: document and clean up
+            coordinates = Location.getCenterQuery(req.query.lat, req.query.lng, req.query.radius);
+        }
+
         if (coordinates) {
             query.coordinates = coordinates;
         }

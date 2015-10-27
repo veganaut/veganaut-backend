@@ -195,5 +195,28 @@ locationSchema.statics.getBoundingBoxQuery = function(boundingBoxString) {
     return query;
 };
 
+/**
+ * TODO
+ * @param lat
+ * @param lng
+ * @param radius
+ * @returns {*}
+ */
+locationSchema.statics.getCenterQuery = function(lat, lng, radius) {
+    var query;
+
+    // TODO: document and clean up
+    var EARTH_RADIUS_METERS = 6371 * 1000;
+    if (typeof lat !== 'undefined' && typeof lng !== 'undefined' && typeof radius !== 'undefined') {
+
+        query = {
+            $within: {
+                $centerSphere: [[lng, lat], radius / EARTH_RADIUS_METERS]
+            }
+        };
+    }
+
+    return query;
+};
 
 mongoose.model('Location', locationSchema);
