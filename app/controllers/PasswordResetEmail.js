@@ -14,7 +14,7 @@ var Person = mongoose.model('Person');
  * Period for which a reset token is valid: 24 hours
  * @type {number}
  */
-var TOKEN_VALIDITY_PERIOD = 24 * 360000;
+var TOKEN_VALIDITY_PERIOD = 24 * 60 * 60 * 1000;
 
 /**
  * Frontend URL to which to append the reset token to
