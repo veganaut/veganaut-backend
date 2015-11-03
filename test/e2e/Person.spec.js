@@ -7,7 +7,6 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
         h.request('POST', h.baseURL + 'person')
             .send({
                 email: 'doge@mac.dog',
-                fullName: 'Doge MacDog',
                 nickname: 'Doger',
                 locale: 'de',
                 password: 'wow. such secure. so protect.'
@@ -18,7 +17,6 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
                 // Some sanity checks on the returned person
                 var person = res.body;
                 expect(person.email).toEqual('doge@mac.dog');
-                expect(person.fullName).toEqual('Doge MacDog');
                 expect(person.nickname).toEqual('Doger');
                 expect(person.locale).toEqual('de', 'has correct locale');
                 expect(person.accountType).toBe('player', 'has correct account type');
@@ -35,11 +33,11 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
         h.request('POST', h.baseURL + 'person')
             .send({
                 email: 'doge@do.ge',
-                fullName: 'Just Doge',
                 nickname: 'Doge',
                 password: 'much safe. so security. wow.',
 
                 // These values shouldn't be writable
+                fullName: 'Just Doge',
                 accountType: 'npc',
                 attributes: {
                     pioneer: 100,
@@ -52,6 +50,7 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
                 expect(res.statusCode).toBe(201);
 
                 var person = res.body;
+                expect(typeof person.fullName).toEqual('undefined', 'fullName was not set');
                 expect(person.accountType).toEqual('player', 'accountType was not set to npc');
                 expect(person.attributes.pioneer).toEqual(0, 'could not set pioneer attribute');
                 expect(person.attributes.diplomat).toEqual(0, 'could not set diplomat attribute');
@@ -66,7 +65,6 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
         h.request('POST', h.baseURL + 'person')
             .send({
                 email: 'foo@bar.baz',
-                fullName: 'Dudette That',
                 nickname: 'Dude',
                 password: 'already has an account but forgot 2 months ago'
             })

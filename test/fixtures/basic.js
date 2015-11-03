@@ -28,7 +28,6 @@ var getFixtures = function() {
         email: 'im@stoop.id',
         password: 'bestpasswordever',
         nickname: 'Bob',
-        fullName: 'Bob Burton',
         gender: 'male'
     });
 
@@ -37,8 +36,7 @@ var getFixtures = function() {
         email: 'npc@example.com',
         password: 'npc',
         accountType: 'npc',
-        nickname: 'Npc',
-        fullName: 'Non Player Character'
+        nickname: 'Npc'
     });
 
 

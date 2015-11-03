@@ -21,7 +21,7 @@ var cryptoUtils = require('../utils/cryptoUtils');
 exports.register = function(req, res, next) {
     // Create person from the posted data
     var person = new Person(_.pick(req.body,
-        'email', 'fullName', 'password', 'nickname', 'locale')
+        'email', 'password', 'nickname', 'locale')
     );
     person.save(function(err) {
         if (err) {

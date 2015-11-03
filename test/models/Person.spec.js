@@ -19,7 +19,6 @@ describe('A person', function() {
     beforeAll(function(done) {
         person = new Person({
             email: 'mynewperson@example.com',
-            fullName: 'Test',
             nickname: 'nick',
             password: 'secure'
         });

@@ -56,8 +56,7 @@ FixtureCreator.prototype.user = function(name) {
         _id: this._getNextId(),
         email: name + '@example.com',
         password: name,
-        nickname: this._capitalize(name),
-        fullName: this._capitalize(name) + ' Example'
+        nickname: this._capitalize(name)
     });
 
     return this;
