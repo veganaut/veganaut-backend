@@ -43,6 +43,8 @@ describe('A person', function() {
             expect(foundPerson.email).toBe('mynewperson@example.com', 'set e-mail');
             expect(foundPerson.password).not.toBe('secure', 'encrypted the password');
             expect(foundPerson.accountType).toBe('player', 'set the correct default account type');
+            expect(typeof foundPerson.createdAt).toBe('object', 'has created at date');
+            expect(Math.abs(foundPerson.createdAt.getTime() - Date.now())).toBeLessThan(1000, 'created at is about now');
             done();
         });
     });

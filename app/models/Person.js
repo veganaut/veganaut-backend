@@ -19,20 +19,22 @@ var cryptoUtils = require('../utils/cryptoUtils');
 
 
 var personSchema = new Schema({
+    // TODO: force-lowercase e-mail
     email: {type: String, unique: true, sparse: true, required: true},
-    password: {type: String, required: true},
+    password: {type: String},
     nickname: {type: String, required: true},
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
 
     fullName: {type: String},
-    // dateOfBirth can be just a year, year-month, or year-month-day
-    dateOfBirth: {type: String, matches: /^\d{4}(?:-\d\d){0,2}$/},
+    createdAt: {type: Date, default: Date.now},
 
-    phone: String,
-    address: String,
-    gender: {type: String, enum: ['male', 'female', 'other']},
+    // dateOfBirth can be just a year, year-month, or year-month-day
+    dateOfBirth: {type: String, matches: /^\d{4}(?:-\d\d){0,2}$/}, // unused
+    phone: String, // unused
+    address: String, // unused
+    gender: {type: String, enum: ['male', 'female', 'other']}, // unused
     locale: {type: String, default: config.locale.default, enum: config.locale.available},
 
     accountType: {
@@ -82,6 +84,10 @@ personSchema.pre('save', function(next) {
 ;
 
 personSchema.methods.verify = function(candidatePassword, next) {
+    if (typeof this.password !== 'string') {
+        // TODO: we should really have error codes that the frontend can understand (and translate).
+        return next(new Error('You have not set a password yet. Click on "I dont\'t know my password".'));
+    }
     bcrypt.compare(candidatePassword, this.password, next);
 };
 
