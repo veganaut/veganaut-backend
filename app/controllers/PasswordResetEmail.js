@@ -51,7 +51,7 @@ var EMAIL_TEXT = {
         'Prost und guten Appetit!\n' +
         'Sebu & Toby\n\n\n' +
         'Salut {{NAME}}!\n\n' +
-        'Tu reçois ce mail parce que tu t'es inscrit à Veganaut.net.\n\n' +
+        'Tu reçois ce mail parce que tu t\'es inscrit à Veganaut.net.\n\n' +
         'Clique ce lien ou copie-le dans ton browser pour saisir ton mot de passe:\n\n' +
         '{{URL}}\n\n' +
         'Ça te permet de connecter de nouveau et de partager tes découvertes véganes avec les autres Véganautes.\n\n' +
@@ -99,8 +99,8 @@ exports.send = function (req, res, next) {
         },
         function (token, user, done) {
             var text = EMAIL_TEXT[type].text;
-            text = text.replace('{{NAME}}', user.nickname);
-            text = text.replace('{{URL}}', RESET_BASE_URL + token);
+            text = text.replace(/\{\{NAME\}\}/g, user.nickname);
+            text = text.replace(/\{\{URL\}\}/g, RESET_BASE_URL + token);
             var mailOptions = {
                 to: user.email,
                 from: config.email.from,
