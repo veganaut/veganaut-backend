@@ -32,7 +32,8 @@ var EMAIL_TEXT = {
         'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
         '{{URL}}\n\n' +
         'If you did not request this, please ignore this email and your password will remain unchanged.\n\n' +
-        'Your Veganaut.net team\n'
+        'Best,\n' +
+        'Sebu\n'
     },
     registration: {
         subject: 'Veganaut.net Registration',
@@ -42,21 +43,21 @@ var EMAIL_TEXT = {
         '{{URL}}\n\n' +
         'This will enable you to log in again and to share your vegan discoveries with other Veganauts!\n\n' +
         'Cheers,\n' +
-        'Sebu & Toby\n\n\n' +
+        'Sebu\n\n\n' +
         'Hallo {{NAME}}!\n\n' +
         'Du erhälst diese Mail, weil du dich auf Veganaut.net registriert hast.\n\n' +
         'Klicke auf den folgenden Link oder kopiere ihn in deinen Browser, um dein Passwort zu setzen:\n\n' +
         '{{URL}}\n\n' +
         'Damit kannst du dich wieder einloggen und deine veganen Entdeckungen mit anderen Veganaut*innen teilen!\n\n' +
         'Prost und guten Appetit!\n' +
-        'Sebu & Toby\n\n\n' +
+        'Sebu\n\n\n' +
         'Salut {{NAME}}!\n\n' +
         'Tu reçois ce mail parce que tu t\'es inscrit à Veganaut.net.\n\n' +
         'Clique ce lien ou copie-le dans ton browser pour saisir ton mot de passe:\n\n' +
         '{{URL}}\n\n' +
         'Ça te permet de connecter de nouveau et de partager tes découvertes véganes avec les autres Véganautes.\n\n' +
         'Santé et bon app!\n' +
-        'Sebu & Toby\n'
+        'Sebu\n'
     }
 };
 
