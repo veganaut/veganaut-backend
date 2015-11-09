@@ -28,15 +28,18 @@ exports.createSessionFor = function(user) {
  * @returns {*}
  */
 var authenticate = function(email, pass, next) {
+    // Query the db for the given email
     Person.findOne({email: email}, function(err, user) {
-        if (err) { return next(err); }
-
-        // query the db for the given username
+        if (err) {
+            return next(err);
+        }
         if (!user) {
             return next(new Error('Cannot find user with email ' + email + '.'));
         }
         user.verify(pass, function(err, result) {
-            if (err) { return next(err); }
+            if (err) {
+                return next(err);
+            }
             if (result) {
                 var superUniqueId = exports.createSessionFor(user);
                 return next(null, user, superUniqueId);
@@ -100,15 +103,14 @@ exports.restrict = function(req, res, next) {
  * Login route
  * @param req
  * @param res
+ * @param next
  */
-exports.create = function (req, res) {
-    // Email or password missing:
+exports.create = function (req, res, next) {
+    // Check if email or password missing
     if (!req.body.email || !req.body.password) {
-        // no user or password given
-        res.status(400).send({ status: 'Bad Request',
+        return res.status(400).send({ status: 'Bad Request',
             message: 'Email && Password are required'
         });
-        return;
     }
     // Otherwise try to login
     else {
@@ -120,7 +122,8 @@ exports.create = function (req, res) {
             }
             else {
                 // TODO: should probably not always send the error message to the user
-                return res.status(403).send({ error: err.message });
+                res.status(403);
+                return next(err);
             }
         });
     }

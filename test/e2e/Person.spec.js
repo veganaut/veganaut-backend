@@ -7,26 +7,29 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
         h.request('POST', h.baseURL + 'person')
             .send({
                 email: 'doge@mac.dog',
-                fullName: 'Doge MacDog',
                 nickname: 'Doger',
-                locale: 'de',
-                password: 'wow. such secure. so protect.'
+                locale: 'de'
             })
             .end(function(err, res) {
                 expect(res.statusCode).toBe(201);
 
-                // Some sanity checks on the returned person
-                var person = res.body;
-                expect(person.email).toEqual('doge@mac.dog');
-                expect(person.fullName).toEqual('Doge MacDog');
-                expect(person.nickname).toEqual('Doger');
-                expect(person.locale).toEqual('de', 'has correct locale');
-                expect(person.accountType).toBe('player', 'has correct account type');
+                // Should have gotten a session in return
+                var session = res.body;
+                expect(typeof session.sessionId).toEqual('string', 'got a session id');
 
-                // Make sure password is not returned
-                expect(typeof person.password).toEqual('undefined');
+                // Use the session received from the registration
+                h.sessionId = res.body.sessionId;
+                h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
+                    h.sessionId = undefined; // Unset session again
+                    expect(res.statusCode).toBe(200, 'could get profile with session from registration');
 
-                done();
+                    var person = res.body;
+                    expect(person.email).toEqual('doge@mac.dog');
+                    expect(person.nickname).toEqual('Doger');
+                    expect(person.locale).toEqual('de', 'has correct locale');
+                    expect(person.accountType).toBe('player', 'has correct account type');
+                    done();
+                });
             })
         ;
     });
@@ -35,11 +38,10 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
         h.request('POST', h.baseURL + 'person')
             .send({
                 email: 'doge@do.ge',
-                fullName: 'Just Doge',
                 nickname: 'Doge',
-                password: 'much safe. so security. wow.',
 
                 // These values shouldn't be writable
+                fullName: 'Just Doge',
                 accountType: 'npc',
                 attributes: {
                     pioneer: 100,
@@ -51,13 +53,20 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
             .end(function(err, res) {
                 expect(res.statusCode).toBe(201);
 
-                var person = res.body;
-                expect(person.accountType).toEqual('player', 'accountType was not set to npc');
-                expect(person.attributes.pioneer).toEqual(0, 'could not set pioneer attribute');
-                expect(person.attributes.diplomat).toEqual(0, 'could not set diplomat attribute');
-                expect(person.attributes.evaluator).toEqual(0, 'could not set evaluator attribute');
-                expect(person.attributes.gourmet).toEqual(0, 'could not set gourmet attribute');
-                done();
+                // Use the session received from the registration
+                h.sessionId = res.body.sessionId;
+                h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
+                    h.sessionId = undefined; // Unset session again
+
+                    var person = res.body;
+                    expect(typeof person.fullName).toEqual('undefined', 'fullName was not set');
+                    expect(person.accountType).toEqual('player', 'accountType was not set to npc');
+                    expect(person.attributes.pioneer).toEqual(0, 'could not set pioneer attribute');
+                    expect(person.attributes.diplomat).toEqual(0, 'could not set diplomat attribute');
+                    expect(person.attributes.evaluator).toEqual(0, 'could not set evaluator attribute');
+                    expect(person.attributes.gourmet).toEqual(0, 'could not set gourmet attribute');
+                    done();
+                });
             })
         ;
     });
@@ -66,12 +75,12 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
         h.request('POST', h.baseURL + 'person')
             .send({
                 email: 'foo@bar.baz',
-                fullName: 'Dudette That',
-                nickname: 'Dude',
-                password: 'already has an account but forgot 2 months ago'
+                nickname: 'Dude'
             })
             .end(function(err, res) {
                 expect(res.statusCode).toBe(400);
+                expect(typeof res.body.error).toBe('string', 'has an error message');
+                expect(typeof res.body.sessionId).toBe('undefined', 'did not get a session id');
                 done();
             })
         ;

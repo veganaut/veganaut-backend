@@ -10,6 +10,7 @@ var async = require('async');
 var constants = require('../utils/constants');
 var Person = mongoose.model('Person');
 var Mission = require('../models/Missions').Mission;
+var Session = require('./Session');
 var cryptoUtils = require('../utils/cryptoUtils');
 
 /**
@@ -21,18 +22,25 @@ var cryptoUtils = require('../utils/cryptoUtils');
 exports.register = function(req, res, next) {
     // Create person from the posted data
     var person = new Person(_.pick(req.body,
-        'email', 'fullName', 'password', 'nickname', 'locale')
+        'email', 'nickname', 'locale')
     );
     person.save(function(err) {
         if (err) {
-            // Send a 400 status if the email address is already used
+            // Send a 400 status with nice error message if the email address is already used
             if (err.name === 'MongoError' && err.code === 11000) {
                 res.status(400);
+                err = new Error('There is already an account with this e-mail address.');
             }
             return next(err);
         }
 
-        return res.status(201).send(person);
+        // Create a session and reply with that
+        // Not very RESTful, but it's what we need here. It would be too
+        // complicated to get a session without a password set yet.
+        var sessionId = Session.createSessionFor(person);
+        return res.status(201).send({
+            sessionId: sessionId
+        });
     });
 };
 
