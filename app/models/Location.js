@@ -196,19 +196,19 @@ locationSchema.statics.getBoundingBoxQuery = function(boundingBoxString) {
 };
 
 /**
- * TODO
- * @param lat
- * @param lng
- * @param radius
- * @returns {*}
+ * Creates a $within query based on the given center (lat/lng) and radius
+ * @param {number} lat
+ * @param {number} lng
+ * @param {number} radius Radius around the lat/lng in meters to query for locations.
+ * @returns {{}|undefined}
  */
 locationSchema.statics.getCenterQuery = function(lat, lng, radius) {
     var query;
 
-    // TODO: document and clean up
+    // Approximate earth radius
     var EARTH_RADIUS_METERS = 6371 * 1000;
     if (typeof lat !== 'undefined' && typeof lng !== 'undefined' && typeof radius !== 'undefined') {
-
+        // Create the $centerSphere query
         query = {
             $within: {
                 $centerSphere: [[lng, lat], radius / EARTH_RADIUS_METERS]

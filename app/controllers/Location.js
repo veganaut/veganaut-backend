@@ -100,24 +100,27 @@ exports.create = function(req, res, next) {
 };
 
 exports.list = function(req, res, next) {
-    // Create the query based on the bounding box. If they are not provided,
-    // all locations are loaded
+    // Create the query based on the bounding box or coordinate/radius.
+    // If no query is provided, all locations are loaded
     var query = {};
     var coordinates;
 
     try {
+        // Try to get the bounding box query first
         coordinates = Location.getBoundingBoxQuery(req.query.bounds);
-        if (!coordinates) {
-            // TODO: document and clean up
-            coordinates = Location.getCenterQuery(req.query.lat, req.query.lng, req.query.radius);
-        }
 
-        if (coordinates) {
-            query.coordinates = coordinates;
+        // If there was no bounding box, try the center (lat/lng) and radius query
+        if (!coordinates) {
+            coordinates = Location.getCenterQuery(req.query.lat, req.query.lng, req.query.radius);
         }
     }
     catch (e) {
         return next(e);
+    }
+
+    // Set the coordinates query if one was found
+    if (coordinates) {
+        query.coordinates = coordinates;
     }
 
     // Load the locations, but only the data we actually want to send

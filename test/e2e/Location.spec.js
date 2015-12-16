@@ -95,6 +95,20 @@ h.describe('Location API methods as logged in user alice', function() {
         ;
     });
 
+    it('can list locations within a radius around a center', function(done) {
+        h.request(h.baseURL + 'location/list?lat=46.956&lng=7.452&radius=150')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                expect(typeof res.body).toBe('object', 'returns an array of locations');
+                expect(res.body.length).toBe(1, 'returns only the location within the radius');
+
+                var location = res.body[0];
+                expect(location.name).toBe('3dosha', 'returned the correct location');
+                done();
+            })
+        ;
+    });
+
     it('can get an individual location with products', function(done) {
         h.request('GET', h.baseURL + 'location/000000000000000000000006')
             .end(function(err, res) {
