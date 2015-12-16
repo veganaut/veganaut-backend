@@ -39,24 +39,24 @@ var EMAIL_TEXT = {
         subject: 'Veganaut.net Registration',
         text: 'Hi {{NAME}}!\n\n' +
         '(Deutsch unten. Français en bas.) You are receiving this e-mail because you have registered on Veganaut.net.\n\n' +
-        'Please click on the following link, or paste it into your browser to set your password:\n\n' +
+        'Please click on the following link (or paste it into your browser) to set your password:\n\n' +
         '{{URL}}\n\n' +
         'This will enable you to log in again and to share your vegan discoveries with other Veganauts!\n\n' +
         'Cheers,\n' +
         'Sebu\n\n\n' +
         'Hallo {{NAME}}!\n\n' +
         'Du erhälst diese Mail, weil du dich auf Veganaut.net registriert hast.\n\n' +
-        'Klicke auf den folgenden Link oder kopiere ihn in deinen Browser, um dein Passwort zu setzen:\n\n' +
+        'Klicke auf den folgenden Link (oder kopiere ihn in deinen Browser), um dein Passwort zu setzen:\n\n' +
         '{{URL}}\n\n' +
         'Damit kannst du dich wieder einloggen und deine veganen Entdeckungen mit anderen Veganaut*innen teilen!\n\n' +
         'Prost und guten Appetit!\n' +
         'Sebu\n\n\n' +
         'Salut {{NAME}}!\n\n' +
-        'Tu reçois ce mail parce que tu t\'es inscrit à Veganaut.net.\n\n' +
-        'Clique ce lien ou copie-le dans ton browser pour saisir ton mot de passe:\n\n' +
+        'Tu reçois ce mail parce que tu t\'es inscrit sur Veganaut.net.\n\n' +
+        'Clique sur ce lien (ou copie-le dans ton browser) pour saisir ton mot de passe:\n\n' +
         '{{URL}}\n\n' +
-        'Ça te permet de connecter de nouveau et de partager tes découvertes véganes avec les autres Véganautes.\n\n' +
-        'Santé et bon app!\n' +
+        'Cela te permettera de te reconnecter et de partager tes découvertes véganes avec les autres Véganautes.\n\n' +
+        'À la tienne et bon app!\n' +
         'Sebu\n'
     }
 };
