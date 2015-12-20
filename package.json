@@ -1,7 +1,8 @@
 {
   "name": "veganaut-backend",
-  "version": "0.0.1",
+  "version": "0.8.0",
   "private": true,
+  "repository": "https://github.com/veganaut/veganaut-backend",
   "scripts": {
     "postinstall": "if [ ! -f app/config.js ]; then cp app/config-example.js app/config.js; fi",
     "start": "node app.js",
