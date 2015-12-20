@@ -51,6 +51,7 @@ var getFixtures = function() {
         _id: '000000000000000000000007',
         coordinates: [7.441016, 46.946757],
         name: 'Reformhaus Ruprecht',
+        description: 'Bio shop with many vegan options.',
         type: 'retail',
         owner: fix.bob.id
     });
