@@ -228,6 +228,7 @@ exports.update = function(req, res, next) {
             findLocation(obj, cb);
         },
         updateLocation,
+        populateOwner,
         findProducts
     ], handleSingleLocationResult);
 };

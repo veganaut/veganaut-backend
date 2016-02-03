@@ -273,6 +273,11 @@ h.describe('Location API methods as logged in user alice', function() {
                 expect(location.lat).toBe(47.3, 'correct new lat');
                 expect(location.lng).toBe(7.1, 'correct new lng');
 
+                // Owner is populated
+                expect(typeof location.owner).toBe('object', 'has an owner');
+                expect(typeof location.owner.id).toBe('string', 'owner has an id');
+                expect(typeof location.owner.nickname).toBe('string', 'owner has a nickname');
+
                 // Check that it was really saved
                 h.request('GET', h.baseURL + 'location/000000000000000000000006')
                     .end(function(err, res) {
