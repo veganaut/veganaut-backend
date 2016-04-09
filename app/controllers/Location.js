@@ -340,6 +340,7 @@ exports.getAvailableMissions = function(req, res, next) {
                     // Check if this available mission already has a last completed mission defined
                     if (typeof availableMission.lastCompleted === 'undefined') {
                         // Set the completed mission as the last one completed for that available mission
+                        // TODO: we don't really need to send the id and type of the mission
                         availableMission.lastCompleted = completedMission;
                     }
 

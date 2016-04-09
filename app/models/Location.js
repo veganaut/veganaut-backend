@@ -8,6 +8,7 @@ var util = require('util');
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var constants = require('../utils/constants');
 var Average = require('../utils/Average');
 var Missions = require('./Missions');
 
@@ -43,6 +44,23 @@ var locationSchema = new Schema({
 
     // When the points were last calculated and stored
     updatedAt: {type: Date, default: Date.now}
+});
+
+// Create the schema for all the tags
+var tagSchemaType = {};
+_.each(constants.LOCATION_TAGS, function(tag) {
+    tagSchemaType[tag] = {
+        type: Number,
+        default: 0
+    };
+});
+
+// Add the tags to the location schema
+locationSchema.add({
+    tags: {
+        type: tagSchemaType,
+        default: {}
+    }
 });
 
 // Locations keep track of average quality and effort
@@ -83,7 +101,7 @@ locationSchema.methods.computeCurrentPoints = function() {
  * Callback to notify the location that a new mission has been completed. The
  * location will then update its score.
  */
-locationSchema.methods.notifyMissionCompleted = function(mission, next) {
+locationSchema.methods.notifyMissionCompleted = function(mission, previousCompletedMission, next) {
     // Update the score of the location
     var points = this.computeCurrentPoints();
     var owner = this.owner;
@@ -112,6 +130,34 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
         this.addEffort(EFFORT_VALUES[mission.outcome]);
     }
 
+    // For locationTags missions, the tags change
+    if (mission instanceof Missions.LocationTagsMission) {
+        var oldTags = _.isObject(previousCompletedMission) ? previousCompletedMission.outcome : [];
+        var newTags = mission.outcome;
+
+        // Go through all the newly added tags
+        // TODO: helper methods for increasing and decreasing tags
+        _.each(_.difference(newTags, oldTags), function(addedTag) {
+            if (typeof this.tags[addedTag] === 'undefined') {
+                this.tags[addedTag] = 0;
+            }
+            this.tags[addedTag] += 1;
+        }.bind(this));
+
+        // Then decrease all the removed tags
+        _.each(_.difference(oldTags, newTags), function(removedTag) {
+            // Sanity check to make sure this tag really exists (should always be the kind)
+            if (typeof this.tags[removedTag] !== 'undefined') {
+                this.tags[removedTag] -= 1;
+                if (this.tags[removedTag] === 0) {
+                    delete this.tags[removedTag];
+                }
+            }
+        }.bind(this));
+
+        this.markModified('tags');
+    }
+
     // Save the new state
     this.points = points;
     this.markModified('points');
@@ -127,7 +173,7 @@ locationSchema.methods.notifyMissionCompleted = function(mission, next) {
  */
 locationSchema.options.toJSON = {
     transform: function(doc) {
-        var ret = _.pick(doc, ['name', 'description', 'link', 'type', 'id', 'owner', 'updatedAt']);
+        var ret = _.pick(doc, ['name', 'description', 'link', 'type', 'id', 'owner', 'updatedAt', 'tags']);
 
         // Add lat/lng in the format the frontend expects
         if (util.isArray(doc.coordinates)) {

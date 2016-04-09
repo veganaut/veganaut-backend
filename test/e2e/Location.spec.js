@@ -75,6 +75,7 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.effort).toBe('object', 'has an effort');
                     expect(typeof location.effort.average).toBe('number', 'has an effort average');
                     expect(typeof location.effort.numRatings).toBe('number', 'has an effort rating amount');
+                    expect(typeof location.tags).toBe('undefined', 'tags are not set');
                 });
                 done();
             })
@@ -138,6 +139,7 @@ h.describe('Location API methods as logged in user alice', function() {
                 expect(typeof location.effort).toBe('object', 'has an effort');
                 expect(typeof location.effort.average).toBe('number', 'has an effort average');
                 expect(typeof location.effort.numRatings).toBe('number', 'has an effort rating amount');
+                expect(typeof location.tags).toBe('object', 'got tags object');
                 expect(location.products.length).toBeGreaterThan(0, 'got some products');
 
                 // Expected order: samosa should be before curry because curry is temporarilyUnavailable
@@ -150,6 +152,29 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof product.location).toBe('undefined', 'location is not sent again');
                     expect(typeof product.availability).toBe('string', 'has an availability');
                     expect(product.availability).toBe(expectedAvailabilities[index], 'correct availability');
+                });
+
+                done();
+            })
+        ;
+    });
+
+    it('can get an individual location with tags', function(done) {
+        h.request('GET', h.baseURL + 'location/000000000000000000000008')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                var location = res.body;
+                expect(typeof location).toBe('object', 'response is an object');
+                expect(location.id).toBe('000000000000000000000008', 'correct location id');
+                expect(location.name).toBe('Kremoby Hollow', 'correct name');
+
+                expect(typeof location.tags).toBe('object', 'got tags object');
+                expect(Object.keys(location.tags).length).toBe(5, 'got correct amount of tags');
+
+                _.each(location.tags, function(count, tag) {
+                    expect(typeof tag).toBe('string', 'got a tag name');
+                    expect(typeof count).toBe('number', 'got a count');
+                    expect(count).toBeGreaterThan(0, 'correctcount count');
                 });
 
                 done();
@@ -191,7 +216,7 @@ h.describe('Location API methods as logged in user alice', function() {
         ;
     });
 
-    it('can get available missions at a location', function(done) {
+    it('get correct available and completed missions at ruprecht', function(done) {
         h.request('GET', h.baseURL + 'location/000000000000000000000007/availableMission/list')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
@@ -199,7 +224,7 @@ h.describe('Location API methods as logged in user alice', function() {
                 var available = res.body;
                 expect(typeof available).toBe('object', 'response is an object');
                 expect(typeof available.locationMissions).toBe('object', 'has locationMissions');
-                expect(Object.keys(available.locationMissions).length).toBe(8, 'has correct number of available location missions');
+                expect(Object.keys(available.locationMissions).length).toBe(9, 'has correct number of available location missions');
 
                 _.each(available.locationMissions, function(mission, missionType) {
                     expect(typeof mission).toBe('object', missionType + ' mission definition is an object');
@@ -235,6 +260,52 @@ h.describe('Location API methods as logged in user alice', function() {
                 var setProductAvailMission = available.productMissions['000000000000000000000103'].setProductAvail;
                 expect(typeof setProductAvailMission.lastCompleted).toBe('object', 'has a last completed setProductAvail mission');
                 expect(setProductAvailMission.points).toBe(0, 'setProductAvail cool down period has NOT expired');
+
+                done();
+            })
+        ;
+    });
+
+    it('get correct available and completed missions at hollow', function(done) {
+        h.request('GET', h.baseURL + 'location/000000000000000000000008/availableMission/list')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+
+                var available = res.body;
+
+                // Specific checks with basic fixture data
+                var visitBonusMission = available.locationMissions.visitBonus;
+                expect(typeof visitBonusMission.lastCompleted).toBe('object', 'has a last completed visitBonus mission');
+                expect(visitBonusMission.lastCompleted.outcome).toBe(true, 'correct last visitBonus outcome');
+                expect(visitBonusMission.points).toBeGreaterThan(0, 'visitBonus cool down period has expired');
+                expect(typeof visitBonusMission.lastCompleted.completed).toMatch('string', 'last visitBonus has a completed date');
+                var completedAt = new Date(visitBonusMission.lastCompleted.completed);
+                expect(isNaN(completedAt.getTime())).toBe(false,
+                    'last visitBonus completed can be parsed as a valid date'
+                );
+
+                var hasOptionsMission = available.locationMissions.hasOptions;
+                expect(typeof hasOptionsMission.lastCompleted).toBe('object', 'has a last completed hasOptions mission');
+                expect(hasOptionsMission.lastCompleted.outcome).toBe('yes', 'correct last hasOptions outcome');
+                expect(hasOptionsMission.points).toBeGreaterThan(0, 'hasOptions cool down period has expired');
+
+                var giveFeedbackMission = available.locationMissions.giveFeedback;
+                expect(typeof giveFeedbackMission.lastCompleted).toBe('object', 'has a last completed giveFeedback mission');
+                expect(giveFeedbackMission.lastCompleted.outcome).toBe('Your vegan food is so tasty', 'correct last giveFeedback outcome');
+                expect(giveFeedbackMission.points).toBeGreaterThan(0, 'giveFeedback cool down period has expired');
+
+                var locationTagsMission = available.locationMissions.locationTags;
+                expect(typeof locationTagsMission.lastCompleted).toBe('object', 'has a last completed locationTags mission');
+                expect(_.isArray(locationTagsMission.lastCompleted.outcome)).toBe(true, 'correct last locationTags outcome type');
+                expect(_.without(
+                    locationTagsMission.lastCompleted.outcome,
+                    'gBreakfast',
+                    'gLunch',
+                    'gDinner',
+                    'gSweets',
+                    'rnBooks'
+                ).length).toBe(0, 'correct last locationTags outcome', locationTagsMission.lastCompleted.outcome);
+                expect(locationTagsMission.points).toBeGreaterThan(0, 'locationTags cool down period has expired');
 
                 done();
             })
@@ -347,6 +418,7 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
                     expect(typeof location.effort).toBe('object', 'has am effort');
                     expect(typeof location.effort.average).toBe('number', 'has am effort average');
                     expect(typeof location.effort.numRatings).toBe('number', 'has am effort rating amount');
+                    expect(typeof location.tags).toBe('undefined', 'tags are not set');
                 });
                 done();
             })
@@ -375,6 +447,7 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
                 expect(typeof location.effort).toBe('object', 'has an effort');
                 expect(typeof location.effort.average).toBe('number', 'has an effort average');
                 expect(typeof location.effort.numRatings).toBe('number', 'has an effort rating amount');
+                expect(typeof location.tags).toBe('object', 'got tags object');
                 expect(typeof location.products).toBe('object', 'got an array of products');
                 expect(location.products.length).toBeGreaterThan(0, 'got some products');
 

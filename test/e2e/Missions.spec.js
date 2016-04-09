@@ -173,6 +173,28 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
         ;
     });
 
+    it('can submit locationTags mission', function(done) {
+        h.request('POST', h.baseURL + 'mission')
+            .send({
+                location: locationId,
+                type: 'locationTags',
+                outcome: [
+                    'rfDairy',
+                    'rfBread',
+                    'rfSweets',
+                    'rfMeat'
+                ],
+                points: 20
+            })
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(201);
+                expect(res.body.type).toBe('locationTags', 'type of mission');
+                expect(res.body.points).toEqual(20, 'points of mission');
+                done();
+            })
+        ;
+    });
+
     // Test validation with a few invalid submissions
     it('cannot submit bogus visitBonus mission', function(done) {
         h.request('POST', h.baseURL + 'mission')
@@ -235,9 +257,8 @@ h.describe('Basic functionality of Missions API methods.', {fixtures: fix, user:
             })
         ;
     });
-
-
 });
+
 
 h.describe('Product missions referring to existing products.', function() {
     it('can submit rateProduct mission', function(done) {
@@ -324,6 +345,7 @@ h.describe('Product missions referring to existing products.', function() {
         ;
     });
 });
+
 
 h.describe('Update of products.', function() {
     it('correctly updates product rating when submitting rateProduct mission.', function(done) {
@@ -458,7 +480,50 @@ h.describe('Mission API methods and their influence on locations.', function() {
             })
         ;
     });
+
+    it('location tags are updated when same user re-submits the locationTags mission', function(done) {
+        h.request('POST', h.baseURL + 'mission')
+            .send({
+                location: '000000000000000000000008', // Mission in hollow
+                type: 'locationTags',
+                outcome: [
+                    'gBreakfast',
+                    // No longer specifying gLunch
+                    'gDinner',
+                    'gSweets',
+                    'gSnacks', // Adding new gSnacks
+                    'rnBooks'
+
+                ],
+                points: 20
+            })
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(201);
+
+                // Check how the location looks now
+                h.request('GET', h.baseURL + 'location/000000000000000000000008')
+                    .end(function(err, res) {
+                        expect(res.statusCode).toBe(200);
+
+                        var tags = res.body.tags;
+                        // Check that it updated the count taking into account the last mission
+                        // and that it didn't simply add the new tags
+                        expect(Object.keys(tags).length).toBe(5, 'has the new number of tags');
+                        expect(tags.gBreakfast).toBe(1, 'gBreakfast count');
+                        expect(tags.gDinner).toBe(1, 'gDinner count');
+                        expect(tags.gSweets).toBe(1, 'gSweets count');
+                        expect(tags.gSnacks).toBe(1, 'gSnacks count');
+                        expect(tags.rnBooks).toBe(1, 'rnBooks count');
+                        expect(typeof tags.gLunch).toBe('undefined', 'gLunch no longer there');
+
+                        done();
+                    })
+                ;
+            })
+        ;
+    });
 });
+
 
 fix = new FixtureCreator()
     .user('alice')

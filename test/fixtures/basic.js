@@ -176,6 +176,18 @@ var getFixtures = function() {
         completed: '2014-08-10',
         outcome: 'Your vegan food is so tasty'
     });
+    fix.aliceMission4Hollow = new Missions.LocationTagsMission({
+        location: fix.hollow.id,
+        person: fix.alice.id,
+        completed: '2014-08-10',
+        outcome: [
+            'gBreakfast',
+            'gLunch',
+            'gDinner',
+            'gSweets',
+            'rnBooks'
+        ]
+    });
     fix.bobMission1Hollow = new Missions.HasOptionsMission({
         location: fix.hollow.id,
         person: fix.bob.id,

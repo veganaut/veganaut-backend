@@ -126,7 +126,8 @@ personSchema.methods.notifyMissionCompleted = function(mission, next) {
         missionType === 'WhatOptionsMission' ||
         missionType === 'RateProductMission' ||
         missionType === 'OfferQualityMission' ||
-        missionType === 'EffortValueMission'))
+        missionType === 'EffortValueMission' ||
+        missionType === 'LocationTagsMission'))
     {
         pioneerInc += PIONEER_INC;
     }
@@ -141,6 +142,7 @@ personSchema.methods.notifyMissionCompleted = function(mission, next) {
     if (missionType === 'RateProductMission' ||
         missionType === 'OfferQualityMission' ||
         missionType === 'EffortValueMission' ||
+        missionType === 'LocationTagsMission' ||
         missionType === 'SetProductNameMission' ||
         missionType === 'SetProductAvailMission')
     {

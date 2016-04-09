@@ -16,6 +16,36 @@ constants.ACCOUNT_TYPES = {
     NPC: 'npc'
 };
 
+/**
+ * List of tags that can be given to locations
+ * The prefixes stand for:
+ *   - g: gastronomy
+ *   - rf: retail food
+ *   - rn: retail non-food
+ * @type {string[]}
+ */
+constants.LOCATION_TAGS = [
+    'gBreakfast',
+    'gLunch',
+    'gDinner',
+    'gBrunch',
+    'gSweets',
+    'gSnacks',
+    'gMilk',
+    'rfDairy',
+    'rfBread',
+    'rfSweets',
+    'rfMeat',
+    'rfCheese',
+    'rfSupplements',
+    'rnClothes',
+    'rnShoes',
+    'rnHygiene',
+    'rnCleaning',
+    'rnBooks',
+    'rnPets'
+];
+
 // TODO: should all this availability stuff be here?
 /**
  * List of product availability string

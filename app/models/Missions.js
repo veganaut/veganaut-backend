@@ -33,7 +33,8 @@ var POINTS_BY_TYPE = {
     SetProductAvailMission: 5,
     GiveFeedbackMission: 10,
     OfferQualityMission: 20,
-    EffortValueMission:  20
+    EffortValueMission:  20,
+    LocationTagsMission: 20
 };
 
 /**
@@ -41,6 +42,7 @@ var POINTS_BY_TYPE = {
  * @type {{}}
  */
 var MISSION_COOL_DOWN_PERIOD = {
+    // TODO: make the periods all longer?
     AddLocationMission:   0, // none
     VisitBonusMission:    1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
     HasOptionsMission:    1000 * 60 * 60 * 24, // 1 day
@@ -52,7 +54,8 @@ var MISSION_COOL_DOWN_PERIOD = {
     SetProductAvailMission: 1000 * 60 * 60 *  4, // 4 hours
     GiveFeedbackMission:  1000 * 60 * 60 * 24, // 1 day
     OfferQualityMission:  1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
-    EffortValueMission:   1000 * 60 * 60 * 24 * 7 * 3  // 3 weeks
+    EffortValueMission:   1000 * 60 * 60 * 24 * 7 * 3,  // 3 weeks
+    LocationTagsMission:  1000 * 60 * 60 * 24 * 7 * 3  // 3 weeks
 };
 
 /**
@@ -114,6 +117,43 @@ missionSchema.pre('save', function(next) {
     }
 });
 
+// Get the last same mission from that user
+missionSchema.pre('save', function(next) {
+    var that = this;
+
+    if (typeof that._previousCompletedMission === 'undefined') {
+        // Select the mission of the same type at the same location by the same person
+        var previousMissionQuery = {
+            __t: that.getType(),
+            location: that.location,
+            person: that.person
+        };
+
+        // If it's a product mission, the product also has to be the same
+        if (that.isProductModifyingMission()) {
+            previousMissionQuery['outcome.product'] = that.outcome.product;
+        }
+
+        allMissions.Mission.findOne(previousMissionQuery).sort({
+            completed: 'desc'
+        }).exec(function(err, previousMission) {
+            if (err) {
+                return next(err);
+            }
+
+            // If a previous mission was found, store it for later use
+            if (_.isObject(previousMission)) {
+                that._previousCompletedMission = previousMission;
+            }
+
+            return next();
+        });
+    }
+    else {
+        return next();
+    }
+});
+
 missionSchema.pre('save', function(next) {
     var that = this;
     that.populate('person', function(err) {
@@ -167,7 +207,7 @@ missionSchema.pre('save', function(next) {
                     if (err) {
                         return cb(err);
                     }
-                    return that.location.notifyMissionCompleted(that, cb);
+                    return that.location.notifyMissionCompleted(that, that._previousCompletedMission, cb);
                 });
             },
 
@@ -247,7 +287,7 @@ missionSchema.methods.isProductModifyingMission = function() {
  * Calculates the points that should be awarded for this mission
  * at the current time. This depends on when the user last did this
  * mission at this location and the cool down period of the mission.
- * TODO NOW: test this thoroughly
+ * TODO: test this thoroughly
  * TODO: this needs to be merged somehow with the code in the Location controller that does the same calculation for many misions
  * @param {function} callback
  */
@@ -486,6 +526,17 @@ allMissions.EffortValueMission = Mission.discriminator('EffortValueMission', new
     }
 ));
 
+allMissions.LocationTagsMission = Mission.discriminator('LocationTagsMission', new MissionSchema(
+    {
+        type: [{
+            type: String,
+            enum: constants.LOCATION_TAGS,
+            required: true
+        }],
+        required: true
+    }
+));
+
 /**
  * List of missions that are specific to a location
  * @type {*[]}
@@ -498,7 +549,8 @@ allMissions.locationMissionModels = [
     allMissions.BuyOptionsMission,
     allMissions.GiveFeedbackMission,
     allMissions.OfferQualityMission,
-    allMissions.EffortValueMission
+    allMissions.EffortValueMission,
+    allMissions.LocationTagsMission
 ];
 
 /**
