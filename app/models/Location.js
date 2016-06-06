@@ -187,15 +187,19 @@ locationSchema.options.toJSON = {
             // TODO: only expose points of owner and current user?
         }
 
-        // Add the quality and effort
-        ret.quality = {
-            average: doc.quality.average,
-            numRatings: doc.quality.count
-        };
-        ret.effort = {
-            average: doc.effort.average,
-            numRatings: doc.effort.count
-        };
+        // Add the quality and effort (if they were loaded)
+        if (typeof doc.quality.count !== 'undefined') {
+            ret.quality = {
+                average: doc.quality.average,
+                numRatings: doc.quality.count
+            };
+        }
+        if (typeof doc.effort.count !== 'undefined') {
+            ret.effort = {
+                average: doc.effort.average,
+                numRatings: doc.effort.count
+            };
+        }
 
         return ret;
     }
