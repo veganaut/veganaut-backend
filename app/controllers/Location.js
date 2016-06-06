@@ -8,6 +8,49 @@ var Location = mongoose.model('Location');
 var Missions = require('../models/Missions');
 var Product = require('../models/Product');
 
+// TODO WIP: move to separate file (or even pre-calculate and store in db?)
+// ADAPTED FROM https://github.com/davetroy/geohash-js
+// Originally it would use base32, we use base4 because we want
+// the precision to increase more gradually the more letters are considered.
+var encodeVeganautGeoHash = function(latitude, longitude, precision) {
+    var latBounds = {
+        lower: -90,
+        upper: 90
+    };
+    var lngBounds = {
+        lower: -180,
+        upper: 180
+    };
+    var character = 0;
+    var geohash = '';
+
+    var lngMid, latMid;
+    while (geohash.length < precision) {
+        lngMid = (lngBounds.lower + lngBounds.upper) / 2;
+        if (longitude > lngMid) {
+            character += 2;
+            lngBounds.lower = lngMid;
+        }
+        else {
+            lngBounds.upper = lngMid;
+        }
+
+        latMid = (latBounds.lower + latBounds.upper) / 2;
+        if (latitude > latMid) {
+            character += 1;
+            latBounds.lower = latMid;
+        }
+        else {
+            latBounds.upper = latMid;
+        }
+
+        geohash += character.toString();
+        character = 0;
+    }
+    return geohash;
+};
+
+
 /**
  * Number of missions to send in the get completed missions call
  * @type {number}
@@ -99,6 +142,24 @@ exports.create = function(req, res, next) {
     ], handleSingleLocationResult);
 };
 
+
+// TODO WIP: find a good place for this and document
+var getClusterSizeName = function(clusterSize, zoomLevel) {
+    var invertedZoomLevel = 18 - zoomLevel;
+    if (clusterSize > invertedZoomLevel * 3) {
+        return 'large';
+    }
+    else if (clusterSize > invertedZoomLevel) {
+        return 'medium';
+    }
+    else if (clusterSize > 1) {
+        return 'small';
+    }
+    else {
+        return 'tiny';
+    }
+};
+
 exports.list = function(req, res, next) {
     // Create the query based on the bounding box or coordinate/radius.
     // If no query is provided, all locations are loaded
@@ -123,14 +184,77 @@ exports.list = function(req, res, next) {
         query.coordinates = coordinates;
     }
 
+    // TODO WIP: validate, also that >= 0 <= 17
+    var zoomLevel = parseInt(req.query.zoom, 10);
+
     // Load the locations, but only the data we actually want to send
-    Location.find(query, 'name type coordinates updatedAt quality effort owner')
-        .populate('owner', 'id nickname')
+    // TODO WIP: we no longer populate the owner, it's too slow, what consequences does that have?
+    Location.find(query, 'name type coordinates quality')
+    // Location.find(query, 'name type coordinates updatedAt quality effort owner')
+        // .populate('owner', 'id nickname')
         .exec(function(err, locations) {
             if (err) {
                 return next(err);
             }
-            return res.send(locations);
+
+            // TODO WIP: clean this whole thing up and name everything correctly
+            _.each(locations, function(location) {
+                location.hash = encodeVeganautGeoHash(location.coordinates[1], location.coordinates[0], 20);
+            });
+
+            // Precision for top locations
+            var precisionTopLocation = zoomLevel + 2;
+
+            // Precision for clusters
+            var precisionClusters = zoomLevel + 3;
+
+            var locationGroupsTopLocations = _.groupBy(locations, function(location) {
+                return location.hash.substring(0, precisionTopLocation);
+            });
+            var locationGroupsClusters = _.groupBy(locations, function(location) {
+                return location.hash.substring(0, precisionClusters);
+            });
+
+
+            // Calculating top locations
+            var topLocations = _.map(locationGroupsTopLocations, function(cluster) {
+                return _.reduce(cluster, function(topLoc, loc) {
+                    // TODO: accessing quality is dominating the execution time of this whole method
+                    // (well actually the db access is doing that of course)
+                    if (loc.quality.rank > topLoc.quality.rank) {
+                        return loc;
+                    }
+                    else {
+                        return topLoc;
+                    }
+                });
+            });
+
+            topLocations = _.sortByOrder(topLocations, 'quality.rank', 'desc');
+            topLocations = _.take(topLocations, 10);
+
+            // Calculating clusters
+            var allClusterData = _.map(locationGroupsClusters, function(cluster, clusterId) {
+                var clusterData = {
+                    id: clusterId,
+                    lat: 0,
+                    lng: 0
+                };
+                _.each(cluster, function(loc) {
+                    clusterData.lat += loc.coordinates[1];
+                    clusterData.lng += loc.coordinates[0];
+                });
+
+                clusterData.clusterSize = cluster.length;
+                clusterData.sizeName = getClusterSizeName(clusterData.clusterSize, zoomLevel);
+                clusterData.lat /= clusterData.clusterSize;
+                clusterData.lng /= clusterData.clusterSize;
+
+                return clusterData;
+            });
+
+            // TODO WIP: from when on (which zoom level) should we just send all locations?
+            return res.send(allClusterData.concat(topLocations));
         }
     );
 };
@@ -242,8 +366,8 @@ exports.update = function(req, res, next) {
 exports.getCompletedMissions = function(req, res, next) {
     var locationId = req.params.locationId;
     Missions.Mission
-        // Get missions at this location that are not from NPCs
-        // For privacy reasons, we don't include the completed date
+    // Get missions at this location that are not from NPCs
+    // For privacy reasons, we don't include the completed date
         .find({
             location: locationId,
             isNpcMission: false
