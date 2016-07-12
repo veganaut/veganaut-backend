@@ -48,33 +48,28 @@ h.describe('Location API methods as logged in user alice', function() {
         h.request('GET', h.baseURL + 'location/list')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
-                expect(typeof res.body).toBe('object', 'returns an array of locations');
-                expect(res.body.length).toBe(5, '5 locations (4 from fixtures, one from previous test)');
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(Object.keys(res.body).length).toBe(1, 'returns nothing else');
+                expect(res.body.locations.length).toBe(5, '5 locations (4 from fixtures, one from previous test)');
 
-                _.each(res.body, function(location) {
+                _.each(res.body.locations, function(location) {
+                    expect(Object.keys(location).length).toBe(7, 'number of properties exposed of location');
+                    expect(typeof location.id).toBe('string', 'has an id');
                     expect(typeof location.name).toBe('string', 'has a name');
                     expect(typeof location.lat).toBe('number', 'has lat');
                     expect(typeof location.lng).toBe('number', 'has lng');
                     expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
 
-                    expect(typeof location.updatedAt).toMatch('string', 'updatedAt is a string');
-                    var updatedAt = new Date(location.updatedAt);
-                    expect(isNaN(updatedAt.getTime())).toBe(false,
-                        'updatedAt can be parsed as a valid date'
-                    );
-
                     expect(typeof location.owner).toBe('object', 'has an owner set');
                     expect(typeof location.owner.id).toBe('string', 'owner has an id');
-                    expect(typeof location.owner.nickname).toBe('string', 'owner has a nickname');
-                    expect(Object.keys(location.owner).length).toBe(2, 'not exposing any other owner details');
+                    expect(Object.keys(location.owner).length).toBe(1, 'not exposing any other owner details');
 
                     expect(typeof location.points).toBe('undefined', 'points are not set');
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
-                    expect(typeof location.effort).toBe('object', 'has an effort');
-                    expect(typeof location.effort.average).toBe('number', 'has an effort average');
-                    expect(typeof location.effort.numRatings).toBe('number', 'has an effort rating amount');
+                    expect(typeof location.effort).toBe('undefined', 'effort not exposed');
                     expect(typeof location.tags).toBe('undefined', 'tags are not set');
                 });
                 done();
@@ -86,10 +81,11 @@ h.describe('Location API methods as logged in user alice', function() {
         h.request(h.baseURL + 'location/list?bounds=7.436,46.943,7.442,46.950')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
-                expect(typeof res.body).toBe('object', 'returns an array of locations');
-                expect(res.body.length).toBe(1, 'returns only the location in the bounding box');
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(res.body.locations.length).toBe(1, 'returns only the location in the bounding box');
 
-                var location = res.body[0];
+                var location = res.body.locations[0];
                 expect(location.name).toBe('Reformhaus Ruprecht', 'returned the correct location');
                 done();
             })
@@ -100,11 +96,50 @@ h.describe('Location API methods as logged in user alice', function() {
         h.request(h.baseURL + 'location/list?lat=46.956&lng=7.452&radius=150')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
-                expect(typeof res.body).toBe('object', 'returns an array of locations');
-                expect(res.body.length).toBe(1, 'returns only the location within the radius');
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(res.body.locations.length).toBe(1, 'returns only the location within the radius');
 
-                var location = res.body[0];
+                var location = res.body.locations[0];
                 expect(location.name).toBe('3dosha', 'returned the correct location');
+                done();
+            })
+        ;
+    });
+
+    it('can list locations and cluster them', function(done) {
+        h.request('GET', h.baseURL + 'location/list?bounds=7.337,46.851,7.557,47.076&clusterLevel=11')
+            .end(function(err, res) {
+
+                expect(res.statusCode).toBe(200);
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(_.isArray(res.body.clusters)).toBe(true, 'returns an array of clusters');
+                expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
+                expect(res.body.locations.length).toBe(2, 'returns 2 locations');
+                expect(res.body.clusters.length).toBe(3, 'returns 3 clusters');
+
+                var totalLocations = 0;
+                _.each(res.body.clusters, function(cluster) {
+                    expect(Object.keys(cluster).length).toBe(6, 'number of properties exposed of cluster');
+                    expect(typeof cluster.id).toBe('string', 'has an id');
+                    expect(typeof cluster.lat).toBe('number', 'has lat');
+                    expect(typeof cluster.lng).toBe('number', 'has lng');
+                    expect(cluster.clusterSize).toBeGreaterThan(-1, 'has a valid cluster size');
+                    totalLocations += cluster.clusterSize;
+                    expect(['tiny', 'small', 'medium', 'large'].indexOf(cluster.sizeName))
+                        .toBeGreaterThan(-1, 'has a valid cluster size name')
+                    ;
+                    expect(cluster.numOwned).toBeGreaterThan(-1, 'numOwned valid');
+                });
+
+                expect(totalLocations).toBe(4, 'has all locations in clusters');
+
+                // Test that we own some location in a certain cluster
+                var ownedCluster = _.findWhere(res.body.clusters, { id: '31000212130021' });
+                expect(_.isPlainObject(ownedCluster)).toBe(true, 'found cluster where user is owner');
+                expect(ownedCluster.numOwned).toBe(2, 'numOwned valid');
+
                 done();
             })
         ;
@@ -398,31 +433,98 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
         h.request('GET', h.baseURL + 'location/list')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
-                expect(typeof res.body).toBe('object', 'returns an array of locations');
-                expect(res.body.length).toBe(4, 'has 4 locations');
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(Object.keys(res.body).length).toBe(1, 'returns nothing else');
+                expect(res.body.locations.length).toBe(4, 'has 4 locations');
 
-                _.each(res.body, function(location) {
+                _.each(res.body.locations, function(location) {
+                    expect(Object.keys(location).length).toBe(7, 'number of properties exposed of location');
+                    expect(typeof location.id).toBe('string', 'has an id');
                     expect(typeof location.name).toBe('string', 'has a name');
                     expect(typeof location.lat).toBe('number', 'has lat');
                     expect(typeof location.lng).toBe('number', 'has lng');
                     expect(location.type).toMatch(/^(gastronomy|retail)$/, 'type is gastronomy or retail');
                     expect(typeof location.owner).toBe('object', 'has an owner');
-                    // TODO: should the id be hidden for logged out users?
                     expect(typeof location.owner.id).toBe('string', 'owner has an id');
-                    expect(typeof location.owner.nickname).toBe('string', 'owner has a nickname');
-                    expect(Object.keys(location.owner).length).toBe(2, 'only 2 properties of the owner are exposed');
+                    expect(Object.keys(location.owner).length).toBe(1, 'not exposing any other owner details');
+
                     expect(typeof location.points).toBe('undefined', 'points are not set');
                     expect(typeof location.quality).toBe('object', 'has a quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
-                    expect(typeof location.effort).toBe('object', 'has am effort');
-                    expect(typeof location.effort.average).toBe('number', 'has am effort average');
-                    expect(typeof location.effort.numRatings).toBe('number', 'has am effort rating amount');
+                    expect(typeof location.effort).toBe('undefined', 'effort not exposed');
                     expect(typeof location.tags).toBe('undefined', 'tags are not set');
                 });
                 done();
             })
         ;
+    });
+
+    it('can list locations and cluster them', function(done) {
+        h.request('GET', h.baseURL + 'location/list?bounds=7.337,46.851,7.557,47.076&clusterLevel=11')
+            .end(function(err, res) {
+
+                expect(res.statusCode).toBe(200);
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(_.isArray(res.body.clusters)).toBe(true, 'returns an array of clusters');
+                expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
+                expect(res.body.locations.length).toBe(2, 'returns 2 locations');
+                expect(res.body.clusters.length).toBe(3, 'returns 3 clusters');
+
+                var totalLocations = 0;
+                _.each(res.body.clusters, function(cluster) {
+                    expect(Object.keys(cluster).length).toBe(5, 'number of properties exposed of cluster');
+                    expect(typeof cluster.id).toBe('string', 'has an id');
+                    expect(typeof cluster.lat).toBe('number', 'has lat');
+                    expect(typeof cluster.lng).toBe('number', 'has lng');
+                    expect(cluster.clusterSize).toBeGreaterThan(-1, 'has a valid cluster size');
+                    totalLocations += cluster.clusterSize;
+                    expect(['tiny', 'small', 'medium', 'large'].indexOf(cluster.sizeName))
+                        .toBeGreaterThan(-1, 'has a valid cluster size name')
+                    ;
+                    expect(typeof cluster.numOwned).toBe('undefined', 'numOwned not given if not logged in');
+                });
+
+                expect(totalLocations).toBe(4, 'has all locations in clusters');
+
+                done();
+            })
+        ;
+    });
+
+    it('can filter locations by type', function(done) {
+        h.request('GET', h.baseURL + 'location/list?type=gastronomy')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(Object.keys(res.body).length).toBe(1, 'returns nothing else');
+                expect(res.body.locations.length).toBe(2, 'has 2 gastronomy locations');
+
+                _.each(res.body.locations, function(location) {
+                    expect(location.type).toBe('gastronomy', 'returned gastronomy location');
+                });
+                done();
+            })
+        ;
+    });
+
+    it('can filter locations by update time', function(done) {
+        // TODO: find a better way to test this
+        setTimeout(function() {
+            h.request('GET', h.baseURL + 'location/list?updatedWithin=1')
+                .end(function(err, res) {
+                    expect(res.statusCode).toBe(200);
+                    expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                    expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                    expect(Object.keys(res.body).length).toBe(1, 'returns nothing else');
+                    expect(res.body.locations.length).toBe(0, 'has no location changed less than a second ago');
+                    done();
+                })
+            ;
+        }, 1000);
     });
 
     it('can get an individual location', function(done) {

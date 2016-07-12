@@ -17,6 +17,15 @@ constants.ACCOUNT_TYPES = {
 };
 
 /**
+ * List of possible location types.
+ * @type {string[]}
+ */
+constants.LOCATION_TYPES = [
+    'gastronomy',
+    'retail'
+];
+
+/**
  * List of tags that can be given to locations
  * The prefixes stand for:
  *   - g: gastronomy

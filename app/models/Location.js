@@ -34,7 +34,7 @@ var locationSchema = new Schema({
     name: String,
     description: String,
     link: String,
-    type: {type: String, enum: ['gastronomy', 'retail']},
+    type: {type: String, enum: constants.LOCATION_TYPES},
 
     // Maps person ids to their points at time updatedAt.
     points: {type: Schema.Types.Mixed, default: {}}, // TODO: replace this with a more specific schema
@@ -173,12 +173,26 @@ locationSchema.methods.notifyMissionCompleted = function(mission, previousComple
  */
 locationSchema.options.toJSON = {
     transform: function(doc) {
-        var ret = _.pick(doc, ['name', 'description', 'link', 'type', 'id', 'owner', 'updatedAt', 'tags']);
+        var ret = _.pick(doc, ['name', 'description', 'link', 'type', 'id', 'updatedAt', 'tags']);
 
         // Add lat/lng in the format the frontend expects
         if (util.isArray(doc.coordinates)) {
             ret.lng = doc.coordinates[0];
             ret.lat = doc.coordinates[1];
+        }
+
+        // Check if owner was loaded
+        if (typeof doc.owner !== 'undefined') {
+            if (typeof doc.populated('owner') === 'undefined') {
+                // If the owner wasn't populated, wrap the id in an object
+                ret.owner = {
+                    id: doc.owner
+                };
+            }
+            else {
+                // If is was populated, expose directly
+                ret.owner = doc.owner;
+            }
         }
 
         // Compute and include points if the are present (= were loaded from db)

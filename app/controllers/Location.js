@@ -2,54 +2,34 @@
 
 var _ = require('lodash');
 var async = require('async');
+var constants = require('../utils/constants');
+var utils = require('../utils/utils');
 
 var mongoose = require('mongoose');
 var Location = mongoose.model('Location');
 var Missions = require('../models/Missions');
 var Product = require('../models/Product');
 
-// TODO WIP: move to separate file (or even pre-calculate and store in db?)
-// ADAPTED FROM https://github.com/davetroy/geohash-js
-// Originally it would use base32, we use base4 because we want
-// the precision to increase more gradually the more letters are considered.
-var encodeVeganautGeoHash = function(latitude, longitude, precision) {
-    var latBounds = {
-        lower: -90,
-        upper: 90
-    };
-    var lngBounds = {
-        lower: -180,
-        upper: 180
-    };
-    var character = 0;
-    var geohash = '';
+/**
+ * Minimum cluster level (same as zoom levels used by leaflet)
+ * @type {number}
+ */
+var CLUSTER_LEVEL_MIN = 0;
 
-    var lngMid, latMid;
-    while (geohash.length < precision) {
-        lngMid = (lngBounds.lower + lngBounds.upper) / 2;
-        if (longitude > lngMid) {
-            character += 2;
-            lngBounds.lower = lngMid;
-        }
-        else {
-            lngBounds.upper = lngMid;
-        }
+/**
+ * Maximum cluster level (same as zoom levels used by leaflet)
+ * For levels bigger than that, we don't do clustering.
+ * (When zoomed in quite a lot, we show all locations.)
+ * @type {number}
+ */
+var CLUSTER_LEVEL_MAX = 13;
 
-        latMid = (latBounds.lower + latBounds.upper) / 2;
-        if (latitude > latMid) {
-            character += 1;
-            latBounds.lower = latMid;
-        }
-        else {
-            latBounds.upper = latMid;
-        }
-
-        geohash += character.toString();
-        character = 0;
-    }
-    return geohash;
-};
-
+/**
+ * Number of top locations to return when getting the clustered
+ * location list.
+ * @type {number}
+ */
+var NUM_TOP_LOCATIONS = 15;
 
 /**
  * Number of missions to send in the get completed missions call
@@ -89,6 +69,121 @@ var handleSingleLocationResult = function(err, obj) {
     });
 
     return obj.res.send(returnObj);
+};
+
+/**
+ * Returns a word describing the size of the cluster at the
+ * given zoom level.
+ *
+ * TODO: find a better place for this code
+ * @param {number} clusterSize
+ * @param {number} clusterLevel
+ * @returns {string}
+ */
+var getClusterSizeName = function(clusterSize, clusterLevel) {
+    var invertedZoomLevel = 18 - clusterLevel;
+    if (clusterSize > invertedZoomLevel * 3) {
+        return 'large';
+    }
+    else if (clusterSize > invertedZoomLevel) {
+        return 'medium';
+    }
+    else if (clusterSize > 1) {
+        return 'small';
+    }
+    else {
+        return 'tiny';
+    }
+};
+
+/**
+ * Calculates and returns the location clusters for the given level.
+ *
+ * @param {Location[]} locations List of locations to cluster
+ *      Assumes that the locations have a property "geoHash" set.
+ * @param {number} clusterLevel Already validated clustering levle
+ * @param {Person} [user] User for which to get the clusters.
+ *      Used to "numOwned" property on the cluster
+ * @returns {Array}
+ */
+var getLocationClusters = function(locations, clusterLevel, user) {
+    // Calculate precision (number of characters of the location has to use)
+    // Slightly more precise than the top locations to have more clusters
+    var precisionClusters = clusterLevel + 3;
+
+    var locationGroupsClusters = _.groupBy(locations, function(location) {
+        return location.geoHash.substring(0, precisionClusters);
+    });
+
+    // Calculating clusters
+    var allClusterData = _.map(locationGroupsClusters, function(cluster, clusterId) {
+        var clusterData = {
+            id: clusterId,
+            lat: 0,
+            lng: 0
+        };
+        _.each(cluster, function(loc) {
+            clusterData.lat += loc.coordinates[1];
+            clusterData.lng += loc.coordinates[0];
+
+            // TODO: Add tests to make sure this works correctly? Or will this be removed too soon?
+            if (typeof user === 'object') {
+                clusterData.numOwned = clusterData.numOwned || 0;
+                if (('' + loc.owner) === ('' + user.id)) {
+                    clusterData.numOwned += 1;
+                }
+            }
+        });
+
+        clusterData.clusterSize = cluster.length;
+        clusterData.sizeName = getClusterSizeName(clusterData.clusterSize, clusterLevel);
+        clusterData.lat /= clusterData.clusterSize;
+        clusterData.lng /= clusterData.clusterSize;
+
+        return clusterData;
+    });
+
+    return allClusterData;
+};
+
+/**
+ * Roughly clusters the given locations, selects the top location of
+ * every cluster and then returns the overall highest ranked locations.
+ * This gives a spread out set of highly ranked locations.
+ *
+ * @param {Location[]} locations
+ * @param {number} clusterLevel
+ * @returns {Location[]}
+ */
+var getSpreadTopLocations = function(locations, clusterLevel) {
+    // Calculate precision (number of characters of the location has to use)
+    // Slightly less precise than the clusters to not have many overlapping top locations
+    var precisionTopLocation = clusterLevel + 2;
+
+    // Group the locations by their cluster
+    var locationGroupsTopLocations = _.groupBy(locations, function(location) {
+        return location.geoHash.substring(0, precisionTopLocation);
+    });
+
+    // Calculating top locations
+    var topLocations = _.map(locationGroupsTopLocations, function(cluster) {
+        return _.reduce(cluster, function(topLoc, loc) {
+            // TODO: accessing quality is dominating the execution time of this whole method
+            // (well actually the db access is doing that of course)
+            if (loc.quality.rank > topLoc.quality.rank) {
+                return loc;
+            }
+            else {
+                return topLoc;
+            }
+        });
+    });
+
+    // Sort by rank and pick the top ones
+    topLocations = _.sortByOrder(topLocations, 'quality.rank', 'desc');
+    topLocations = _.take(topLocations, NUM_TOP_LOCATIONS);
+
+    return topLocations;
 };
 
 /**
@@ -142,24 +237,14 @@ exports.create = function(req, res, next) {
     ], handleSingleLocationResult);
 };
 
-
-// TODO WIP: find a good place for this and document
-var getClusterSizeName = function(clusterSize, zoomLevel) {
-    var invertedZoomLevel = 18 - zoomLevel;
-    if (clusterSize > invertedZoomLevel * 3) {
-        return 'large';
-    }
-    else if (clusterSize > invertedZoomLevel) {
-        return 'medium';
-    }
-    else if (clusterSize > 1) {
-        return 'small';
-    }
-    else {
-        return 'tiny';
-    }
-};
-
+/**
+ * Returns lists of locations. These can either be full lists in the given
+ * bounds or clustered locations with only the top locations returned as such.
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.list = function(req, res, next) {
     // Create the query based on the bounding box or coordinate/radius.
     // If no query is provided, all locations are loaded
@@ -184,77 +269,57 @@ exports.list = function(req, res, next) {
         query.coordinates = coordinates;
     }
 
-    // TODO WIP: validate, also that >= 0 <= 17
-    var zoomLevel = parseInt(req.query.zoom, 10);
+    // Add location type to the query if valid value given
+    if (constants.LOCATION_TYPES.indexOf(req.query.type) > -1) {
+        query.type = req.query.type;
+    }
+
+    // Add updated within restriction to the query if valid value given
+    var updatedWithin = parseInt(req.query.updatedWithin, 10);
+    if (!isNaN(updatedWithin) && updatedWithin > 0) {
+        query.updatedAt = {
+            $gt: new Date(Date.now() - (updatedWithin * 1000))
+        };
+    }
+
+    // Get the cluster level and make sure it's either undefined or in the valid levels
+    // If a value outside the bounds is given, we won't do clustering
+    var clusterLevel = parseInt(req.query.clusterLevel, 10);
+    if (isNaN(clusterLevel) ||
+        clusterLevel < CLUSTER_LEVEL_MIN ||
+        clusterLevel > CLUSTER_LEVEL_MAX)
+    {
+        clusterLevel = undefined;
+    }
 
     // Load the locations, but only the data we actually want to send
-    // TODO WIP: we no longer populate the owner, it's too slow, what consequences does that have?
-    Location.find(query, 'name type coordinates quality')
-    // Location.find(query, 'name type coordinates updatedAt quality effort owner')
-        // .populate('owner', 'id nickname')
+    Location.find(query, 'name type coordinates quality owner')
         .exec(function(err, locations) {
             if (err) {
                 return next(err);
             }
 
-            // TODO WIP: clean this whole thing up and name everything correctly
-            _.each(locations, function(location) {
-                location.hash = encodeVeganautGeoHash(location.coordinates[1], location.coordinates[0], 20);
-            });
+            // Prepare response object
+            var response = {};
 
-            // Precision for top locations
-            var precisionTopLocation = zoomLevel + 2;
-
-            // Precision for clusters
-            var precisionClusters = zoomLevel + 3;
-
-            var locationGroupsTopLocations = _.groupBy(locations, function(location) {
-                return location.hash.substring(0, precisionTopLocation);
-            });
-            var locationGroupsClusters = _.groupBy(locations, function(location) {
-                return location.hash.substring(0, precisionClusters);
-            });
-
-
-            // Calculating top locations
-            var topLocations = _.map(locationGroupsTopLocations, function(cluster) {
-                return _.reduce(cluster, function(topLoc, loc) {
-                    // TODO: accessing quality is dominating the execution time of this whole method
-                    // (well actually the db access is doing that of course)
-                    if (loc.quality.rank > topLoc.quality.rank) {
-                        return loc;
-                    }
-                    else {
-                        return topLoc;
-                    }
-                });
-            });
-
-            topLocations = _.sortByOrder(topLocations, 'quality.rank', 'desc');
-            topLocations = _.take(topLocations, 10);
-
-            // Calculating clusters
-            var allClusterData = _.map(locationGroupsClusters, function(cluster, clusterId) {
-                var clusterData = {
-                    id: clusterId,
-                    lat: 0,
-                    lng: 0
-                };
-                _.each(cluster, function(loc) {
-                    clusterData.lat += loc.coordinates[1];
-                    clusterData.lng += loc.coordinates[0];
+            // Check if we got a cluster level for which we do clustering
+            if (_.isNumber(clusterLevel)) {
+                // Calculate the geo hash of every location
+                // TODO: pre-calculate and store in db
+                _.each(locations, function(location) {
+                    location.geoHash = utils.calculateGeoHash(location.coordinates[1], location.coordinates[0]);
                 });
 
-                clusterData.clusterSize = cluster.length;
-                clusterData.sizeName = getClusterSizeName(clusterData.clusterSize, zoomLevel);
-                clusterData.lat /= clusterData.clusterSize;
-                clusterData.lng /= clusterData.clusterSize;
+                // Get the top locations and the clusters
+                response.locations = getSpreadTopLocations(locations, clusterLevel);
+                response.clusters = getLocationClusters(locations, clusterLevel, req.user);
+            }
+            else {
+                // No clustering wanted by the requester or level too high that clustering makes sense
+                response.locations = locations;
+            }
 
-                return clusterData;
-            });
-
-            // TODO WIP: from when on (which zoom level) should we just send all locations?
-            return res.send(allClusterData.concat(topLocations));
+            return res.send(response);
         }
     );
 };
