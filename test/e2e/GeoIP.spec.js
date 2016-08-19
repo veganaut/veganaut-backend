@@ -11,6 +11,8 @@ h.describe('GeoIP', function() {
 
                 // No further testing because geoip can't handle 127.0.0.1 (localhost)
 
+                // TODO: should test the part about the country data
+
                 done();
             })
         ;

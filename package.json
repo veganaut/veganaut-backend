@@ -15,7 +15,7 @@
     "express": "4.13.3",
     "morgan": "1.6.1",
     "body-parser": "1.14.1",
-    "geoip-lite": "1.1.6",
+    "geoip-lite": "1.1.8",
     "lodash": "3.10.1",
     "mongoose": "4.1.11",
     "password-generator": "2.0.1",
