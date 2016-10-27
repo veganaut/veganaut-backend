@@ -75,6 +75,8 @@ app.options('/location', cors());
 app.post('/location', cors(), Session.restrict, Location.create);
 app.options('/location/list', cors());
 app.get('/location/list', cors(), Location.list);
+app.options('/location/search', cors());
+app.get('/location/search', cors(), Location.search);
 app.options('/location/:locationId', cors());
 app.get('/location/:locationId', cors(), Location.get);
 app.put('/location/:locationId', cors(), Session.restrict, Location.update);

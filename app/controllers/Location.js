@@ -324,6 +324,38 @@ exports.list = function(req, res, next) {
     );
 };
 
+// TODO WIP: document
+exports.search = function(req, res, next) {
+    var searchString = req.query.query;
+    var limit = parseInt(req.query.limit, 10) || 10;
+
+    Location
+        .find(
+            {
+                $text: { $search: searchString }
+            },
+            {
+                searchScore: { $meta: 'textScore' },
+                name: 1,
+                type: 1,
+                quality: 1
+            }
+        )
+        .sort({
+            searchScore: { $meta : 'textScore' },
+            'quality.rank': 'desc'
+        })
+        .limit(limit)
+        .exec(function(err, locations) {
+            if (err) {
+                return next(err);
+            }
+
+            return res.send(locations);
+        }
+    );
+};
+
 
 // TODO: this is so ugly I'm gonna die. How does one handle this async callback mess while staying sane?
 

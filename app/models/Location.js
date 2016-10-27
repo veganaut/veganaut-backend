@@ -46,6 +46,12 @@ var locationSchema = new Schema({
     updatedAt: {type: Date, default: Date.now}
 });
 
+// TODO WIP: verify that this index makes sense and how to create it in the db
+locationSchema.index(
+    { name: 'text', description: 'text' },
+    { weights: {name: 10, description: 1 }}
+);
+
 // Create the schema for all the tags
 var tagSchemaType = {};
 _.each(constants.LOCATION_TAGS, function(tag) {
