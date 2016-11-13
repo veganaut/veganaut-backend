@@ -568,6 +568,47 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
         ;
     });
 
+    it('can search for locations', function(done) {
+        h.request('GET', h.baseURL + 'location/search?query=shop')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                var locations = res.body;
+                expect(_.isArray(locations)).toBe(true, 'got an array');
+                expect(locations.length).toBeGreaterThan(1, 'got more than one result');
+
+                _.each(locations, function(location) {
+                    expect(Object.keys(location).length).toBe(4, 'number of properties exposed of location');
+                    expect(typeof location.id).toBe('string', 'has an id');
+                    expect(typeof location.name).toBe('string', 'has a name');
+                    expect(typeof location.type).toBe('string', 'has type');
+                    expect(typeof location.quality).toBe('object', 'has quality');
+                    expect(typeof location.quality.average).toBe('number', 'has a quality average');
+                    expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
+                });
+                done();
+            })
+        ;
+    });
+
+    it('can limit number of results when searching for locations', function(done) {
+        h.request('GET', h.baseURL + 'location/search?query=shop&limit=1')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                expect(res.body.length).toBe(1, 'got one result');
+                done();
+            })
+        ;
+    });
+
+    it('checks for valid search string when searching', function(done) {
+        h.request('GET', h.baseURL + 'location/search')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(400);
+                done();
+            })
+        ;
+    });
+
     it('cannot update a location', function(done) {
         h.request('PUT', h.baseURL + 'location/000000000000000000000006')
             .send({

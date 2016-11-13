@@ -324,11 +324,33 @@ exports.list = function(req, res, next) {
     );
 };
 
-// TODO WIP: document
+/**
+ * Searches for locations by a string. Searched the name and description.
+ * Parameters read from the request:
+ * - query: string to search for
+ * - limit: number of locations to return, defaults to 10, maximum 50
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
 exports.search = function(req, res, next) {
     var searchString = req.query.query;
-    var limit = parseInt(req.query.limit, 10) || 10;
+    var limit = parseInt(req.query.limit, 10);
 
+    // Check validity of query string
+    if (!_.isString(searchString) || searchString.length < 1) {
+        res.status(400);
+        return next(new Error('Must provide a query string.'));
+    }
+
+    // Set default limit and make sure it's not above the max
+    if (!_.isNumber(limit) || isNaN(limit) || limit <= 0) {
+        limit = 10;
+    }
+    limit = Math.min(limit, 50);
+
+    // Find the locations
     Location
         .find(
             {

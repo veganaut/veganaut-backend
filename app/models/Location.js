@@ -46,10 +46,10 @@ var locationSchema = new Schema({
     updatedAt: {type: Date, default: Date.now}
 });
 
-// TODO WIP: verify that this index makes sense and how to create it in the db
+// Create an index for the text search
 locationSchema.index(
-    { name: 'text', description: 'text' },
-    { weights: {name: 10, description: 1 }}
+    {name: 'text', description: 'text'},
+    {weights: {name: 10, description: 1}}
 );
 
 // Create the schema for all the tags
