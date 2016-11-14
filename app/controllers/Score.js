@@ -32,6 +32,9 @@ var getPlayersById = function() {
 var getLocationCountByType = function() {
     var query = Location.aggregate([
         {
+            $match: Location.getBaseQuery()
+        },
+        {
             $group: {
                 _id: '$type',
                 sum: {$sum: 1}
@@ -115,6 +118,9 @@ var getMissionsCountByPlayer = function(playerByIdPromise) {
  */
 var getLocationCountByPlayer = function(playerByIdPromise) {
     var query = Location.aggregate([
+        {
+            $match: Location.getBaseQuery()
+        },
         {
             $group: {
                 _id: '$owner',

@@ -25,7 +25,7 @@ h.describe('Score controller', function() {
 
             var peopleLocations = stats.people.locations;
             expect(typeof peopleLocations).toBe('object', 'got people.locations stats');
-            expect(peopleLocations.length).toBeGreaterThan(0, 'got some people location entries');
+            expect(peopleLocations.length).toBe(2, 'has correct amount of people location entries');
             _.each(peopleLocations, function(stat) {
                 expect(typeof stat.person).toBe('object', 'people location contains person');
                 expect(typeof stat.person.id).toBe('string', 'people location contains person with id');
@@ -33,15 +33,19 @@ h.describe('Score controller', function() {
                 expect(typeof stat.locations).toBe('number', 'people location contains a number');
                 expect(stat.locations).toBeGreaterThan(0, 'people location contains a valid value');
             });
+            expect(peopleLocations[0].person.nickname).toBe('Alice', 'Alice is first');
+            expect(peopleLocations[0].locations).toBe(2, 'Alice owns 2 locations');
+            expect(peopleLocations[1].person.nickname).toBe('Bob', 'Bob is second');
+            expect(peopleLocations[1].locations).toBe(1, 'Bob owns 2 locations');
 
             expect(typeof stats.locationTypes).toBe('object', 'got locationTypes stats');
             var locationTypes = stats.locationTypes.locations;
             expect(typeof locationTypes).toBe('object', 'got locationTypes.locations stats');
-            expect(locationTypes.length).toBeGreaterThan(0, 'got some locationTypes entries');
+            expect(locationTypes.length).toBe(2, 'got correct amount of locationTypes entries');
             _.each(locationTypes, function(stat) {
                 expect(typeof stat.type).toBe('string', 'locationTypes contains a type');
                 expect(typeof stat.locations).toBe('number', 'locationTypes contains a number');
-                expect(stat.locations).toBeGreaterThan(0, 'locationTypes contains a valid value');
+                expect(stat.locations).toBe(2, 'has 2 locations of each type');
             });
 
             done();

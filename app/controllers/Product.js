@@ -98,29 +98,23 @@ exports.list = function(req, res, next) {
         });
     };
 
-    // Check if there is a location query
-    if (Object.keys(locationQuery).length > 0) {
-        // Find the relevant locations
-        Location
-            .find(locationQuery, function(err, locations) {
-                if (err) {
-                    return next(err);
-                }
-
-                // Generate list of location ids
-                var ids = [];
-                _.each(locations, function(location) {
-                    ids.push(location.id);
-                });
-
-                return doProductQuery({
-                    location: {$in: ids}
-                });
+    // Find the relevant locations (we always need to run this query even if
+    // it's empty here as it will automatically exclude the deleted locations).
+    Location
+        .find(locationQuery, function(err, locations) {
+            if (err) {
+                return next(err);
             }
-        );
-    }
-    else {
-        // No location query, return all products
-        return doProductQuery({});
-    }
+
+            // Generate list of location ids
+            var ids = [];
+            _.each(locations, function(location) {
+                ids.push(location.id);
+            });
+
+            return doProductQuery({
+                location: {$in: ids}
+            });
+        }
+    );
 };

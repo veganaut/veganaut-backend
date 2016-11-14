@@ -36,6 +36,9 @@ var locationSchema = new Schema({
     link: String,
     type: {type: String, enum: constants.LOCATION_TYPES},
 
+    // Whether this location was deleted (soft delete)
+    deleted: Boolean,
+
     // Maps person ids to their points at time updatedAt.
     points: {type: Schema.Types.Mixed, default: {}}, // TODO: replace this with a more specific schema
 
@@ -72,6 +75,21 @@ locationSchema.add({
 // Locations keep track of average quality and effort
 new Average('quality', 1, 5, locationSchema);
 new Average('effort', -1, 1, locationSchema);
+
+/**
+ * Method for adding the base query (excluding deleted locations)
+ * to all basic query methods.
+ * @param next
+ */
+var whereNotDeletedPreHook = function(next) {
+    this.where(locationSchema.statics.getBaseQuery());
+    next();
+};
+
+// Register the hooks (findById calls findOne)
+locationSchema.pre('find', whereNotDeletedPreHook);
+locationSchema.pre('findOne', whereNotDeletedPreHook);
+locationSchema.pre('count', whereNotDeletedPreHook);
 
 
 /**
@@ -223,6 +241,17 @@ locationSchema.options.toJSON = {
 
         return ret;
     }
+};
+
+/**
+ * Returns the base query that should be used for all location queries.
+ * This is added automatically for find, findOne, findById and count.
+ * @returns {{}}
+ */
+locationSchema.statics.getBaseQuery = function() {
+    return {
+        deleted: {$ne: true}
+    };
 };
 
 /**

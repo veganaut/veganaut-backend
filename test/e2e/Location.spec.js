@@ -568,6 +568,16 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
         ;
     });
 
+    it('does not return deleted locations', function(done) {
+        h.request('GET', h.baseURL + 'location/000000000000000000000011')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(404);
+                expect(typeof res.body.error).toBe('string', 'got an error message');
+                done();
+            })
+        ;
+    });
+
     it('can search for locations', function(done) {
         h.request('GET', h.baseURL + 'location/search?query=shop')
             .end(function(err, res) {

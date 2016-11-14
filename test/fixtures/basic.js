@@ -69,6 +69,14 @@ var getFixtures = function() {
         type: 'retail',
         owner: fix.npc.id
     });
+    fix.deletedPlace = new Location({
+        _id: '000000000000000000000011',
+        coordinates: [7.456015, 46.949960],
+        name: 'CLOSED: This place should never show up!',
+        type: 'gastronomy',
+        owner: fix.alice.id,
+        deleted: true
+    });
 
     fix.doshaCurry = new Product({
         _id: '000000000000000000000101',
@@ -76,7 +84,6 @@ var getFixtures = function() {
         name: 'curry',
         availability: constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE.temporarilyUnavailable
     });
-
     fix.doshaSamosa = new Product({
         _id: '000000000000000000000102',
         location: fix.dosha.id,
@@ -206,6 +213,12 @@ var getFixtures = function() {
         person: fix.npc.id,
         completed: '2014-08-10',
         outcome: 4
+    });
+
+    fix.closedPlaceProduct = new Product({
+        _id: '000000000000000000000104',
+        location: fix.deletedPlace.id,
+        name: 'THIS PRODUCT SHOULD NEVER SHOW UP'
     });
 
     return fix;
