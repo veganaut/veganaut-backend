@@ -19,6 +19,7 @@ var Score = require('./app/controllers/Score');
 var Session = require('./app/controllers/Session');
 var PasswordResetEmail = require('./app/controllers/PasswordResetEmail');
 var Product = require('./app/controllers/Product');
+var Sitemap = require('./app/controllers/Sitemap');
 
 // Create the app
 var app = express();
@@ -100,6 +101,9 @@ app.get('/geoip', cors(), GeoIP.get);
 
 app.options('/passwordResetEmail', cors());
 app.post('/passwordResetEmail', cors(), PasswordResetEmail.send);
+
+// Sitemap of frontend
+app.get('/sitemap.xml', Sitemap.getSitemap);
 
 // Handle errors and if no one responded to the request
 app.use(function(err, req, res, next) {
