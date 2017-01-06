@@ -292,8 +292,19 @@ exports.list = function(req, res, next) {
         clusterLevel = undefined;
     }
 
+    // Define the fields we have to load
+    var fieldsToLoad = 'name type coordinates quality owner';
+
+    // Check if and which part of the address should be loaded
+    if (req.query.addressType === 'city') {
+        fieldsToLoad += ' address.city';
+    }
+    else if (req.query.addressType === 'street') {
+        fieldsToLoad += ' address.street address.houseNumber';
+    }
+
     // Load the locations, but only the data we actually want to send
-    Location.find(query, 'name type coordinates quality owner')
+    Location.find(query, fieldsToLoad)
         .exec(function(err, locations) {
             if (err) {
                 return next(err);
@@ -360,7 +371,8 @@ exports.search = function(req, res, next) {
                 searchScore: { $meta: 'textScore' },
                 name: 1,
                 type: 1,
-                quality: 1
+                quality: 1,
+                'address.city': 1
             }
         )
         .sort({
@@ -398,12 +410,12 @@ var updateLocation = function(obj, cb) {
     var locationData = obj.req.body;
     _.merge(obj.location, _.pick(locationData, ['name', 'description', 'link', 'type']));
 
-    // Set coordinates if they are given
-    if (typeof locationData.lng === 'number') {
+    // Set coordinates if they are given and if they actually changed
+    if (typeof locationData.lng === 'number' && obj.location.coordinates[0] !== locationData.lng) {
         obj.location.coordinates[0] = locationData.lng;
         obj.location.markModified('coordinates');
     }
-    if (typeof locationData.lat === 'number') {
+    if (typeof locationData.lat === 'number' && obj.location.coordinates[1] !== locationData.lat) {
         obj.location.coordinates[1] = locationData.lat;
         obj.location.markModified('coordinates');
     }

@@ -39,6 +39,15 @@ h.describe('Location API methods as logged in user alice', function() {
                 expect(location.effort.average).toBe(0, 'effort is at 0 by default');
                 expect(location.effort.numRatings).toBe(0, 'effort numRatings is at 0 by default');
 
+                // Check that it got the address from the Nominatim mock
+                expect(typeof location.address).toBe('object', 'got address object');
+                expect(location.address.street).toBe('Bundesplatz', 'got street');
+                expect(location.address.houseNumber).toBe('1', 'got houseNumber');
+                expect(location.address.postcode).toBe('3005', 'got postcode');
+                expect(location.address.city).toBe('Bern', 'got city');
+                expect(location.address.country).toBe('Switzerland', 'got country');
+                expect(Object.keys(location.address).length).toBe(5, 'got correct amount of address details');
+
                 done();
             })
         ;
@@ -71,14 +80,15 @@ h.describe('Location API methods as logged in user alice', function() {
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
                     expect(typeof location.effort).toBe('undefined', 'effort not exposed');
                     expect(typeof location.tags).toBe('undefined', 'tags are not set');
+                    expect(typeof location.address).toBe('undefined', 'address is not set');
                 });
                 done();
             })
         ;
     });
 
-    it('can list locations within a bounding box', function(done) {
-        h.request(h.baseURL + 'location/list?bounds=7.436,46.943,7.442,46.950')
+    it('can list locations within a bounding box with address', function(done) {
+        h.request(h.baseURL + 'location/list?bounds=7.436,46.943,7.442,46.950&addressType=street')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
                 expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
@@ -87,13 +97,18 @@ h.describe('Location API methods as logged in user alice', function() {
 
                 var location = res.body.locations[0];
                 expect(location.name).toBe('Reformhaus Ruprecht', 'returned the correct location');
+                expect(typeof location.address).toBe('object', 'has an address');
+                expect(Object.keys(location.address).length).toBe(2, 'number of address properties exposed');
+                expect(location.address.street).toBe('Christoffelgasse', 'correct street');
+                expect(location.address.houseNumber).toBe('7', 'correct house number');
+
                 done();
             })
         ;
     });
 
-    it('can list locations within a radius around a center', function(done) {
-        h.request(h.baseURL + 'location/list?lat=46.956&lng=7.452&radius=150')
+    it('can list locations within a radius around a center with address', function(done) {
+        h.request(h.baseURL + 'location/list?lat=46.956&lng=7.452&radius=150&addressType=city')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
                 expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
@@ -102,6 +117,10 @@ h.describe('Location API methods as logged in user alice', function() {
 
                 var location = res.body.locations[0];
                 expect(location.name).toBe('3dosha', 'returned the correct location');
+                expect(typeof location.address).toBe('object', 'has an address');
+                expect(Object.keys(location.address).length).toBe(1, 'number of address properties exposed');
+                expect(location.address.city).toBe('Bern', 'correct city');
+
                 done();
             })
         ;
@@ -175,6 +194,13 @@ h.describe('Location API methods as logged in user alice', function() {
                 expect(typeof location.effort.average).toBe('number', 'has an effort average');
                 expect(typeof location.effort.numRatings).toBe('number', 'has an effort rating amount');
                 expect(typeof location.tags).toBe('object', 'got tags object');
+                expect(typeof location.address).toBe('object', 'got address object');
+                expect(typeof location.address.street).toBe('string', 'got street');
+                expect(typeof location.address.houseNumber).toBe('string', 'got houseNumber');
+                expect(typeof location.address.postcode).toBe('string', 'got postcode');
+                expect(typeof location.address.city).toBe('string', 'got city');
+                expect(typeof location.address.country).toBe('string', 'got country');
+                expect(Object.keys(location.address).length).toBe(5, 'got correct amount of address details');
                 expect(location.products.length).toBeGreaterThan(0, 'got some products');
 
                 // Expected order: samosa should be before curry because curry is temporarilyUnavailable
@@ -420,6 +446,7 @@ h.describe('Location update methods as logged in user alice', function() {
                 expect(location.type).toBe('gastronomy', 'correct type');
                 expect(location.lat).toBe(46.957113, 'correct lat');
                 expect(location.lng).toBe(7.452544, 'correct lng');
+                expect(location.address.street).toBe('Moserstrasse', 'correct street');
 
                 done();
             })
@@ -455,6 +482,7 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
                     expect(typeof location.effort).toBe('undefined', 'effort not exposed');
                     expect(typeof location.tags).toBe('undefined', 'tags are not set');
+                    expect(typeof location.address).toBe('undefined', 'address is not set');
                 });
                 done();
             })
@@ -552,6 +580,8 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
                 expect(typeof location.tags).toBe('object', 'got tags object');
                 expect(typeof location.products).toBe('object', 'got an array of products');
                 expect(location.products.length).toBeGreaterThan(0, 'got some products');
+                expect(typeof location.address).toBe('object', 'address is set');
+                expect(Object.keys(location.address).length).toBe(5, 'number of address properties exposed');
 
                 _.each(location.products, function(product) {
                     expect(typeof product.name).toBe('string', 'has a name');
@@ -587,13 +617,16 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
                 expect(locations.length).toBeGreaterThan(1, 'got more than one result');
 
                 _.each(locations, function(location) {
-                    expect(Object.keys(location).length).toBe(4, 'number of properties exposed of location');
+                    expect(Object.keys(location).length).toBe(5, 'number of properties exposed of location');
                     expect(typeof location.id).toBe('string', 'has an id');
                     expect(typeof location.name).toBe('string', 'has a name');
                     expect(typeof location.type).toBe('string', 'has type');
                     expect(typeof location.quality).toBe('object', 'has quality');
                     expect(typeof location.quality.average).toBe('number', 'has a quality average');
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
+                    expect(typeof location.address).toBe('object', 'has an address');
+                    expect(Object.keys(location.address).length).toBe(1, 'number of properties exposed of address');
+                    expect(typeof location.address.city).toBe('string', 'has a city in the address');
                 });
                 done();
             })

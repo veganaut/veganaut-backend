@@ -7,6 +7,7 @@
 'use strict';
 
 var _ = require('lodash');
+var nock = require('nock');
 
 // Get the app
 var port = 3001;
@@ -32,6 +33,35 @@ mockery.registerMock('../utils/mailTransporter.js', {
         cb();
     }
 });
+
+// Configure Nock to allow connections to localhost (for the e2e tests to connect to the API).
+nock.enableNetConnect('localhost:' + port);
+
+// Create a mock response for the Nominatim API.
+// This mock will keep on re-installing itself to allow for unlimited requests.
+var nominatim = nock('https://nominatim.openstreetmap.org');
+var installNominatimMock = function() {
+    nominatim
+        .get('/reverse')
+        .query(true)
+        .optionally()
+        .reply(200, function() {
+            // Re-install the mock to alway be ready for a next request
+            installNominatimMock();
+            return {
+                address: {
+                    house_number: '1', // jshint ignore:line
+                    road: 'Bundesplatz',
+                    city: 'Bern',
+                    postcode: '3005',
+                    country: 'Switzerland',
+                    country_code: 'ch' // jshint ignore:line
+                }
+            };
+        })
+    ;
+};
+installNominatimMock();
 
 // SuperAgent
 var request = require('superagent');

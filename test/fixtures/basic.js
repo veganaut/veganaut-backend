@@ -45,6 +45,26 @@ var getFixtures = function() {
         coordinates: [7.452544, 46.957113],
         name: '3dosha',
         type: 'gastronomy',
+        address: {
+            street: 'Moserstrasse',
+            houseNumber: '25',
+            postcode: '3014',
+            city: 'Bern',
+            country: 'Switzerland'
+        },
+        osmAddress: {
+            restaurant: '3dosha ayurveda',
+            house_number: '25', // jshint ignore:line
+            road: 'Moserstrasse',
+            suburb: 'Spitalacker',
+            city_district: 'Stadtteil V', // jshint ignore:line
+            city: 'Bern',
+            county: 'Verwaltungskreis Bern-Mittelland',
+            state: 'Bern',
+            postcode: '3014',
+            country: 'Switzerland',
+            country_code: 'ch' // jshint ignore:line
+        },
         owner: fix.bob.id
     });
     fix.ruprecht = new Location({
@@ -53,6 +73,25 @@ var getFixtures = function() {
         name: 'Reformhaus Ruprecht',
         description: 'Bio shop with many vegan options.',
         type: 'retail',
+        address: {
+            street: 'Christoffelgasse',
+            houseNumber: '7',
+            postcode: '3011',
+            city: 'Bern',
+            country: 'Switzerland'
+        },
+        osmAddress: {
+            house_number: '7', // jshint ignore:line
+            road: 'Christoffelgasse',
+            suburb: 'Rotes Quartier',
+            city_district: 'Stadtteil I', // jshint ignore:line
+            city: 'Bern',
+            county: 'Verwaltungskreis Bern-Mittelland',
+            state: 'Bern',
+            postcode: '3011',
+            country: 'Switzerland',
+            country_code: 'ch' // jshint ignore:line
+        },
         owner: fix.bob.id
     });
     fix.hollow = new Location({
@@ -60,6 +99,25 @@ var getFixtures = function() {
         coordinates: [7.446611, 46.953880],
         name: 'Kremoby Hollow',
         type: 'gastronomy',
+        address: {
+            street: 'Schänzlihalde',
+            houseNumber: '30',
+            postcode: '3013',
+            city: 'Bern',
+            country: 'Switzerland'
+        },
+        osmAddress: {
+            house_number: '30', // jshint ignore:line
+            road: 'Schänzlihalde',
+            suburb: 'Altenberg',
+            city_district: 'Stadtteil V', // jshint ignore:line
+            city: 'Bern',
+            county: 'Verwaltungskreis Bern-Mittelland',
+            state: 'Bern',
+            postcode: '3013',
+            country: 'Switzerland',
+            country_code: 'ch' // jshint ignore:line
+        },
         owner: fix.alice.id
     });
     fix.shop = new Location({
@@ -67,6 +125,26 @@ var getFixtures = function() {
         coordinates: [7.444621, 46.957212],
         name: 'Shop',
         type: 'retail',
+        address: {
+            street: 'Lorrainestrasse',
+            houseNumber: '23',
+            postcode: '3013',
+            city: 'Bern',
+            country: 'Switzerland'
+        },
+        osmAddress: {
+            convenience: 'LOLA',
+            house_number: '23', // jshint ignore:line
+            road: 'Lorrainestrasse',
+            suburb: 'Lorraine',
+            city_district: 'Stadtteil V', // jshint ignore:line
+            city: 'Bern',
+            county: 'Verwaltungskreis Bern-Mittelland',
+            state: 'Bern',
+            postcode: '3013',
+            country: 'Switzerland',
+            country_code: 'ch' // jshint ignore:line
+        },
         owner: fix.npc.id
     });
     fix.deletedPlace = new Location({
@@ -75,6 +153,25 @@ var getFixtures = function() {
         name: 'CLOSED: This place should never show up!',
         type: 'gastronomy',
         owner: fix.alice.id,
+        address: {
+            street: 'Langmauerweg',
+            houseNumber: '15c',
+            postcode: '3011',
+            city: 'Bern',
+            country: 'Switzerland'
+        },
+        osmAddress: {
+            house_number: '15c', // jshint ignore:line
+            road: 'Langmauerweg',
+            suburb: 'Matte',
+            city_district: 'Stadtteil I', // jshint ignore:line
+            city: 'Bern',
+            county: 'Verwaltungskreis Bern-Mittelland',
+            state: 'Bern',
+            postcode: '3011',
+            country: 'Switzerland',
+            country_code: 'ch' // jshint ignore:line
+        },
         deleted: true
     });
 

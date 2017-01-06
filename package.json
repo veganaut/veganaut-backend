@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "mockery": "1.4.0",
+    "nock": "9.0.2",
     "jasmine": "2.3.2",
     "superagent": "1.4.0",
     "jshint": "2.8.0",

@@ -9,6 +9,7 @@ var _ = require('lodash');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
+var osmUtils = require('../utils/osmUtils');
 var Average = require('../utils/Average');
 var Missions = require('./Missions');
 
@@ -35,6 +36,14 @@ var locationSchema = new Schema({
     description: String,
     link: String,
     type: {type: String, enum: constants.LOCATION_TYPES},
+    address: {
+        street: String,
+        houseNumber: String,
+        postcode: String,
+        city: String,
+        country: String
+    },
+    osmAddress: {type: Schema.Types.Mixed},
 
     // Whether this location was deleted (soft delete)
     deleted: Boolean,
@@ -90,6 +99,40 @@ var whereNotDeletedPreHook = function(next) {
 locationSchema.pre('find', whereNotDeletedPreHook);
 locationSchema.pre('findOne', whereNotDeletedPreHook);
 locationSchema.pre('count', whereNotDeletedPreHook);
+
+// Pre-save hook for fetching addresses from OSM Nominatim
+locationSchema.pre('save', function(next) {
+    var that = this;
+
+    // If we have coordinates and either no osmAddress yet or the coordinates changed, look the address up
+    // (The "!that.isNew" is needed to not fetch the address for the basic fixtures.)
+    if (typeof that.coordinates !== 'undefined' &&
+        (typeof that.osmAddress === 'undefined' ||
+        (!that.isNew && that.isModified('coordinates'))))
+    {
+        // TODO: This is also done during the frontend e2e tests. It's acceptable because those are not run so often, but would still be good to improve the situation.
+        osmUtils.osmAddressLookup(that.coordinates[1], that.coordinates[0], function(err, lookup) {
+            // Nominatim sends errors with a 200 status code...
+            if (typeof lookup === 'object' && typeof lookup.error === 'string') {
+                err = new Error(lookup.error);
+            }
+            if (err) {
+                console.log('Error finding address for', that.name, that.coordinates[1], that.coordinates[0], err);
+                return next(err);
+            }
+
+            that.osmAddress = lookup.address;
+            that.address = osmUtils.convertFromOsmAddress(that.osmAddress);
+            that.markModified('osmAddress');
+            that.markModified('address');
+
+            return next();
+        });
+    }
+    else {
+        return next();
+    }
+});
 
 
 /**
@@ -203,6 +246,13 @@ locationSchema.options.toJSON = {
         if (util.isArray(doc.coordinates)) {
             ret.lng = doc.coordinates[0];
             ret.lat = doc.coordinates[1];
+        }
+
+        // Add address if anything was loaded
+        // TODO: Find a better way to check if this was loaded
+        var address = doc.address.toJSON();
+        if (Object.keys(address).length > 0) {
+            ret.address = address;
         }
 
         // Check if owner was loaded
