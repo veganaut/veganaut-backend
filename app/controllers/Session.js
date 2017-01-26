@@ -3,31 +3,67 @@
  * Module dependencies.
  */
 
+var _ = require('lodash');
 var generatePassword = require('password-generator');
 var mongoose = require('mongoose');
 var Person = mongoose.model('Person');
+var Session = require('../models/Session');
+
 
 /**
- * Temporary storage for sessions (map of session id to user id)
- * TODO: need to find a better way to store session (in mongo e.g.)
- * @type {{}}
+ * Time in ms after an inactive session will be considered invalid.
+ * Corresponds to 180 days.
+ * @type {number}
  */
-var sessionStore = {};
+var SESSION_VALIDITY_PERIOD = 1000 * 60 * 60 * 24 * 180;
 
-exports.createSessionFor = function(user) {
+/**
+ * Minimum time in ms between two updates of a session's activeAt date.
+ * Corresponds to 8 hours.
+ * @type {number}
+ */
+var SESSION_ACTIVE_PERIOD = 1000 * 60 * 60 * 8;
+
+/**
+ * Creates a session for the given user from the given request.
+ * @param user User instance to create a session for
+ * @param [req] The express request object (User-Agent will be retrieved)
+ * @param next Callback
+ */
+exports.createSessionFor = function(user, req, next) {
+    // Generate a secure session id
     var sessionId = generatePassword(40, false);
-    sessionStore[sessionId] = user.id;
-    return sessionId;
+
+    // Get the user agent if we can (this will later help the user to identify the session)
+    var userAgent = 'unknown';
+    if (_.isObject(req) && _.isFunction(req.get)) {
+        userAgent = req.get('User-Agent');
+    }
+
+    // Create the session
+    var session = new Session({
+        user: user.id,
+        sid: sessionId,
+        userAgent: userAgent
+    });
+
+    session.save(function(err) {
+        if (err) {
+            return next(err);
+        }
+        return next(null, sessionId);
+    });
 };
 
 /**
  *
- * @param name
+ * @param email
  * @param pass
+ * @param req
  * @param next
  * @returns {*}
  */
-var authenticate = function(email, pass, next) {
+var authenticate = function(email, pass, req, next) {
     // Query the db for the given email
     Person.findOne({email: email}, function(err, user) {
         if (err) {
@@ -41,14 +77,87 @@ var authenticate = function(email, pass, next) {
                 return next(err);
             }
             if (result) {
-                var superUniqueId = exports.createSessionFor(user);
-                return next(null, user, superUniqueId);
+                exports.createSessionFor(user, req, function(err, sessionId) {
+                    if (err) {
+                        return next(err);
+                    }
+                    return next(null, user, sessionId);
+                });
             }
             else {
                 return next(new Error('Incorrect password'));
             }
         });
     });
+};
+
+/**
+ * Tries to extract the session id from the request. Returns undefined
+ * if not session id was found.
+ * @param req
+ * @returns {string|undefined}
+ */
+var getSessionIdFromRequest = function(req) {
+    var authHeader = req.get('Authorization');
+    if (authHeader) {
+        var parts = authHeader.split(' ');
+        // We use "VeganautBearer" identifier, it's almost oauth, but not quite
+        // (or is it? I don't know, the docs are too long)
+        if (parts.length === 2 && parts[0] === 'VeganautBearer') {
+            return parts[1];
+        }
+    }
+
+    return undefined;
+};
+
+/**
+ * Validates and updates the given session if necessary. The next callback
+ * is called with an error or null as first argument and the validates session
+ * or undefined as the second argument. So if everything goes ok, but the session
+ * is invalid, it will return as next(null, undefined).
+ *
+ * @param session
+ * @param req
+ * @param next
+ * @returns {*}
+ */
+var validateAndUpdateSession = function(session, req, next) {
+    if (!_.isObject(session)) {
+        // No session given, return empty
+        return next();
+    }
+
+    // Calculate how long ago the session was last active
+    var sessionActiveAgo = Date.now() - session.activeAt.getTime();
+
+    // Check if the session is still valid
+    if (sessionActiveAgo > SESSION_VALIDITY_PERIOD) {
+        // No longer valid, delete it and return
+        // TODO: The frontend will not always reload correctly when the app is already loaded and the session expires. This is very unlikely however.
+        Session.findOneAndRemove({sid: session.sid}, function(err) {
+            return next(err);
+        });
+    }
+    else {
+        // Session is valid. Check if we need to update the activeAt date
+        // We only do this ever so often to not have a db write on every request
+        if (sessionActiveAgo > SESSION_ACTIVE_PERIOD) {
+            // Set new date and userAgent
+            session.activeAt = Date.now();
+            session.userAgent = req.get('User-Agent');
+            session.save(function(err) {
+                if (err) {
+                    return next(err);
+                }
+                return next(null, session);
+            });
+        }
+        else {
+            // Session is still set to active, return right away
+            return next(null, session);
+        }
+    }
 };
 
 /**
@@ -59,29 +168,38 @@ var authenticate = function(email, pass, next) {
  * @param next
  */
 exports.addUserToRequest = function(req, res, next) {
-    var foundSession = false;
-    var authHeader = req.get('Authorization');
-    if (authHeader) {
-        var parts = authHeader.split(' ');
-        // We use "VeganautBearer" identifier, it's almost oauth, but not quite
-        // (or is it? I don't know, the docs are too long)
-        if (parts.length === 2 && parts[0] === 'VeganautBearer' && sessionStore[parts[1]]) {
-            req.sessionId = parts[1];
+    var sessionId = getSessionIdFromRequest(req);
 
-            var userId = sessionStore[req.sessionId];
-            foundSession = true;
-            Person.findOne({_id: userId}, function(err, user) {
+    // If no session id was found, return without doing anything
+    if (!_.isString(sessionId)) {
+        return next();
+    }
+
+    // Find the session
+    Session.findOne({sid: sessionId})
+        .populate('user')
+        .exec(function(err, session) {
+            if (err || !_.isObject(session)) {
+                // Error or no session found, return without doing anything
+                return next();
+            }
+
+            validateAndUpdateSession(session, req, function(err, session) {
                 if (err) {
                     return next(err);
                 }
-                req.user = user;
+
+                // Check if we got a validated session back
+                if (_.isObject(session)) {
+                    // Session is valid, set the sid and user on the request
+                    req.sessionId = session.sid;
+                    req.user = session.user;
+                }
+
                 return next();
             });
-        }
-    }
-    if (!foundSession) {
-        return next();
-    }
+        })
+    ;
 };
 
 /**
@@ -114,7 +232,7 @@ exports.create = function (req, res, next) {
     }
     // Otherwise try to login
     else {
-        authenticate(req.body.email, req.body.password, function (err, user, sessionId) {
+        authenticate(req.body.email, req.body.password, req, function (err, user, sessionId) {
             if (user) {
                 return res.send({
                     sessionId: sessionId
@@ -135,9 +253,15 @@ exports.create = function (req, res, next) {
  * @param req
  * @param res
  */
-exports.delete = function (req, res) {
-    // destroy the user's session to log them out
-    // will be re-created next request
-    delete sessionStore[req.sessionId];
-    res.send({ status: 'OK' });
+exports.delete = function (req, res, next) {
+    // Destroy the user's session to log them out
+    if (typeof req.sessionId === 'string' && req.sessionId.length > 0) {
+        Session.findOneAndRemove({sid: req.sessionId}, function(err) {
+            if (err) {
+                return next(err);
+            }
+            res.send({ status: 'OK' });
+        });
+    }
+    return next(new Error('No session active.'));
 };

@@ -2,6 +2,8 @@
 
 var h = require('../helpers_');
 
+// TODO: test session expiration!
+
 h.describe('Session API methods', function() {
 
     it('cannot access restricted areas when not logged in', function(done) {

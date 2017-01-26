@@ -14,6 +14,7 @@ var Location = mongoose.model('Location');
 var Person = mongoose.model('Person');
 var Mission = mongoose.model('Mission');
 var Product = require('../../app/models/Product');
+var Session = require('../../app/models/Session');
 
 
 var load = function(fixtures, done) {
@@ -22,7 +23,8 @@ var load = function(fixtures, done) {
         Person.remove.bind(Person),
         Location.remove.bind(Location),
         Mission.remove.bind(Mission),
-        Product.remove.bind(Product)
+        Product.remove.bind(Product),
+        Session.remove.bind(Session)
     ];
 
     // Add all the fixtures

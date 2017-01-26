@@ -37,9 +37,13 @@ exports.register = function(req, res, next) {
         // Create a session and reply with that
         // Not very RESTful, but it's what we need here. It would be too
         // complicated to get a session without a password set yet.
-        var sessionId = Session.createSessionFor(person);
-        return res.status(201).send({
-            sessionId: sessionId
+        Session.createSessionFor(person, req, function(err, sessionId) {
+            if (err) {
+                return next(err);
+            }
+            return res.status(201).send({
+                sessionId: sessionId
+            });
         });
     });
 };

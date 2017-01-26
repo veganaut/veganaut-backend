@@ -111,11 +111,11 @@ var SessionController = require('../app/controllers/Session');
  * Creates a session for the user with the given email address.
  */
 var createSessionFor = function(email, next) {
+    // TODO: instead of creating sessions here, create them in the fixtures and then use them here
     Person.findOne({email: email}, function(err, p) {
         if (err) { return next(err); }
         if (!p) { return next(new Error('Could not find person with email ' + email)); }
-        var sessionId = SessionController.createSessionFor(p);
-        next(null, sessionId);
+        SessionController.createSessionFor(p, undefined, next);
     });
 };
 exports.createSessionFor = createSessionFor;
