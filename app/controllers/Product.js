@@ -51,15 +51,14 @@ exports.list = function(req, res, next) {
         locationQuery.type = req.query.locationType;
     }
 
-    // Create the query based on the bounding box
+    // Create the query based on the center and radius
     try {
-        var coordinatesQuery = Location.getBoundingBoxQuery(req.query.bounds);
+        var coordinatesQuery = Location.getCenterQuery(req.query.lat, req.query.lng, req.query.radius);
         if (coordinatesQuery) {
             locationQuery.coordinates = coordinatesQuery;
 
             // We have a coords query, so not including the whole world
             response.includesWholeWorld = false;
-
         }
     }
     catch (e) {
