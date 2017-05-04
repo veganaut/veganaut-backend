@@ -41,8 +41,7 @@ exports.list = function(req, res, next) {
     // Prepare the response
     var response = {
         products: [],
-        totalProducts: 0,
-        includesWholeWorld: true
+        totalProducts: 0
     };
 
     // Read the location type filter
@@ -56,9 +55,6 @@ exports.list = function(req, res, next) {
         var coordinatesQuery = Location.getCenterQuery(req.query.lat, req.query.lng, req.query.radius);
         if (coordinatesQuery) {
             locationQuery.coordinates = coordinatesQuery;
-
-            // We have a coords query, so not including the whole world
-            response.includesWholeWorld = false;
         }
     }
     catch (e) {

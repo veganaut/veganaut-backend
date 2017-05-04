@@ -353,6 +353,7 @@ locationSchema.statics.getBoundingBoxQuery = function(boundingBoxString) {
  */
 locationSchema.statics.getCenterQuery = function(lat, lng, radius) {
     var query;
+    // TODO: should we check if the radius is so big that this includes the whole world and then return an empty query?
 
     // Approximate earth radius
     var EARTH_RADIUS_METERS = 6371 * 1000;
