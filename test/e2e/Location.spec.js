@@ -4,7 +4,7 @@ var _ = require('lodash');
 var h = require('../helpers_');
 
 
-h.describe('Location API methods as logged in user alice', function() {
+h.describe('Location API methods as logged in user alice.', function() {
     it('can create a new location', function(done) {
         h.request('POST', h.baseURL + 'location')
             .send({
@@ -59,7 +59,8 @@ h.describe('Location API methods as logged in user alice', function() {
                 expect(res.statusCode).toBe(200);
                 expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
                 expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
-                expect(Object.keys(res.body).length).toBe(1, 'returns nothing else');
+                expect(res.body.totalLocations).toBe(5, 'returns correct total locations');
+                expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
                 expect(res.body.locations.length).toBe(5, '5 locations (4 from fixtures, one from previous test)');
 
                 _.each(res.body.locations, function(location) {
@@ -93,6 +94,7 @@ h.describe('Location API methods as logged in user alice', function() {
                 expect(res.statusCode).toBe(200);
                 expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
                 expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(res.body.totalLocations).toBe(1, 'returns correct total locations');
                 expect(res.body.locations.length).toBe(1, 'returns only the location in the bounding box');
 
                 var location = res.body.locations[0];
@@ -113,6 +115,7 @@ h.describe('Location API methods as logged in user alice', function() {
                 expect(res.statusCode).toBe(200);
                 expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
                 expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(res.body.totalLocations).toBe(1, 'returns correct total locations');
                 expect(res.body.locations.length).toBe(1, 'returns only the location within the radius');
 
                 var location = res.body.locations[0];
@@ -134,7 +137,8 @@ h.describe('Location API methods as logged in user alice', function() {
                 expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
                 expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
                 expect(_.isArray(res.body.clusters)).toBe(true, 'returns an array of clusters');
-                expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
+                expect(res.body.totalLocations).toBe(4, 'returns correct total locations');
+                expect(Object.keys(res.body).length).toBe(3, 'returns nothing else');
                 expect(res.body.locations.length).toBe(2, 'returns 2 locations');
                 expect(res.body.clusters.length).toBe(3, 'returns 3 clusters');
 
@@ -429,7 +433,7 @@ h.describe('Location API methods as logged in user alice', function() {
 });
 
 
-h.describe('Location update methods as logged in user alice', function() {
+h.describe('Location update methods as logged in user alice.', function() {
     it('does not update fields that are not sent', function(done) {
         h.request('PUT', h.baseURL + 'location/000000000000000000000006')
             .send({
@@ -455,14 +459,15 @@ h.describe('Location update methods as logged in user alice', function() {
 });
 
 
-h.describe('Location API methods when not logged in', {user: ''}, function() {
+h.describe('Location API methods when not logged in.', {user: ''}, function() {
     it('can list locations', function(done) {
         h.request('GET', h.baseURL + 'location/list')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
                 expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
                 expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
-                expect(Object.keys(res.body).length).toBe(1, 'returns nothing else');
+                expect(res.body.totalLocations).toBe(4, 'returns correct total locations');
+                expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
                 expect(res.body.locations.length).toBe(4, 'has 4 locations');
 
                 _.each(res.body.locations, function(location) {
@@ -489,6 +494,24 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
         ;
     });
 
+    it('can list locations with limit and skip', function(done) {
+        h.request('GET', h.baseURL + 'location/list?limit=2&skip=1')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(res.body.totalLocations).toBe(4, 'returns correct total locations');
+                expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
+                expect(res.body.locations.length).toBe(2, 'limits to 2 locations');
+
+                // This tests the sorting and the skip at the same time
+                expect(res.body.locations[0].name).toBe('Reformhaus Ruprecht', 'correct location 1');
+                expect(res.body.locations[1].name).toBe('3dosha', 'correct location 2');
+                done();
+            })
+        ;
+    });
+
     it('can list locations and cluster them', function(done) {
         h.request('GET', h.baseURL + 'location/list?bounds=7.337,46.851,7.557,47.076&clusterLevel=11')
             .end(function(err, res) {
@@ -497,7 +520,8 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
                 expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
                 expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
                 expect(_.isArray(res.body.clusters)).toBe(true, 'returns an array of clusters');
-                expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
+                expect(res.body.totalLocations).toBe(4, 'returns correct total locations');
+                expect(Object.keys(res.body).length).toBe(3, 'returns nothing else');
                 expect(res.body.locations.length).toBe(2, 'returns 2 locations');
                 expect(res.body.clusters.length).toBe(3, 'returns 3 clusters');
 
@@ -528,7 +552,8 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
                 expect(res.statusCode).toBe(200);
                 expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
                 expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
-                expect(Object.keys(res.body).length).toBe(1, 'returns nothing else');
+                expect(res.body.totalLocations).toBe(2, 'returns correct total locations');
+                expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
                 expect(res.body.locations.length).toBe(2, 'has 2 gastronomy locations');
 
                 _.each(res.body.locations, function(location) {
@@ -547,7 +572,8 @@ h.describe('Location API methods when not logged in', {user: ''}, function() {
                     expect(res.statusCode).toBe(200);
                     expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
                     expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
-                    expect(Object.keys(res.body).length).toBe(1, 'returns nothing else');
+                    expect(res.body.totalLocations).toBe(0, 'returns correct total locations');
+                    expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
                     expect(res.body.locations.length).toBe(0, 'has no location changed less than a second ago');
                     done();
                 })

@@ -240,6 +240,7 @@ exports.create = function(req, res, next) {
 /**
  * Returns lists of locations. These can either be full lists in the given
  * bounds or clustered locations with only the top locations returned as such.
+ * TODO: Split this up and document all parameters clearly
  *
  * @param req
  * @param res
@@ -292,6 +293,22 @@ exports.list = function(req, res, next) {
         clusterLevel = undefined;
     }
 
+    // Check whether there is clustering
+    var useClustering = _.isNumber(clusterLevel);
+
+    // If there is no clustering, use limit and skip
+    var limit, skip;
+    if (!useClustering) {
+        limit = utils.strictParsePositiveInteger(req.query.limit);
+        skip = utils.strictParsePositiveInteger(req.query.skip);
+        if (!_.isNumber(limit)) {
+            limit = undefined;
+        }
+        if (!_.isNumber(skip)) {
+            skip = undefined;
+        }
+    }
+
     // Define the fields we have to load
     var fieldsToLoad = 'name type coordinates quality owner';
 
@@ -303,36 +320,49 @@ exports.list = function(req, res, next) {
         fieldsToLoad += ' address.street address.houseNumber';
     }
 
-    // Load the locations, but only the data we actually want to send
-    Location.find(query, fieldsToLoad)
-        .exec(function(err, locations) {
-            if (err) {
-                return next(err);
-            }
-
-            // Prepare response object
-            var response = {};
-
-            // Check if we got a cluster level for which we do clustering
-            if (_.isNumber(clusterLevel)) {
-                // Calculate the geo hash of every location
-                // TODO: pre-calculate and store in db
-                _.each(locations, function(location) {
-                    location.geoHash = utils.calculateGeoHash(location.coordinates[1], location.coordinates[0]);
-                });
-
-                // Get the top locations and the clusters
-                response.locations = getSpreadTopLocations(locations, clusterLevel);
-                response.clusters = getLocationClusters(locations, clusterLevel, req.user);
-            }
-            else {
-                // No clustering wanted by the requester or level too high that clustering makes sense
-                response.locations = locations;
-            }
-
-            return res.send(response);
+    // Count the total locations first
+    Location.count(query, function(err, count) {
+        if (err) {
+            return next(err);
         }
-    );
+
+        // Prepare response object
+        var response = {
+            totalLocations: count
+        };
+
+        // Load the locations, but only the data we actually want to send
+        Location
+            .find(query, fieldsToLoad)
+            .limit(limit)
+            .skip(skip)
+            .sort('-quality.rank -quality.count name')
+            .exec(function(err, locations) {
+                if (err) {
+                    return next(err);
+                }
+
+                // Check if we got a cluster level for which we do clustering
+                if (useClustering) {
+                    // Calculate the geo hash of every location
+                    // TODO: pre-calculate and store in db
+                    _.each(locations, function(location) {
+                        location.geoHash = utils.calculateGeoHash(location.coordinates[1], location.coordinates[0]);
+                    });
+
+                    // Get the top locations and the clusters
+                    response.locations = getSpreadTopLocations(locations, clusterLevel);
+                    response.clusters = getLocationClusters(locations, clusterLevel, req.user);
+                }
+                else {
+                    // No clustering wanted by the requester or level too high that clustering makes sense
+                    response.locations = locations;
+                }
+
+                res.send(response);
+            }
+        );
+    });
 };
 
 /**
