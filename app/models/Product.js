@@ -10,7 +10,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
 var Average = require('../utils/Average');
-var Missions = require('./Missions');
+var Missions = require('./Task');
 
 var productSchema = new Schema({
     location: {

@@ -7,13 +7,13 @@ var bodyParser = require('body-parser');
 
 // Models
 require('./app/models/Person.js');
-require('./app/models/Missions.js');
+require('./app/models/Task.js');
 require('./app/models/Location.js');
 
 // Controllers
 var GeoIP = require('./app/controllers/GeoIP');
 var Location = require('./app/controllers/Location');
-var Missions = require('./app/controllers/Missions');
+var Missions = require('./app/controllers/Task');
 var Person = require('./app/controllers/Person');
 var Score = require('./app/controllers/Score');
 var Session = require('./app/controllers/Session');

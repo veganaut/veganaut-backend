@@ -7,7 +7,7 @@ var utils = require('../utils/utils');
 
 var mongoose = require('mongoose');
 var Location = mongoose.model('Location');
-var Missions = require('../models/Missions');
+var Missions = require('../models/Task');
 var Product = require('../models/Product');
 
 /**

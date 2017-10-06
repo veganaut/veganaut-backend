@@ -6,7 +6,7 @@
 var _ = require('lodash');
 var mongoose = require('mongoose');
 var FixtureLoader = require('./FixtureLoader');
-var Missions = require('../../app/models/Missions');
+var Missions = require('../../app/models/Task');
 var Product = require('../../app/models/Product');
 
 var Person = mongoose.model('Person');

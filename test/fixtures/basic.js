@@ -9,7 +9,7 @@ var FixtureLoader = require('./FixtureLoader');
 
 var Person = mongoose.model('Person');
 var Location = mongoose.model('Location');
-var Missions = require('../../app/models/Missions');
+var Missions = require('../../app/models/Task');
 var Product = require('../../app/models/Product');
 
 var getFixtures = function() {

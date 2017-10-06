@@ -11,7 +11,7 @@ var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
 var osmUtils = require('../utils/osmUtils');
 var Average = require('../utils/Average');
-var Missions = require('./Missions');
+var Missions = require('./Task');
 
 /*
  * Constants related to point computation

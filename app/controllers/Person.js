@@ -9,7 +9,7 @@ var mongoose = require('mongoose');
 var async = require('async');
 var constants = require('../utils/constants');
 var Person = mongoose.model('Person');
-var Mission = require('../models/Missions').Mission;
+var Mission = require('../models/Task').Mission;
 var Session = require('./Session');
 var cryptoUtils = require('../utils/cryptoUtils');
 

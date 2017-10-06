@@ -4,7 +4,7 @@ var _ = require('lodash');
 var mongoose = require('mongoose');
 var async = require('async');
 var Location = mongoose.model('Location');
-var Missions = require('../models/Missions');
+var Missions = require('../models/Task');
 var Product = require('../models/Product');
 
 exports.submit = function(req, res, next) {

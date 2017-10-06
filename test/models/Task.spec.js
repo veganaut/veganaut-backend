@@ -5,7 +5,7 @@
 'use strict';
 
 var h = require('../helpers_');
-var Missions = require('../../app/models/Missions');
+var Missions = require('../../app/models/Task');
 
 h.describe('A VisitBonusMission', function() {
     var mission;
