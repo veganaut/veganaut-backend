@@ -1,14 +1,12 @@
 'use strict';
 
 var _ = require('lodash');
-var async = require('async');
+var BPromise = require('bluebird');
 var constants = require('../utils/constants');
 var utils = require('../utils/utils');
+var taskDefinitions = require('../utils/taskDefinitions');
 
-var mongoose = require('mongoose');
-var Location = mongoose.model('Location');
-var Missions = require('../models/Task');
-var Product = require('../models/Product');
+var db = require('../models');
 
 /**
  * Minimum cluster level (same as zoom levels used by leaflet)
@@ -30,46 +28,6 @@ var CLUSTER_LEVEL_MAX = 13;
  * @type {number}
  */
 var NUM_TOP_LOCATIONS = 15;
-
-/**
- * Number of missions to send in the get completed missions call
- * @type {number}
- */
-var NUM_COMPLETED_MISSION_LIMIT = 10;
-
-/**
- * Helper method to populate the owner of a location.
- * @param {object} obj Should have a "location" poperty holding the location to populate
- * @param {function} cb
- */
-var populateOwner = function(obj, cb) {
-    obj.location.populate('owner', 'id nickname', function(err) {
-        cb(err, obj);
-    });
-};
-
-/**
- * Helper method that send a location as a response with the
- * data aggregated on obj.
- * @param err
- * @param obj
- */
-var handleSingleLocationResult = function(err, obj) {
-    if (err) {
-        return obj.next(err);
-    }
-    var returnObj = obj.location.toJSON();
-
-    // Add the products
-    returnObj.products = obj.products;
-
-    // Remove the back reference to the location
-    _.each(returnObj.products, function(product) {
-        product.location = undefined;
-    });
-
-    return obj.res.send(returnObj);
-};
 
 /**
  * Returns a word describing the size of the cluster at the
@@ -102,11 +60,9 @@ var getClusterSizeName = function(clusterSize, clusterLevel) {
  * @param {Location[]} locations List of locations to cluster
  *      Assumes that the locations have a property "geoHash" set.
  * @param {number} clusterLevel Already validated clustering levle
- * @param {Person} [user] User for which to get the clusters.
- *      Used to "numOwned" property on the cluster
  * @returns {Array}
  */
-var getLocationClusters = function(locations, clusterLevel, user) {
+var getLocationClusters = function(locations, clusterLevel) {
     // Calculate precision (number of characters of the location has to use)
     // Slightly more precise than the top locations to have more clusters
     var precisionClusters = clusterLevel + 3;
@@ -123,16 +79,8 @@ var getLocationClusters = function(locations, clusterLevel, user) {
             lng: 0
         };
         _.each(cluster, function(loc) {
-            clusterData.lat += loc.coordinates[1];
-            clusterData.lng += loc.coordinates[0];
-
-            // TODO: Add tests to make sure this works correctly? Or will this be removed too soon?
-            if (typeof user === 'object') {
-                clusterData.numOwned = clusterData.numOwned || 0;
-                if (('' + loc.owner) === ('' + user.id)) {
-                    clusterData.numOwned += 1;
-                }
-            }
+            clusterData.lat += loc.lat;
+            clusterData.lng += loc.lng;
         });
 
         clusterData.clusterSize = cluster.length;
@@ -170,7 +118,7 @@ var getSpreadTopLocations = function(locations, clusterLevel) {
         return _.reduce(cluster, function(topLoc, loc) {
             // TODO: accessing quality is dominating the execution time of this whole method
             // (well actually the db access is doing that of course)
-            if (loc.quality.rank > topLoc.quality.rank) {
+            if (loc.qualityRank > topLoc.qualityRank) {
                 return loc;
             }
             else {
@@ -180,7 +128,7 @@ var getSpreadTopLocations = function(locations, clusterLevel) {
     });
 
     // Sort by rank and pick the top ones
-    topLocations = _.sortByOrder(topLocations, 'quality.rank', 'desc');
+    topLocations = _.sortByOrder(topLocations, 'qualityRank', 'desc');
     topLocations = _.take(topLocations, NUM_TOP_LOCATIONS);
 
     return topLocations;
@@ -193,48 +141,63 @@ var getSpreadTopLocations = function(locations, clusterLevel) {
  * @param next
  */
 exports.create = function(req, res, next) {
-    // This is called 'obj' because it's just nothing really. Need to find a better
-    // way to compose these async methods. TODO: Probably just need to switch to promises
-    var obj = {
-        req: req,
-        res: res,
-        next: next
-    };
-
-    var location = new Location(_.assign(
-        _.pick(req.body, 'name', 'description', 'link', 'type'),
+    // Build the new location
+    var location = db.Location.build(_.assign(
+        _.pick(req.body, 'name', 'type'),
         {
-            coordinates: [req.body.lng, req.body.lat],
-            owner: req.user
+            coordinates: utils.createPoint(req.body.lat, req.body.lng)
         }
     ));
 
-    var mission;
-    async.waterfall([
-        function(cb) {
-            location.save(function(err) {
-                obj.location = location;
-                cb(err, obj);
+    location.save()
+        .then(function() {
+            // Create the completed AddLocation task
+            return db.Task.create({
+                type: constants.TASK_TYPES.AddLocation,
+                locationId: location.id,
+                personId: req.user.id,
+                outcome: {
+                    locationAdded: true
+                }
             });
-        },
-        function(obj, cb) {
-            // Create the completed addLocation mission
-            // TODO: this should probably go in the Location Model pre save or something, then one can also change FixtureCreator.location
-            mission = new Missions.AddLocationMission({
-                person: req.user.id,
-                location: location,
-                completed: new Date(),
-                outcome: true
-            });
-            mission.save(function(err) {
-                // We take the location instance from the mission, because that one has
-                // the correct points calculated
-                obj.location = mission.location;
-                cb(err, obj);
-            });
-        },
-        populateOwner
-    ], handleSingleLocationResult);
+        })
+        .then(function(addLocationTask) {
+            // Create the triggered tasks that are implied when creating a location
+            var baseProperties = {
+                triggeredById: addLocationTask.id,
+                locationId: location.id,
+                personId: req.user.id
+            };
+
+            return BPromise.all([
+                db.Task.create(_.defaults({
+                    type: constants.TASK_TYPES.SetLocationName,
+                    outcome: {
+                        name: location.name
+                    }
+                }, baseProperties)),
+
+                db.Task.create(_.defaults({
+                    type: constants.TASK_TYPES.SetLocationType,
+                    outcome: {
+                        locationType: location.type
+                    }
+                }, baseProperties)),
+
+                db.Task.create(_.defaults({
+                    type: constants.TASK_TYPES.SetLocationCoordinates,
+                    outcome: {
+                        latitude: location.lat,
+                        longitude: location.lng
+                    }
+                }, baseProperties))
+            ]);
+        })
+        .then(function() {
+            return res.send(location);
+        })
+        .catch(next)
+    ;
 };
 
 /**
@@ -247,40 +210,43 @@ exports.create = function(req, res, next) {
  * @param next
  */
 exports.list = function(req, res, next) {
-    // Create the query based on the bounding box or coordinate/radius.
+    // Create the where clause based on the bounding box or coordinate/radius.
     // If no query is provided, all locations are loaded
-    var query = {};
-    var coordinates;
-
+    var coordWhere;
     try {
         // Try to get the bounding box query first
-        coordinates = Location.getBoundingBoxQuery(req.query.bounds);
+        coordWhere = db.Location.getBoundingBoxQuery(req.query.bounds);
 
         // If there was no bounding box, try the center (lat/lng) and radius query
-        if (!coordinates) {
-            coordinates = Location.getCenterQuery(req.query.lat, req.query.lng, req.query.radius);
+        if (!coordWhere) {
+            coordWhere = db.Location.getCenterQuery(req.query.lat, req.query.lng, req.query.radius);
         }
     }
     catch (e) {
         return next(e);
     }
 
+    // Prepare the where clauses
+    var whereClauses = [];
+
     // Set the coordinates query if one was found
-    if (coordinates) {
-        query.coordinates = coordinates;
+    if (coordWhere) {
+        whereClauses.push(coordWhere);
     }
 
     // Add location type to the query if valid value given
     if (constants.LOCATION_TYPES.indexOf(req.query.type) > -1) {
-        query.type = req.query.type;
+        whereClauses.push({type: req.query.type});
     }
 
     // Add updated within restriction to the query if valid value given
     var updatedWithin = parseInt(req.query.updatedWithin, 10);
     if (!isNaN(updatedWithin) && updatedWithin > 0) {
-        query.updatedAt = {
-            $gt: new Date(Date.now() - (updatedWithin * 1000))
-        };
+        whereClauses.push({
+            updatedAt: {
+                $gt: new Date(Date.now() - (updatedWithin * 1000))
+            }
+        });
     }
 
     // Get the cluster level and make sure it's either undefined or in the valid levels
@@ -310,59 +276,66 @@ exports.list = function(req, res, next) {
     }
 
     // Define the fields we have to load
-    var fieldsToLoad = 'name type coordinates quality owner';
+    var fieldsToLoad = ['id', 'name', 'type', 'coordinates', 'qualityTotal', 'qualityCount', 'qualityRank'];
 
     // Check if and which part of the address should be loaded
     if (req.query.addressType === 'city') {
-        fieldsToLoad += ' address.city';
+        fieldsToLoad.push('addressCity');
     }
     else if (req.query.addressType === 'street') {
-        fieldsToLoad += ' address.street address.houseNumber';
+        fieldsToLoad = fieldsToLoad.concat(['addressStreet', 'addressHouse']);
     }
 
+    // Create the where query from the list of clauses
+    var whereQuery = {
+        $and: whereClauses
+    };
+
     // Count the total locations first
-    Location.count(query, function(err, count) {
-        if (err) {
-            return next(err);
-        }
+    db.Location.count({where: whereQuery})
+        .then(function(count) {
+            // Prepare response object
+            var response = {
+                totalLocations: count
+            };
 
-        // Prepare response object
-        var response = {
-            totalLocations: count
-        };
+            // Load the locations, but only the data we actually want to send
+            db.Location.findAll({
+                where: whereQuery,
+                attributes: fieldsToLoad,
+                limit: limit,
+                offset: skip,
+                order: [
+                    ['qualityRank', 'DESC'],
+                    ['qualityCount', 'DESC'],
+                    ['name', 'ASC']
+                ]
+            })
+                .then(function(locations) {
+                    // Check if we got a cluster level for which we do clustering
+                    if (useClustering) {
+                        // Calculate the geo hash of every location
+                        // TODO: pre-calculate and store in db
+                        _.each(locations, function(location) {
+                            location.geoHash = utils.calculateGeoHash(location.lat, location.lng);
+                        });
 
-        // Load the locations, but only the data we actually want to send
-        Location
-            .find(query, fieldsToLoad)
-            .limit(limit)
-            .skip(skip)
-            .sort('-quality.rank -quality.count name')
-            .exec(function(err, locations) {
-                if (err) {
-                    return next(err);
-                }
+                        // Get the top locations and the clusters
+                        response.locations = getSpreadTopLocations(locations, clusterLevel);
+                        response.clusters = getLocationClusters(locations, clusterLevel);
+                    }
+                    else {
+                        // No clustering wanted by the requester or level too high that clustering makes sense
+                        response.locations = locations;
+                    }
 
-                // Check if we got a cluster level for which we do clustering
-                if (useClustering) {
-                    // Calculate the geo hash of every location
-                    // TODO: pre-calculate and store in db
-                    _.each(locations, function(location) {
-                        location.geoHash = utils.calculateGeoHash(location.coordinates[1], location.coordinates[0]);
-                    });
-
-                    // Get the top locations and the clusters
-                    response.locations = getSpreadTopLocations(locations, clusterLevel);
-                    response.clusters = getLocationClusters(locations, clusterLevel, req.user);
-                }
-                else {
-                    // No clustering wanted by the requester or level too high that clustering makes sense
-                    response.locations = locations;
-                }
-
-                res.send(response);
-            }
-        );
-    });
+                    res.send(response);
+                })
+                .catch(next)
+            ;
+        })
+        .catch(next)
+    ;
 };
 
 /**
@@ -392,81 +365,18 @@ exports.search = function(req, res, next) {
     limit = Math.min(limit, 50);
 
     // Find the locations
-    Location
-        .find(
-            {
-                $text: { $search: searchString }
-            },
-            {
-                searchScore: { $meta: 'textScore' },
-                name: 1,
-                type: 1,
-                quality: 1,
-                'address.city': 1
-            }
-        )
-        .sort({
-            searchScore: { $meta : 'textScore' },
-            'quality.rank': 'desc'
+    db.Location
+        .findAll({
+            attributes: ['id', 'name', 'type', 'qualityTotal', 'qualityCount', 'qualityRank', 'addressCity'],
+            where: db.Location.getSearchQuery(searchString),
+            limit: limit
+            // TODO WIP: order!
         })
-        .limit(limit)
-        .exec(function(err, locations) {
-            if (err) {
-                return next(err);
-            }
-
-            return res.send(locations);
-        }
-    );
-};
-
-
-// TODO: this is so ugly I'm gonna die. How does one handle this async callback mess while staying sane?
-
-var findLocation = function(obj, cb) {
-    var locationId = obj.req.params.locationId;
-    Location.findById(locationId, function(err, location) {
-        if (!err && !location) {
-            obj.res.status(404);
-            err = new Error('Could not find location with id: ' + locationId);
-        }
-
-        obj.location = location;
-        cb(err, obj);
-    });
-};
-
-var updateLocation = function(obj, cb) {
-    var locationData = obj.req.body;
-    _.merge(obj.location, _.pick(locationData, ['name', 'description', 'link', 'type']));
-
-    // Set coordinates if they are given and if they actually changed
-    if (typeof locationData.lng === 'number' && obj.location.coordinates[0] !== locationData.lng) {
-        obj.location.coordinates[0] = locationData.lng;
-        obj.location.markModified('coordinates');
-    }
-    if (typeof locationData.lat === 'number' && obj.location.coordinates[1] !== locationData.lat) {
-        obj.location.coordinates[1] = locationData.lat;
-        obj.location.markModified('coordinates');
-    }
-
-    // Save the new data
-    obj.location.save(function(err) {
-        cb(err, obj);
-    });
-};
-
-var findProducts = function(obj, cb) {
-    obj.products = [];
-    Product
-        .find({location: obj.location.id})
-        .sort(Product.getDefaultSorting())
-        .exec(function(err, p) {
-            if (p) {
-                obj.products = p;
-            }
-            cb(err, obj);
+        .then(function(data) {
+            // console.log(data);
+            return res.send(data);
         })
+        .catch(next)
     ;
 };
 
@@ -478,170 +388,170 @@ var findProducts = function(obj, cb) {
  * @param next
  */
 exports.get = function(req, res, next) {
-    // This is called 'obj' because it's just nothing really. Need to find a better
-    // way to compose these async methods. TODO: Probably just need to switch to promises
-    var obj = {
-        req: req,
-        res: res,
-        next: next
-    };
-
-    async.waterfall([
-        function(cb) {
-            findLocation(obj, cb);
-        },
-        populateOwner,
-        findProducts
-    ], handleSingleLocationResult);
-};
-
-/**
- * Updates the location with id req.params.locationId
- * @param req
- * @param res
- * @param next
- */
-exports.update = function(req, res, next) {
-    var obj = {
-        req: req,
-        res: res,
-        next: next
-    };
-
-    async.waterfall([
-        function(cb) {
-            findLocation(obj, cb);
-        },
-        updateLocation,
-        populateOwner,
-        findProducts
-    ], handleSingleLocationResult);
-};
-
-/**
- * Returns the latest completed missions at a location
- * @param req
- * @param res
- * @param next
- */
-exports.getCompletedMissions = function(req, res, next) {
     var locationId = req.params.locationId;
-    Missions.Mission
-    // Get missions at this location that are not from NPCs
-    // For privacy reasons, we don't include the completed date
-        .find({
-            location: locationId,
-            isNpcMission: false
-        }, 'person location points outcome')
-        .populate('person', 'nickname')
-        .sort({completed: 'desc'})
-        .limit(NUM_COMPLETED_MISSION_LIMIT)
-        .exec(function(err, missions) {
-            // TODO: should return a 404 when the location doesn't exist at all
-            if (err) {
-                return next(err);
+    var location;
+
+    // Load the location by id
+    db.Location.findById(locationId)
+        .then(function(foundLocation) {
+            location = foundLocation;
+            if (!location) {
+                // Gracefully handle location not found
+                res.status(404);
+                throw new Error('Could not find location with id: ' + locationId);
             }
 
-            return res.send(missions);
+            // Load the products of this location
+            return location.getProducts({
+                attributes:  {
+                    exclude: ['locationId']
+                },
+                order: db.Product.getDefaultSorting()
+            });
         })
+        .then(function(products) {
+            var returnObj = location.toJSON();
+
+            // Add the products
+            returnObj.products = products;
+
+            return res.send(returnObj);
+        })
+        .catch(next)
     ;
 };
 
 /**
- * Compiles a list of all missions that are available to the current user
- * at a certain location. The last completed missions of that player are
- * also included.
- * TODO: this whole code should be merged with the Mission model code to calculate the points for a single mission
+ * Returns the next suggested tasks for the user at the given location
+ * TODO WIP: document all this, refactor it and unit test it
  * @param req
  * @param res
  * @param next
- * @returns {*}
  */
-exports.getAvailableMissions = function(req, res, next) {
-    // TODO: should return a 404 when the location doesn't exist at all
+exports.getSuggestedTask = function(req, res, next) {
     var locationId = req.params.locationId;
+    var personId = req.user.id;
 
-    // TODO: move this helper somewhere more central
-    var handleError = function(err) {
-        return next(err);
-    };
+    var queries = {};
 
-    // Query to find all the products of this location
-    var productQuery = Product.find({
-        location: locationId
-    }, 'id').exec();
+    var RANDOM_FACTOR = 50;
+    var NUM_TASK_TO_SUGGEST = 3;
 
-    // Query to find all the completed missions at this location
-    var missionQuery = Missions.Mission.find({
-        location: locationId,
-        person: req.user.id
-    }, 'id completed outcome points type').sort({
-        completed: 'desc'
-    }).exec();
+    queries.userHasBeenThere = db.Task.hasPersonBeenAtLocation(personId, locationId);
 
-    productQuery.then(function(products) {
-        // Create the list of available location missions
-        var locationMissions = {};
-        _.each(Missions.locationMissionModels, function(missionModel) {
-            // Only add the BuyOptionsMission if there are products
-            // TODO: the mission should know itself when it's available
-            // TODO: this is untested
-            if (missionModel !== Missions.BuyOptionsMission ||
-                products.length > 0)
-            {
-                locationMissions[missionModel.getIdentifier()] = {
-                    points: missionModel.getMaxPoints()
-                };
-            }
-        });
+    queries.completedTaskInfos = db.sequelize
+        .query('SELECT t1.type,' +
+            // Using FLOOR to get a number and not a string
+            ' FLOOR(COUNT(t1.*)) as "numDone",' +
 
-        // Create list of all available missions for every product
-        var productMissions = {};
-        _.each(products, function(product) {
-            productMissions[product.id] = {};
-            _.each(Missions.productMissionModels, function(missionModel) {
-                productMissions[product.id][missionModel.getIdentifier()] = {
-                    points: missionModel.getMaxPoints()
-                };
-            });
-        });
+            // Note: this doesn't account for daylight saving, but we don't care, it's just a rough value
+            ' FLOOR(EXTRACT(EPOCH FROM AGE(now(), max(t1."createdAt"))) / 86400) as "daysSinceLastDone",' +
+            ' FLOOR(EXTRACT(EPOCH FROM AGE(now(), max(t2."userLastDone"))) / 86400) as "daysSinceUserLastDone"' +
+            ' FROM tasks AS t1' +
 
-        // Get all the completed missions
-        // TODO: actually, we only need the last completed mission and last mission with more than 0 points of every type
-        missionQuery.then(function(completedMissions) {
-            // Go through the completed missions
-            _.each(completedMissions, function(completedMission) {
-                // Find the corresponding available mission definition
-                var availableMission;
-                if (completedMission.isProductModifyingMission()) {
-                    availableMission = productMissions[completedMission.outcome.product][completedMission.constructor.getIdentifier()];
-                }
-                else {
-                    availableMission = locationMissions[completedMission.constructor.getIdentifier()];
+            ' LEFT JOIN' +
+            ' (' +
+            '    SELECT "type", MAX("createdAt") as "userLastDone"' +
+            '    FROM tasks' +
+            '    WHERE "locationId" = ' + db.sequelize.escape(locationId) +
+            '        AND "personId" = ' + db.sequelize.escape(personId) +
+            '    GROUP BY type' +
+            ' ) t2' +
+            ' ON t1.type = t2.type' +
+
+            ' WHERE t1."locationId" = ' + db.sequelize.escape(locationId) +
+            ' GROUP BY t1.type;'
+        )
+    ;
+
+    BPromise.props(queries)
+        .then(function(results) {
+            // Sequelize somehow wraps this in an extra array, dunno why
+            var completedTaskInfos = _.indexBy(results.completedTaskInfos[0], 'type');
+
+            // Whether the user knows this place from having been there
+            var userHasBeenThere = results.userHasBeenThere;
+
+            var finalResult = [];
+
+            _.each(taskDefinitions, function(definition, type) {
+                // Skip global tasks
+                if (definition.mainSubject === 'global') {
+                    return;
                 }
 
-                // Check if we found an available mission
-                if (typeof availableMission !== 'undefined') {
-                    // Check if this available mission already has a last completed mission defined
-                    if (typeof availableMission.lastCompleted === 'undefined') {
-                        // Set the completed mission as the last one completed for that available mission
-                        // TODO: we don't really need to send the id and type of the mission
-                        availableMission.lastCompleted = completedMission;
+                // Set default values when we didn't get anything from the DB
+                var numDone = 0;
+                var daysSinceLastDone = Infinity;
+                var daysSinceUserLastDone = Infinity;
+                if (completedTaskInfos[type]) {
+                    if (typeof completedTaskInfos[type].numDone === 'number') {
+                        numDone = completedTaskInfos[type].numDone;
                     }
-
-                    // If the user got points for completing this mission, take into account
-                    // the cool down period. If it's not cooled down yet, set the points to zero.
-                    if (completedMission.points > 0 && !completedMission.isCooledDown()) {
-                        availableMission.points = 0;
+                    if (typeof completedTaskInfos[type].daysSinceLastDone === 'number') {
+                        daysSinceLastDone = completedTaskInfos[type].daysSinceLastDone;
+                    }
+                    if (typeof completedTaskInfos[type].daysSinceUserLastDone === 'number') {
+                        daysSinceUserLastDone = completedTaskInfos[type].daysSinceUserLastDone;
                     }
                 }
+
+                var AGE_FACTOR = 90;
+                var MAX_DAYS_UNTIL_STALE = 180;
+                var MAX_STALE_ADDEND = 100;
+                var MISSING_CONFIRMATION_FACTOR = 100;
+                var volatility = Math.max(1, Math.min(100, 100 * (1 - definition.daysUntilStale / MAX_DAYS_UNTIL_STALE))); // Number between 1 and 100
+
+                // TODO WIP: should only take into account the confirmations of the current value
+                // TODO WIP: do this differently for non-info tasks
+                var numConfirmationsMissing = Math.max(3 - numDone, 0);
+                var confirmationsMissingAddend = 0;
+                if (numConfirmationsMissing > 0) {
+                    confirmationsMissingAddend = MAX_STALE_ADDEND + MISSING_CONFIRMATION_FACTOR * numConfirmationsMissing;
+
+                }
+
+                var daysStale = Math.max(daysSinceLastDone - definition.daysUntilStale, 0);
+                var staleAddend = 0;
+                if (numConfirmationsMissing === 0) {
+                    staleAddend = Math.ceil(Math.min(MAX_STALE_ADDEND, daysStale / AGE_FACTOR * volatility));
+                }
+
+                var importanceAddend = definition.importance;
+
+                var randomAddend = Math.round(RANDOM_FACTOR * Math.random());
+
+                // TODO WIP: don't even bother calculating if this will set it to 0
+                var isConfirmedAndNotStaleFactor = 1;
+                if (numConfirmationsMissing === 0 && daysStale === 0) {
+                    isConfirmedAndNotStaleFactor = 0;
+                }
+
+                var requiresFamiliarityFactor = 1;
+                if (!userHasBeenThere && definition.requiredFamiliarity > 0) {
+                    requiresFamiliarityFactor = 0;
+                }
+
+                // Check if the user has done this task already recently
+                var userRecentlyDoneFactor = 1;
+                if (daysSinceUserLastDone < definition.daysUntilStale) {
+                    userRecentlyDoneFactor = 0;
+                }
+
+                var finalFactor = (confirmationsMissingAddend + staleAddend + importanceAddend + randomAddend) *
+                    isConfirmedAndNotStaleFactor * requiresFamiliarityFactor * userRecentlyDoneFactor
+                ;
+
+                finalResult.push({
+                    type: type,
+                    factor: finalFactor
+                });
             });
 
-            // Sent the available location and product missions
-            return res.send({
-                locationMissions: locationMissions,
-                productMissions: productMissions
-            });
-        }, handleError);
-    }, handleError);
+            var sortedTasks = _.sortByOrder(finalResult, 'factor', 'desc');
+
+            res.send(_.pluck(_.take(sortedTasks, NUM_TASK_TO_SUGGEST), 'type'));
+        })
+        .catch(next)
+    ;
 };

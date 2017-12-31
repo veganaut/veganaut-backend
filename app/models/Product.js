@@ -1,101 +1,125 @@
-/**
- * Mongoose schema for a Product: something that is sold
- * at a Location
- */
-
 'use strict';
-
 var _ = require('lodash');
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
-var Average = require('../utils/Average');
-var Missions = require('./Task');
+var ratingModelAddOn = require('../utils/ratingModelAddOn');
 
-var productSchema = new Schema({
-    location: {
-        type: Schema.Types.ObjectId,
-        ref: 'Location',
-        required: true
-    },
-    name: {
-        type: String,
-        required: true
-    },
-    description: {
-        type: String
-    },
-    availability: {
-        type: Number,
-        required: true,
-        default: constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE.available,
-        enum: constants.PRODUCT_AVAILABILITY_VALUES
-    }
-});
+module.exports = function(sequelize, DataTypes) {
+    var Product = sequelize.define('product');
 
-// Keep track of the rating of this product
-new Average('rating', 1, 5, productSchema);
-
-
-/**
- * Static method that returns the sorting string to be used when getting lists
- * of products.
- * @returns {string}
- */
-productSchema.statics.getDefaultSorting = function() {
-    return '-availability -rating.rank -rating.count name';
-};
-
-/**
- * Callback to notify the location that a new mission that modifies this
- * product has been completed.
- * The product will update its score or other changed fields.
- * @param {Mission} mission The mission that was completed
- * @param {Function} next
- */
-productSchema.methods.notifyProductModifyingMissionCompleted = function(mission, next) {
-    var shouldSave = false;
-    if (mission instanceof Missions.RateProductMission) {
-        // Add the new rating
-        this.addRating(mission.outcome.info);
-        shouldSave = true;
-    }
-    else if (mission instanceof Missions.SetProductNameMission) {
-        // Update the name
-        this.name = mission.outcome.info;
-        shouldSave = true;
-    }
-    else if (mission instanceof Missions.SetProductAvailMission) {
-        // Update the availability
-        this.availability = constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE[mission.outcome.info];
-        shouldSave = true;
-    }
-
-    if (shouldSave) {
-        return this.save(next);
-    }
-    return next();
-};
-
-/**
- * Method called automatically before sending a product
- * through the API.
- * @returns {Object}
- */
-productSchema.methods.toJSON = function() {
-    return _.assign(
-        _.pick(this, ['name', 'description', 'location']),
-        {
-            id: this.id,
-            rating: {
-                average: this.rating.average,
-                numRatings: this.rating.count
-            },
-            availability: constants.PRODUCT_AVAILABILITIES_VALUE_TO_STRING[this.availability]
+    var productSchema = {
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        availability: {
+            type: DataTypes.ENUM,
+            values: Object.keys(constants.PRODUCT_AVAILABILITIES),
+            defaultValue: constants.PRODUCT_AVAILABILITIES.always,
+            allowNull: false
+        },
+        isAvailable: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
+            allowNull: false
+        },
+        locationId: {
+            type: DataTypes.INTEGER,
+            allowNull: false
         }
-    );
+    };
+
+    var productOptions = {
+        sequelize: sequelize
+    };
+
+    // Add the rating to the model definition
+    ratingModelAddOn('rating', 1, 5, DataTypes, Product, productSchema, productOptions);
+
+    // Initialise the model
+    Product.init(productSchema, productOptions);
+
+    Product.associate = function(models) {
+        Product.belongsTo(models.Location);
+        Product.hasMany(models.Task);
+    };
+
+    Product.hook('beforeSave', function(product) {
+        // Make sure isAvailable is in sync with the availability enum
+        product.isAvailable = (product.availability !== constants.PRODUCT_AVAILABILITIES.not);
+    });
+
+    /**
+     * Static method that returns the sorting string to be used when getting lists
+     * of products.
+     * @returns {[]}
+     */
+    Product.getDefaultSorting = function() {
+        return [
+            ['isAvailable', 'DESC'],
+            ['ratingRank', 'DESC'],
+            ['ratingCount', 'DESC'],
+            ['name', 'ASC']
+        ];
+    };
+
+    /**
+     * Method to notify the product that a task has been completed.
+     * Will update the correct values on the product.
+     * @param {Task} task
+     * @param {Task} previousTask
+     */
+    Product.prototype.onTaskCompleted = function(task, previousTask) {
+        switch(task.type) {
+        case constants.TASK_TYPES.RateProduct:
+            // Replace or add the rating
+            if (_.isObject(previousTask)) {
+                this.replaceRating(previousTask.outcome.rating, task.outcome.rating);
+            }
+            else {
+                this.addRating(task.outcome.rating);
+            }
+            break;
+
+        case constants.TASK_TYPES.SetProductAvailability:
+            // TODO: verify the availability? Or that should have rather been done by the task already
+            this.availability = task.outcome.availability;
+            break;
+
+        case constants.TASK_TYPES.SetProductName:
+            this.name = task.outcome.name;
+            break;
+        }
+
+        // Save the new state
+        return this.save();
+    };
+
+    /**
+     * Convert the product for transferring over the API
+     * @returns {{}}
+     */
+    Product.prototype.toJSON = function () {
+        var doc = this.get();
+        var ret = _.pick(doc, [
+            'id',
+            'name',
+            'description',
+            'availability'
+        ]);
+
+        // Expose the location id as "location"
+        if (doc.locationId) {
+            ret.location = doc.locationId;
+        }
+
+        // Add the rating
+        ret.rating = {
+            average: doc.ratingAverage,
+            numRatings: doc.ratingCount
+        };
+
+        return _.omit(ret, _.isNull);
+    };
+
+    return Product;
 };
-
-var Product = mongoose.model('Product', productSchema);
-
-module.exports = Product;

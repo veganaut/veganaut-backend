@@ -1,12 +1,11 @@
-/**
+/**angular
  * Example config file for veganaut-backend.
  * Copy this to app/config.js to get a running backend.
  */
 module.exports = {
     frontendUrl: 'https://veganaut.net',
-    locale: {
-        available:  ['en', 'de', 'fr'],
-        default: 'en'
+    database: {
+        connectionUri: 'postgres://user:pass@localhost:5432/dbname'
     },
     email: {
         from: 'veganautnet@yahoo.com',

@@ -3,36 +3,32 @@
  */
 'use strict';
 
-var mongoose = require('mongoose');
 var constants = require('../../app/utils/constants');
 var FixtureLoader = require('./FixtureLoader');
 
-var Person = mongoose.model('Person');
-var Location = mongoose.model('Location');
-var Missions = require('../../app/models/Task');
-var Product = require('../../app/models/Product');
+var db = require('../../app/models');
 
 var getFixtures = function() {
     var fix = {};
 
-    fix.alice = new Person({
-        _id: '000000000000000000000001',
+    fix.alice = db.Person.build({
+        id: 1,
         email: 'foo@bar.baz',
         password: 'foobar',
         nickname: 'Alice',
         fullName: 'Alice Alison'
     });
 
-    fix.bob = new Person({
-        _id: '000000000000000000000002',
+    fix.bob = db.Person.build({
+        id: 2,
         email: 'im@stoop.id',
         password: 'bestpasswordever',
         nickname: 'Bob',
         gender: 'male'
     });
 
-    fix.npc = new Person({
-        _id: '000000000000000000000010',
+    fix.npc = db.Person.build({
+        id: 10,
         email: 'npc@example.com',
         password: 'npc',
         accountType: 'npc',
@@ -40,18 +36,19 @@ var getFixtures = function() {
     });
 
 
-    fix.dosha = new Location({
-        _id: '000000000000000000000006',
-        coordinates: [7.452544, 46.957113],
+    fix.dosha = db.Location.build({
+        id: 6,
+        coordinates: {
+            type: 'Point',
+            coordinates: [7.452544, 46.957113]
+        },
         name: '3dosha',
         type: 'gastronomy',
-        address: {
-            street: 'Moserstrasse',
-            houseNumber: '25',
-            postcode: '3014',
-            city: 'Bern',
-            country: 'Switzerland'
-        },
+        addressStreet: 'Moserstrasse',
+        addressHouse: '25',
+        addressPostcode: '3014',
+        addressCity: 'Bern',
+        addressCountry: 'Switzerland',
         osmAddress: {
             restaurant: '3dosha ayurveda',
             house_number: '25', // jshint ignore:line
@@ -64,22 +61,31 @@ var getFixtures = function() {
             postcode: '3014',
             country: 'Switzerland',
             country_code: 'ch' // jshint ignore:line
-        },
-        owner: fix.bob.id
+        }
     });
-    fix.ruprecht = new Location({
-        _id: '000000000000000000000007',
-        coordinates: [7.441016, 46.946757],
-        name: 'Reformhaus Ruprecht',
-        description: 'Bio shop with many vegan options.',
-        type: 'retail',
-        address: {
-            street: 'Christoffelgasse',
-            houseNumber: '7',
-            postcode: '3011',
-            city: 'Bern',
-            country: 'Switzerland'
+    fix.doshaAdded = db.Task.build({
+        type: 'AddLocation',
+        locationId: fix.dosha.id,
+        personId: fix.bob.id,
+        createdAt: '2014-08-20',
+        outcome: {
+            locationAdded: true
+        }
+    });
+
+    fix.ruprecht = db.Location.build({
+        id: 7,
+        coordinates: {
+            type: 'Point',
+            coordinates: [7.441016, 46.946757]
         },
+        name: 'Reformhaus Ruprecht',
+        type: 'retail',
+        addressStreet: 'Christoffelgasse',
+        addressHouse: '7',
+        addressPostcode: '3011',
+        addressCity: 'Bern',
+        addressCountry: 'Switzerland',
         osmAddress: {
             house_number: '7', // jshint ignore:line
             road: 'Christoffelgasse',
@@ -91,21 +97,31 @@ var getFixtures = function() {
             postcode: '3011',
             country: 'Switzerland',
             country_code: 'ch' // jshint ignore:line
-        },
-        owner: fix.bob.id
+        }
     });
-    fix.hollow = new Location({
-        _id: '000000000000000000000008',
-        coordinates: [7.446611, 46.953880],
+    fix.ruprechtAdded = db.Task.build({
+        type: 'AddLocation',
+        locationId: fix.ruprecht.id,
+        personId: fix.bob.id,
+        createdAt: '2014-08-24T10:00:00',
+        outcome: {
+            locationAdded: true
+        }
+    });
+
+    fix.hollow = db.Location.build({
+        id: 8,
+        coordinates: {
+            type: 'Point',
+            coordinates: [7.446611, 46.953880]
+        },
         name: 'Kremoby Hollow',
         type: 'gastronomy',
-        address: {
-            street: 'Schänzlihalde',
-            houseNumber: '30',
-            postcode: '3013',
-            city: 'Bern',
-            country: 'Switzerland'
-        },
+        addressStreet: 'Schänzlihalde',
+        addressHouse: '30',
+        addressPostcode: '3013',
+        addressCity: 'Bern',
+        addressCountry: 'Switzerland',
         osmAddress: {
             house_number: '30', // jshint ignore:line
             road: 'Schänzlihalde',
@@ -117,21 +133,31 @@ var getFixtures = function() {
             postcode: '3013',
             country: 'Switzerland',
             country_code: 'ch' // jshint ignore:line
-        },
-        owner: fix.alice.id
+        }
     });
-    fix.shop = new Location({
-        _id: '000000000000000000000009',
-        coordinates: [7.444621, 46.957212],
+    fix.hollowAdded = db.Task.build({
+        type: 'AddLocation',
+        locationId: fix.hollow.id,
+        personId: fix.alice.id,
+        createdAt: '2014-08-10',
+        outcome: {
+            locationAdded: true
+        }
+    });
+
+    fix.shop = db.Location.build({
+        id: 9,
+        coordinates: {
+            type: 'Point',
+            coordinates: [7.444621, 46.957212]
+        },
         name: 'Shop',
         type: 'retail',
-        address: {
-            street: 'Lorrainestrasse',
-            houseNumber: '23',
-            postcode: '3013',
-            city: 'Bern',
-            country: 'Switzerland'
-        },
+        addressStreet: 'Lorrainestrasse',
+        addressHouse: '23',
+        addressPostcode: '3013',
+        addressCity: 'Bern',
+        addressCountry: 'Switzerland',
         osmAddress: {
             convenience: 'LOLA',
             house_number: '23', // jshint ignore:line
@@ -144,22 +170,32 @@ var getFixtures = function() {
             postcode: '3013',
             country: 'Switzerland',
             country_code: 'ch' // jshint ignore:line
-        },
-        owner: fix.npc.id
+        }
     });
-    fix.deletedPlace = new Location({
-        _id: '000000000000000000000011',
-        coordinates: [7.456015, 46.949960],
+    fix.shopAdded = db.Task.build({
+        type: 'AddLocation',
+        locationId: fix.shop.id,
+        personId: fix.npc.id,
+        createdAt: '2014-08-07',
+        outcome: {
+            locationAdded: true
+        }
+    });
+
+    fix.deletedPlace = db.Location.build({
+        id: 11,
+        coordinates: {
+            type: 'Point',
+            coordinates: [7.456015, 46.949960]
+        },
         name: 'CLOSED: This place should never show up!',
         type: 'gastronomy',
         owner: fix.alice.id,
-        address: {
-            street: 'Langmauerweg',
-            houseNumber: '15c',
-            postcode: '3011',
-            city: 'Bern',
-            country: 'Switzerland'
-        },
+        addressStreet: 'Langmauerweg',
+        addressHouse: '15c',
+        addressPostcode: '3011',
+        addressCity: 'Bern',
+        addressCountry: 'Switzerland',
         osmAddress: {
             house_number: '15c', // jshint ignore:line
             road: 'Langmauerweg',
@@ -172,149 +208,192 @@ var getFixtures = function() {
             country: 'Switzerland',
             country_code: 'ch' // jshint ignore:line
         },
-        deleted: true
+        deletedAt: Date.now()
     });
 
-    fix.doshaCurry = new Product({
-        _id: '000000000000000000000101',
-        location: fix.dosha.id,
+    fix.doshaCurry = db.Product.build({
+        id: 101,
+        locationId: fix.dosha.id,
         name: 'curry',
-        availability: constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE.temporarilyUnavailable
+        availability: constants.PRODUCT_AVAILABILITIES.not // TODO WIP: this should be some other value "not" should make it not show up in the product list
     });
-    fix.doshaSamosa = new Product({
-        _id: '000000000000000000000102',
-        location: fix.dosha.id,
+    fix.doshaSamosa = db.Product.build({
+        id: 102,
+        locationId: fix.dosha.id,
         name: 'samosa'
     });
 
-    fix.bobMission1Dosha = new Missions.HasOptionsMission({
-        location: fix.dosha.id,
-        person: fix.bob.id,
-        completed: '2014-08-20',
-        outcome: 'yes'
-    });
-    fix.bobMission2Dosha = new Missions.RateProductMission({
-        location: fix.dosha.id,
-        person: fix.bob.id,
-        completed: '2014-08-20',
+    fix.bobTask1Dosha = db.Task.build({
+        type: 'SetLocationProductListComplete',
+        locationId: fix.dosha.id,
+        personId: fix.bob.id,
+        createdAt: '2014-08-20',
         outcome: {
-            product: fix.doshaCurry.id,
-            info: 4
+            completionState: constants.PRODUCT_LIST_STATES.incompleteGoodSummary
         }
     });
-    fix.bobMission3Dosha = new Missions.RateProductMission({
-        location: fix.dosha.id,
-        person: fix.bob.id,
-        completed: '2014-08-20',
+    fix.bobTask2Dosha = db.Task.build({
+        type: 'RateProduct',
+        locationId: fix.dosha.id,
+        productId: fix.doshaCurry.id,
+        personId: fix.bob.id,
+        createdAt: '2014-08-20',
         outcome: {
-            product: fix.doshaSamosa.id,
-            info: 3
+            rating: 4
+        }
+    });
+    fix.bobTask3Dosha = db.Task.build({
+        type: 'RateProduct',
+        locationId: fix.dosha.id,
+        productId: fix.doshaSamosa.id,
+        personId: fix.bob.id,
+        createdAt: '2014-08-20',
+        outcome: {
+            rating: 3
         }
     });
 
-    fix.ruprechtTofu = new Product({
-        _id: '000000000000000000000103',
-        location: fix.ruprecht.id,
+    fix.ruprechtTofu = db.Product.build({
+        id: 103,
+        locationId: fix.ruprecht.id,
         name: 'tofu'
     });
 
-    fix.bobMission1Ruprecht = new Missions.HasOptionsMission({
-        location: fix.ruprecht.id,
-        person: fix.bob.id,
-        completed: '2014-08-24T11:00:00',
-        outcome: 'yes'
-    });
-    fix.bobMission2Ruprecht = new Missions.OfferQualityMission({
-        location: fix.ruprecht.id,
-        person: fix.bob.id,
-        completed: '2014-08-24T12:00:00',
-        outcome: 3
-    });
-    fix.aliceMission1Ruprecht = new Missions.VisitBonusMission({
-        location: fix.ruprecht.id,
-        person: fix.alice.id,
-        completed: '2014-08-25T15:00:00',
-        outcome: true
-    });
-    fix.aliceMission2Ruprecht = new Missions.HasOptionsMission({
-        location: fix.ruprecht.id,
-        person: fix.alice.id,
-        completed: '2014-08-25T16:00:00',
-        outcome: 'yes'
-    });
-    fix.aliceMission3Ruprecht = new Missions.WhatOptionsMission({
-        location: fix.ruprecht.id,
-        person: fix.alice.id,
-        completed: '2014-08-25T17:00:00',
-        outcome: [
-            {
-                product: fix.ruprechtTofu.id
-            }
-        ]
-    });
-    fix.aliceMission4Ruprect = new Missions.SetProductAvailMission({
-        location: fix.ruprecht.id,
-        person: fix.alice.id,
-        completed: Date.now(),
+    fix.bobTask1Ruprecht = db.Task.build({
+        type: 'SetLocationDescription',
+        locationId: fix.ruprecht.id,
+        personId: fix.bob.id,
+        createdAt: '2014-08-24T11:00:00',
         outcome: {
-            product: fix.ruprechtTofu,
-            info: 'available'
+            description: 'Bio shop with many vegan options.'
+        }
+    });
+    fix.bobTask2Ruprecht = db.Task.build({
+        type: 'RateLocationQuality',
+        locationId: fix.ruprecht.id,
+        personId: fix.bob.id,
+        createdAt: '2014-08-24T12:00:00',
+        outcome: {
+            quality: 3
+        }
+    });
+    fix.aliceTask1Ruprecht = db.Task.build({
+        type: 'HaveYouBeenHereRecently',
+        locationId: fix.ruprecht.id,
+        personId: fix.alice.id,
+        createdAt: '2014-08-25T15:00:00',
+        outcome: {
+            beenHere: 'yes'
+        }
+    });
+    fix.aliceTask2Ruprecht = db.Task.build({
+        type: 'SetLocationWebsite',
+        locationId: fix.ruprecht.id,
+        personId: fix.alice.id,
+        createdAt: '2014-08-25T16:00:00',
+        outcome: {
+            website: 'https://example.com/ruprecht',
+            isAvailable: true
+        }
+    });
+    fix.aliceTask3Ruprecht = db.Task.build({
+        type: 'AddProduct',
+        locationId: fix.ruprecht.id,
+        productId: fix.ruprechtTofu.id,
+        personId: fix.alice.id,
+        createdAt: '2014-08-25T17:00:00',
+        outcome: {
+            productAdded: true,
+            name: 'tofu'
+        }
+    });
+    fix.aliceTask4Ruprecht = db.Task.build({
+        type: 'SetProductAvailability',
+        locationId: fix.ruprecht.id,
+        productId: fix.ruprechtTofu.id,
+        personId: fix.alice.id,
+        createdAt: Date.now(),
+        outcome: {
+            availability: constants.PRODUCT_AVAILABILITIES.sometimes
         }
     });
 
-    fix.aliceMission1Hollow = new Missions.VisitBonusMission({
-        location: fix.hollow.id,
-        person: fix.alice.id,
-        completed: '2014-08-10',
-        outcome: true
+    fix.aliceTask1Hollow = db.Task.build({
+        type: 'HaveYouBeenHereRecently',
+        locationId: fix.hollow.id,
+        personId: fix.alice.id,
+        createdAt: '2014-08-10',
+        outcome: {
+            beenHere: 'yesRightNow'
+        }
     });
-    fix.aliceMission2Hollow = new Missions.HasOptionsMission({
-        location: fix.hollow.id,
-        person: fix.alice.id,
-        completed: '2014-08-10',
-        outcome: 'yes'
+    fix.aliceTask2Hollow = db.Task.build({
+        type: 'SetLocationProductListComplete',
+        locationId: fix.hollow.id,
+        personId: fix.alice.id,
+        createdAt: '2014-08-10',
+        outcome: {
+            completionState: constants.PRODUCT_LIST_STATES.incomplete
+        }
     });
-    fix.aliceMission3Hollow = new Missions.GiveFeedbackMission({
-        location: fix.hollow.id,
-        person: fix.alice.id,
-        completed: '2014-08-10',
-        outcome: 'Your vegan food is so tasty'
+    fix.aliceTask3Hollow = db.Task.build({
+        type: 'GiveFeedback',
+        locationId: fix.hollow.id,
+        personId: fix.alice.id,
+        createdAt: '2014-08-10',
+        outcome: {
+            commitment: 'yes',
+            notes: 'Your vegan food is so tasty'
+        }
     });
-    fix.aliceMission4Hollow = new Missions.LocationTagsMission({
-        location: fix.hollow.id,
-        person: fix.alice.id,
-        completed: '2014-08-10',
-        outcome: [
-            'gBreakfast',
-            'gLunch',
-            'gDinner',
-            'gSweets',
-            'rnBooks'
-        ]
+    fix.aliceTask4Hollow = db.Task.build({
+        type: 'TagLocation',
+        locationId: fix.hollow.id,
+        personId: fix.alice.id,
+        createdAt: '2014-08-10',
+        outcome: {
+            tags: [
+                'gBreakfast',
+                'gLunch',
+                'gDinner',
+                'gSweets',
+                'rnBooks'
+            ]
+        }
     });
-    fix.bobMission1Hollow = new Missions.HasOptionsMission({
-        location: fix.hollow.id,
-        person: fix.bob.id,
-        completed: '2014-08-12',
-        outcome: 'yes'
+    fix.bobTask1Hollow = db.Task.build({
+        type: 'HaveYouBeenHereRecently',
+        locationId: fix.hollow.id,
+        personId: fix.bob.id,
+        createdAt: '2014-08-12',
+        outcome: {
+            beenHere: 'yes'
+        }
     });
-    fix.bobMission2Hollow = new Missions.VisitBonusMission({
-        location: fix.hollow.id,
-        person: fix.bob.id,
-        completed: '2014-08-15',
-        outcome: true
+    fix.bobTask2Hollow = db.Task.build({
+        type: 'BuyProduct',
+        locationId: fix.hollow.id,
+        personId: fix.bob.id,
+        createdAt: '2014-08-15',
+        outcome: {
+            commitment: 'maybe',
+            notes: 'not sure if i am hungry enough'
+        }
     });
 
-    fix.bobMission1Shop = new Missions.OfferQualityMission({
-        location: fix.shop.id,
-        person: fix.npc.id,
-        completed: '2014-08-10',
-        outcome: 4
+    fix.bobTask1Shop = db.Task.build({
+        type: 'RateLocationQuality',
+        locationId: fix.shop.id,
+        personId: fix.npc.id,
+        createdAt: '2014-08-10',
+        outcome: {
+            quality: 4
+        }
     });
 
-    fix.closedPlaceProduct = new Product({
-        _id: '000000000000000000000104',
-        location: fix.deletedPlace.id,
+    fix.closedPlaceProduct = db.Product.build({
+        id: 104,
+        locationId: fix.deletedPlace.id,
         name: 'THIS PRODUCT SHOULD NEVER SHOW UP'
     });
 
@@ -322,20 +401,16 @@ var getFixtures = function() {
 };
 exports.getFixtures = getFixtures;
 
-var setupFixtures = function(done) {
-    FixtureLoader.load(getFixtures(), done);
+var setupFixtures = function() {
+    return FixtureLoader.load(getFixtures());
 };
 exports.setupFixtures = setupFixtures;
 
 
 if (require.main === module) {
-    mongoose.connect('mongodb://localhost/veganaut', function(err) {
-        if (err) {
-            console.log('Could not connect to Mongo: ', err);
-            process.exit();
-        }
-        setupFixtures(function() {
-            mongoose.disconnect();
-        });
-    });
+    setupFixtures()
+        .finally(function() {
+            db.sequelize.close();
+        })
+    ;
 }

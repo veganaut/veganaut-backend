@@ -1,38 +1,31 @@
-/**
- * Mongoose schema for a Product: something that is sold
- * at a Location
- */
-
 'use strict';
+module.exports = function(sequelize, DataTypes) {
+    var Session = sequelize.define('session',
+        {
+            sid: {
+                type: DataTypes.STRING(40),
+                primaryKey: true
+            },
+            userAgent: {
+                type: DataTypes.STRING
+            },
+            activeAt: {
+                type: DataTypes.DATE,
+                allowNull: false
+            },
+            userId: {
+                type: DataTypes.INTEGER,
+                allowNull: false
+            }
+        },
+        {
+            updatedAt: false
+        }
+    );
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+    Session.associate = function(models) {
+        Session.belongsTo(models.Person, {as: 'user'});
+    };
 
-var sessionSchema = new Schema({
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: 'Person',
-        required: true
-    },
-    sid: {
-        type: String,
-        unique: true,
-        sparse: true,
-        required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    activeAt: {
-        type: Date,
-        default: Date.now
-    },
-    userAgent: {
-        type: String
-    }
-});
-
-var Session = mongoose.model('Session', sessionSchema);
-
-module.exports = Session;
+    return Session;
+};

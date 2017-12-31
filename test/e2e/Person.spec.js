@@ -42,13 +42,7 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
 
                 // These values shouldn't be writable
                 fullName: 'Just Doge',
-                accountType: 'npc',
-                attributes: {
-                    pioneer: 100,
-                    diplomat: 10,
-                    evaluator: 20,
-                    gourmet: 30
-                }
+                accountType: 'npc'
             })
             .end(function(err, res) {
                 expect(res.statusCode).toBe(201);
@@ -61,10 +55,6 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
                     var person = res.body;
                     expect(typeof person.fullName).toEqual('undefined', 'fullName was not set');
                     expect(person.accountType).toEqual('player', 'accountType was not set to npc');
-                    expect(person.attributes.pioneer).toEqual(0, 'could not set pioneer attribute');
-                    expect(person.attributes.diplomat).toEqual(0, 'could not set diplomat attribute');
-                    expect(person.attributes.evaluator).toEqual(0, 'could not set evaluator attribute');
-                    expect(person.attributes.gourmet).toEqual(0, 'could not set gourmet attribute');
                     done();
                 });
             })
@@ -87,7 +77,7 @@ h.describe('Person API methods when not logged in', {user: ''}, function() {
     });
 
     it('cannot get person by id', function(done) {
-        h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(err, res) {
+        h.request('GET', h.baseURL + 'person/1').end(function(err, res) {
             expect(res.statusCode).toBe(401);
             done();
         });
@@ -100,14 +90,14 @@ h.describe('Person API methods for logged in user', function() {
             expect(res.statusCode).toBe(200);
 
             var me = res.body;
-            expect(me.id).toEqual('000000000000000000000001');
+            expect(me.id).toEqual(1);
             expect(me.email).toEqual('foo@bar.baz');
             expect(me.nickname).toEqual('Alice');
             expect(me.fullName).toEqual('Alice Alison');
             expect(me.locale).toEqual('en');
-            expect(me.completedMissions).toBeGreaterThan(1, 'did a few missions');
+            expect(me.completedTasks).toBeGreaterThan(1, 'did a few tasks');
+            expect(me.addedLocations).toBeGreaterThan(0, 'added a location');
             expect(typeof me.password).toEqual('undefined', 'password should not be returned');
-            expect(typeof me.nickname).toEqual('string', 'should have a nickname');
 
             done();
         });
@@ -125,12 +115,14 @@ h.describe('Person API methods for logged in user', function() {
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
 
-                expect(res.body.id).toEqual('000000000000000000000001', 'user id should not change');
+                expect(res.body.id).toEqual(1, 'user id should not change');
                 expect(res.body.email).toEqual('alice@bar.baz');
                 expect(res.body.fullName).toEqual('Alice Alisonja');
                 expect(res.body.nickname).toEqual('Ali');
                 expect(res.body.locale).toEqual('de');
                 expect(typeof res.body.password).toEqual('undefined', 'password should not be returned');
+
+                // Note: password is checked in the next test
 
                 done();
             })
@@ -178,7 +170,7 @@ h.describe('Person API methods for logged in user', function() {
     });
 
     it('can get person by id', function(done) {
-        h.request('GET', h.baseURL + 'person/000000000000000000000001').end(function(err, res) {
+        h.request('GET', h.baseURL + 'person/1').end(function(err, res) {
             expect(res.statusCode).toBe(200);
 
             var person = res.body;
@@ -186,12 +178,9 @@ h.describe('Person API methods for logged in user', function() {
             expect(person.nickname).toBeDefined();
             expect(person.fullName).toBeUndefined();
             expect(person.locale).toBeUndefined();
-            expect(person.completedMissions).toBeDefined();
-            expect(typeof person.attributes).toEqual('object', 'attributes is a object');
-            expect(person.attributes.pioneer).toBeDefined();
-            expect(person.attributes.diplomat).toBeDefined();
-            expect(person.attributes.evaluator).toBeDefined();
-            expect(person.attributes.gourmet).toBeDefined();
+            expect(person.password).toBeUndefined();
+            expect(person.completedTasks).toBeDefined();
+            expect(person.addedLocations).toBeDefined();
 
             done();
         });
@@ -202,21 +191,22 @@ h.describe('Person API methods for logged in user trying naughty things', functi
     it('cannot update profile fields that are not writable', function(done) {
         h.request('PUT', h.baseURL + 'person/me')
             .send({
-                attributes: {
-                    pioneer: 100,
-                    diplomat: 100,
-                    evaluator: 100,
-                    gourmet: 100
-                }
+                completedTasks: 100,
+                addedLocations: 50,
+                accountType: 'npc',
+                resetPasswordToken: '',
+                resetPasswordExpires: ''
             })
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
 
-                var attributes = res.body.attributes;
-                expect(attributes.pioneer).not.toEqual(100, 'pioneer has not changed');
-                expect(attributes.diplomat).not.toEqual(100, 'diplomat has not changed');
-                expect(attributes.evaluator).not.toEqual(100, 'evaluator has not changed');
-                expect(attributes.gourmet).not.toEqual(100, 'gourmet has not changed');
+                expect(res.body.completedTasks).not.toEqual(100, 'completedTasks has not changed');
+                expect(res.body.addedLocations).not.toEqual(50, 'addedLocations has not changed');
+                expect(res.body.accountType).toBe('player', 'accountType did not change');
+
+                // Can't really test this here as those values are not exposed
+                expect(res.body.resetPasswordToken).toBeUndefined();
+                expect(res.body.resetPasswordExpires).toBeUndefined();
 
                 done();
             })

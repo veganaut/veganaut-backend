@@ -2,27 +2,24 @@
 
 var _ = require('lodash');
 var BPromise = require('bluebird');
-var mongoose = require('mongoose');
-var Missions = require('../models/Task');
-var Location = mongoose.model('Location');
-var Person = mongoose.model('Person');
 var constants = require('../utils/constants');
+var db = require('../models');
 
-var findPeople = BPromise.promisify(Person.find, Person);
 
 /**
  * Returns all people of accountType player indexed by id.
  * Only the nickname and id is returned.
  */
 var getPlayersById = function() {
-    return findPeople({
-        // Only select actual players
-        accountType: constants.ACCOUNT_TYPES.PLAYER
-    }, 'nickname')
-        .then(function(people) {
-            return _.indexBy(people, '_id');
+    return db.Person
+        .findAll({
+            attributes: ['id', 'nickname'],
+            // Only select actual players
+            where: {accountType: constants.ACCOUNT_TYPES.player}
         })
-    ;
+        .then(function(people) {
+            return _.indexBy(people, 'id');
+        });
 };
 
 /**
@@ -30,34 +27,25 @@ var getPlayersById = function() {
  * @return {Promise}
  */
 var getLocationCountByType = function() {
-    var query = Location.aggregate([
-        {
-            $match: Location.getBaseQuery()
-        },
-        {
-            $group: {
-                _id: '$type',
-                sum: {$sum: 1}
-            }
-        },
-        {
-            $sort: {
-                sum: -1,
-                _id: 1
-            }
-        }
-    ]);
-
-    return BPromise.promisify(query.exec, query)().then(function(locationStats) {
-        var stats = [];
-        _.each(locationStats, function(stat) {
-            stats.push({
-                type: stat._id,
-                locations: stat.sum
+    return db.Location
+        .findAll({
+            attributes: [
+                'type',
+                [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'count']
+            ],
+            group: ['type'],
+            order: [
+                ['count', 'DESC']
+            ]
+        })
+        .then(function(results) {
+            return results.map(function(result) {
+                return {
+                    type: result.get('type'),
+                    locations: parseInt(result.get('count'), 10)
+                };
             });
         });
-        return stats;
-    });
 };
 
 /**
@@ -73,77 +61,32 @@ var getPlayerCount = function(playerByIdPromise) {
 };
 
 /**
- * Gets the ranking of the players by completed missions.
+ * Gets the ranking of the players by completed tasks.
  * @param playerByIdPromise
  * @return {Promise}
  */
-var getMissionsCountByPlayer = function(playerByIdPromise) {
-    var query = Missions.Mission.aggregate([
-        {
-            $group: {
-                _id: '$person',
-                sum: {$sum: 1}
-            }
-        },
-        {
-            $sort: {
-                sum: -1,
-                _id: 1
-            }
-        }
-    ]);
+var getTasksCountByPlayer = function(playerByIdPromise) {
+    var tasksByPlayerPromise = db.Task.findAll({
+        attributes: [
+            'personId',
+            [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'count']
+        ],
+        group: ['personId'],
+        order: [
+            ['count', 'DESC']
+        ]
+    });
 
     return BPromise.join(
-        BPromise.promisify(query.exec, query)(), playerByIdPromise,
+        tasksByPlayerPromise, playerByIdPromise,
         function(peopleStats, playersById) {
             var stats = [];
             _.each(peopleStats, function(stat) {
-                if (typeof playersById[stat._id] !== 'undefined') {
+                var personId = stat.get('personId');
+                if (typeof playersById[personId] !== 'undefined') {
                     stats.push({
-                        person: _.pick(playersById[stat._id], ['id', 'nickname']),
-                        missions: stat.sum
-                    });
-                }
-            });
-
-            return stats;
-        }
-    );
-};
-
-/**
- * Gets the ranking of the players by owned locations.
- * @param playerByIdPromise
- * @return {Promise}
- */
-var getLocationCountByPlayer = function(playerByIdPromise) {
-    var query = Location.aggregate([
-        {
-            $match: Location.getBaseQuery()
-        },
-        {
-            $group: {
-                _id: '$owner',
-                sum: {$sum: 1}
-            }
-        },
-        {
-            $sort: {
-                sum: -1,
-                _id: 1
-            }
-        }
-    ]);
-
-    return BPromise.join(
-        BPromise.promisify(query.exec, query)(), playerByIdPromise,
-        function(ownerStats, playersById) {
-            var stats = [];
-            _.each(ownerStats, function(stat) {
-                if (typeof playersById[stat._id] !== 'undefined') {
-                    stats.push({
-                        person: _.pick(playersById[stat._id], ['id', 'nickname']),
-                        locations: stat.sum
+                        person: _.pick(playersById[personId], ['id', 'nickname']),
+                        tasks: parseInt(stat.get('count'), 10)
                     });
                 }
             });
@@ -159,9 +102,8 @@ exports.stats = function(req, res, next) {
     BPromise.join(
         getLocationCountByType(),
         getPlayerCount(playerByIdPromise),
-        getMissionsCountByPlayer(playerByIdPromise),
-        getLocationCountByPlayer(playerByIdPromise),
-        function(locationCount, playerCount, missionsByPlayer, locationsByPlayer) {
+        getTasksCountByPlayer(playerByIdPromise),
+        function(locationCount, playerCount, tasksByPlayer) {
             // Assemble it all up
             return {
                 locationTypes: {
@@ -169,8 +111,7 @@ exports.stats = function(req, res, next) {
                 },
                 people: {
                     count: playerCount,
-                    missions: missionsByPlayer,
-                    locations: locationsByPlayer
+                    tasks: tasksByPlayer
                 }
             };
         }

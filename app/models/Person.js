@@ -1,191 +1,151 @@
-/**
- * Mongoose schema for a person.
- *
- * Password hashing inspired by http://blog.mongodb.org/post/32866457221/password-authentication-with-mongoose-part-1
- */
-
 'use strict';
 
 var _ = require('lodash');
-var mongoose = require('mongoose');
-var async = require('async');
-var Schema = mongoose.Schema;
 var constants = require('../utils/constants');
-var config = require('../config');
-
+var BPromise = require('bluebird');
 var bcrypt = require('bcrypt');
 var BCRYPT_WORK_FACTOR = 10;
 var cryptoUtils = require('../utils/cryptoUtils');
 
-
-var personSchema = new Schema({
-    // TODO: force-lowercase e-mail
-    email: {type: String, unique: true, sparse: true, required: true},
-    password: {type: String},
-    nickname: {type: String, required: true},
-
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
-
-    fullName: {type: String},
-    createdAt: {type: Date, default: Date.now},
-
-    // dateOfBirth can be just a year, year-month, or year-month-day
-    dateOfBirth: {type: String, matches: /^\d{4}(?:-\d\d){0,2}$/}, // unused
-    phone: String, // unused
-    address: String, // unused
-    gender: {type: String, enum: ['male', 'female', 'other']}, // unused
-    locale: {type: String, default: config.locale.default, enum: config.locale.available},
-
-    accountType: {
-        type: String,
-        default: constants.ACCOUNT_TYPES.PLAYER,
-        enum: _.values(constants.ACCOUNT_TYPES)
-    },
-
-    attributes: {
-        pioneer: {type: Number, default: 0},
-        diplomat: {type: Number, default: 0},
-        evaluator: {type: Number, default: 0},
-        gourmet: {type: Number, default: 0}
-    }
-});
-
-personSchema.pre('save', function(next) {
-    var user = this;
-
-    async.series([
-        function(cb) {
-            // Only hash the password if it has been modified (or is new)
-            if (user.isModified('password')) {
-                bcrypt.hash(user.password, BCRYPT_WORK_FACTOR, function(err, hash) {
-                    if (err) {
-                        return next(err);
-                    }
-
-                    // override the cleartext password with the hashed one
-                    user.password = hash;
-                    cb();
-                });
+module.exports = function(sequelize, DataTypes) {
+    var Person = sequelize.define('person',
+        {
+            nickname: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
+            fullName: {
+                type: DataTypes.STRING
+            },
+            email: {
+                type: DataTypes.STRING,
+                unique: true,
+                allowNull: false
+            },
+            password: {
+                type: DataTypes.STRING
+            },
+            resetPasswordToken: {
+                type: DataTypes.STRING
+            },
+            resetPasswordExpires: {
+                type: DataTypes.DATE
+            },
+            locale: {
+                type: DataTypes.ENUM,
+                values: constants.LANGUAGES,
+                defaultValue: constants.DEFAULT_LANGUAGE,
+                allowNull: false
+            },
+            accountType: {
+                type: DataTypes.ENUM,
+                values: Object.keys(constants.ACCOUNT_TYPES),
+                defaultValue: constants.ACCOUNT_TYPES.player,
+                allowNull: false
             }
-            else {
-                cb();
-            }
-        },
-        function() {
-            if (user.isModified('resetPasswordToken') && user.resetPasswordToken) {
-                // Override the cleartext token with the hashed one
-                user.resetPasswordToken = cryptoUtils.hashResetToken(user.resetPasswordToken);
-            }
-            return next();
         }
-    ]);
-})
-;
+    );
 
-personSchema.methods.verify = function(candidatePassword, next) {
-    if (typeof this.password !== 'string') {
-        // TODO: we should really have error codes that the frontend can understand (and translate).
-        return next(new Error('You have not set a password yet. Click on "I dont\'t know my password".'));
-    }
-    bcrypt.compare(candidatePassword, this.password, next);
-};
+    Person.associate = function(models) {
+        Person.hasMany(models.Task);
+    };
 
-/**
- * Method will be called every time a mission is completed.
- * Updates this person's attributes based on the passed mission
- * @param mission
- * @param next
- */
-personSchema.methods.notifyMissionCompleted = function(mission, next) {
-    // TODO: the mission model should know how it affects the attributes
-    var that = this;
-    var INC = 1;
-    var PIONEER_INC = INC;
-    var DIPLOMAT_INC = INC;
-    var EVALUATOR_INC = INC;
-    var GOURMET_INC = INC;
+    Person.hook('beforeSave', function(user) {
+        // Only hash the password if it has been modified (or is new)
+        if (user.changed('password')) {
+            return bcrypt.hash(user.password, BCRYPT_WORK_FACTOR).then(function(hash) {
+                // Override the cleartext password with the hashed one
+                user.password = hash;
+            });
+        }
+    });
 
-    var pioneerInc = 0;
-    var diplomatInc = 0;
-    var evaluatorInc = 0;
-    var gourmetInc = 0;
+    Person.hook('beforeSave', function(user) {
+        // TODO: Change the reset token to be as secure as passwords using bcrypt
+        // Only hash the resetPasswordToken if it's set and changed
+        if (user.resetPasswordToken && user.changed('resetPasswordToken')) {
+            // Override the cleartext token with the hashed one
+            user.resetPasswordToken = cryptoUtils.hashResetToken(user.resetPasswordToken);
+        }
+    });
 
-    var missionType = mission.getType();
+    Person.prototype.verify = function(candidatePassword) {
+        if (typeof this.password !== 'string') {
+            // TODO: we should really have error codes that the frontend can understand (and translate).
+            return BPromise.reject(new Error('You have not set a password yet. Click on "I dont\'t know my password".'));
+        }
+        return bcrypt.compare(candidatePassword, this.password);
+    };
 
-    if (missionType === 'AddLocationMission' ||
-        missionType === 'WhatOptionsMission')
-    {
-        pioneerInc += PIONEER_INC;
-    }
+    /**
+     * Counts the total number of completed tasks and added locations
+     * of this player. The properties completedTasks and addedLocations
+     * are added to the instance.
+     * @returns {Promise}
+     */
+    Person.prototype.calculateTaskCounts = function() {
+        var that = this;
 
-    if (mission.isFirstOfType &&
-        (missionType === 'VisitBonusMission' ||
-        missionType === 'HasOptionsMission' ||
-        missionType === 'WantVeganMission' ||
-        missionType === 'WhatOptionsMission' ||
-        missionType === 'RateProductMission' ||
-        missionType === 'OfferQualityMission' ||
-        missionType === 'EffortValueMission' ||
-        missionType === 'LocationTagsMission'))
-    {
-        pioneerInc += PIONEER_INC;
-    }
-
-    if (missionType === 'HasOptionsMission' ||
-        missionType === 'WantVeganMission' ||
-        missionType === 'GiveFeedbackMission')
-    {
-        diplomatInc = DIPLOMAT_INC;
-    }
-
-    if (missionType === 'RateProductMission' ||
-        missionType === 'OfferQualityMission' ||
-        missionType === 'EffortValueMission' ||
-        missionType === 'LocationTagsMission' ||
-        missionType === 'SetProductNameMission' ||
-        missionType === 'SetProductAvailMission')
-    {
-        evaluatorInc = EVALUATOR_INC;
-    }
-
-    if (missionType === 'VisitBonusMission' ||
-        missionType === 'BuyOptionsMission')
-    {
-        gourmetInc = GOURMET_INC;
-    }
-    that.attributes.pioneer += pioneerInc;
-    that.attributes.diplomat += diplomatInc;
-    that.attributes.evaluator += evaluatorInc;
-    that.attributes.gourmet += gourmetInc;
-    that.save(next);
-};
-
-/**
- * toJSON transform method is automatically called when converting a person
- * to JSON (as before sending it over the API)
- * @type {{transform: Function}}
- */
-personSchema.options.toJSON = {
-    transform: function(doc) {
-        // Pick basic properties
-        var ret = _.pick(doc,
-            'id', 'email', 'nickname', 'fullName', 'gender', 'locale',
-            'dateOfBirth', 'phone', 'address', 'accountType'
+        // First, prepare the condition to separate the AddLocation from the other tasks
+        var isAddLocationCondition = sequelize.literal(
+            'type = ' + sequelize.escape(constants.TASK_TYPES.AddLocation)
         );
 
-        // Attach attributes if they have been loaded
-        // TODO: there should be a better way of checking whether that was loaded
-        if (typeof doc.attributes.pioneer !== 'undefined' ||
-            typeof doc.attributes.diplomat !== 'undefined' ||
-            typeof doc.attributes.evaluator !== 'undefined' ||
-            typeof doc.attributes.gourmet !== 'undefined')
-        {
-            ret.attributes = doc.attributes;
-        }
+        return that
+            .getTasks({
+                // Count the AddLocation tasks separately
+                attributes: [
+                    // Using floor gets sequelize to spit out a number instead of string
+                    [sequelize.fn('FLOOR', sequelize.fn('COUNT', '*')), 'count'],
+                    [isAddLocationCondition, 'isAddLocation']
+                ],
+                where: {
+                    // Don't count automatically triggered tasks
+                    triggeredById: null
+                },
+                group: [isAddLocationCondition],
+                raw: true
+            })
+            .then(function(numTasksCounts) {
+                // Initialise the counts to 0
+                that.completedTasks = 0;
+                that.addedLocations = 0;
 
-        return ret;
-    }
+                // Add the actual counts from the db
+                _.each(numTasksCounts, function(numTasks) {
+                    if (numTasks.isAddLocation) {
+                        // Add the count of the AddLocation tasks
+                        that.addedLocations += numTasks.count;
+                    }
+
+                    // Both AddLocation and other tasks count towards the total completed tasks
+                    that.completedTasks += numTasks.count;
+                });
+            });
+    };
+
+    /**
+     * Convert the person for transferring over the API
+     * @returns {{}}
+     */
+    Person.prototype.toJSON = function () {
+        var doc = this.get();
+        var ret = _.pick(doc, [
+            'id',
+            'nickname',
+            'fullName',
+            'email',
+            'locale',
+            'accountType'
+        ]);
+
+        // These might have been set by calculateTaskCounts()
+        _.assign(ret, _.pick(this, [
+            'completedTasks',
+            'addedLocations'
+        ]));
+        return _.omit(ret, _.isNull);
+    };
+
+    return Person;
 };
-
-mongoose.model('Person', personSchema);

@@ -4,10 +4,9 @@
  */
 
 var _ = require('lodash');
+var BPromise = require('bluebird');
 var generatePassword = require('password-generator');
-var mongoose = require('mongoose');
-var Person = mongoose.model('Person');
-var Session = require('../models/Session');
+var db = require('../models');
 
 
 /**
@@ -28,9 +27,8 @@ var SESSION_ACTIVE_PERIOD = 1000 * 60 * 60 * 8;
  * Creates a session for the given user from the given request.
  * @param user User instance to create a session for
  * @param [req] The express request object (User-Agent will be retrieved)
- * @param next Callback
  */
-exports.createSessionFor = function(user, req, next) {
+exports.createSessionFor = function(user, req) {
     // Generate a secure session id
     var sessionId = generatePassword(40, false);
 
@@ -41,18 +39,16 @@ exports.createSessionFor = function(user, req, next) {
     }
 
     // Create the session
-    var session = new Session({
-        user: user.id,
-        sid: sessionId,
-        userAgent: userAgent
-    });
-
-    session.save(function(err) {
-        if (err) {
-            return next(err);
-        }
-        return next(null, sessionId);
-    });
+    return db.Session.create({
+            userId: user.id,
+            sid: sessionId,
+            userAgent: userAgent,
+            activeAt: Date.now()
+        })
+        .then(function() {
+            return sessionId;
+        })
+    ;
 };
 
 /**
@@ -64,31 +60,29 @@ exports.createSessionFor = function(user, req, next) {
  * @returns {*}
  */
 var authenticate = function(email, pass, req, next) {
+    var user;
     // Query the db for the given email
-    Person.findOne({email: email}, function(err, user) {
-        if (err) {
-            return next(err);
-        }
-        if (!user) {
-            return next(new Error('Cannot find user with email ' + email + '.'));
-        }
-        user.verify(pass, function(err, result) {
-            if (err) {
-                return next(err);
+    db.Person.findOne({where: {email: email}})
+        .then(function (person) {
+            if (!person) {
+                return next(new Error('Cannot find user with email ' + email + '.'));
             }
-            if (result) {
-                exports.createSessionFor(user, req, function(err, sessionId) {
-                    if (err) {
-                        return next(err);
-                    }
-                    return next(null, user, sessionId);
-                });
+            user = person;
+            return user.verify(pass);
+        })
+        .then(function(passwordVerifyResult) {
+            if (passwordVerifyResult === true) {
+                return exports.createSessionFor(user, req);
             }
             else {
-                return next(new Error('Incorrect password'));
+                throw new Error('Incorrect password');
             }
-        });
-    });
+        })
+        .then(function(sessionId) {
+            return next(null, user, sessionId);
+        })
+        .catch(next)
+    ;
 };
 
 /**
@@ -112,21 +106,20 @@ var getSessionIdFromRequest = function(req) {
 };
 
 /**
- * Validates and updates the given session if necessary. The next callback
- * is called with an error or null as first argument and the validates session
- * or undefined as the second argument. So if everything goes ok, but the session
- * is invalid, it will return as next(null, undefined).
+ * Validates and updates the given session if necessary. A promise is returned
+ * that either resolves to undefined (if the session is not valid) or the validated session.
+ * Note that the returned session object should be used as it might have been updated.
  *
  * @param session
  * @param req
- * @param next
- * @returns {*}
+ * @returns {Promise}
  */
-var validateAndUpdateSession = function(session, req, next) {
+var validateAndUpdateSession = function(session, req) {
     if (!_.isObject(session)) {
         // No session given, return empty
-        return next();
+        return BPromise.resolve(undefined);
     }
+
 
     // Calculate how long ago the session was last active
     var sessionActiveAgo = Date.now() - session.activeAt.getTime();
@@ -135,9 +128,11 @@ var validateAndUpdateSession = function(session, req, next) {
     if (sessionActiveAgo > SESSION_VALIDITY_PERIOD) {
         // No longer valid, delete it and return
         // TODO: The frontend will not always reload correctly when the app is already loaded and the session expires. This is very unlikely however.
-        Session.findOneAndRemove({sid: session.sid}, function(err) {
-            return next(err);
-        });
+        return session.destroy()
+            .then(function() {
+                // Resolve empty cause there is no valid session
+                return BPromise.resolve(undefined);
+            });
     }
     else {
         // Session is valid. Check if we need to update the activeAt date
@@ -146,16 +141,11 @@ var validateAndUpdateSession = function(session, req, next) {
             // Set new date and userAgent
             session.activeAt = Date.now();
             session.userAgent = req.get('User-Agent');
-            session.save(function(err) {
-                if (err) {
-                    return next(err);
-                }
-                return next(null, session);
-            });
+            return session.save();
         }
         else {
             // Session is still set to active, return right away
-            return next(null, session);
+            return BPromise.resolve(session);
         }
     }
 };
@@ -176,29 +166,30 @@ exports.addUserToRequest = function(req, res, next) {
     }
 
     // Find the session
-    Session.findOne({sid: sessionId})
-        .populate('user')
-        .exec(function(err, session) {
-            if (err || !_.isObject(session)) {
-                // Error or no session found, return without doing anything
-                return next();
+    db.Session
+        .findOne({
+            where: {sid: sessionId},
+            include: 'user'
+        })
+        .catch(function() {
+            // Ignore errors when not finding a session, this will be treated
+            // when validating the session
+            return undefined;
+        })
+        .then(function(session) {
+            return validateAndUpdateSession(session, req);
+        })
+        .then(function(session) {
+            // Check if we got a validated session back
+            if (_.isObject(session)) {
+                // Session is valid, set the sid and user on the request
+                req.sessionId = session.sid;
+                req.user = session.user;
             }
 
-            validateAndUpdateSession(session, req, function(err, session) {
-                if (err) {
-                    return next(err);
-                }
-
-                // Check if we got a validated session back
-                if (_.isObject(session)) {
-                    // Session is valid, set the sid and user on the request
-                    req.sessionId = session.sid;
-                    req.user = session.user;
-                }
-
-                return next();
-            });
+            next();
         })
+        .catch(next)
     ;
 };
 
@@ -252,16 +243,20 @@ exports.create = function (req, res, next) {
  * Log out route
  * @param req
  * @param res
+ * @param next
  */
-exports.delete = function (req, res, next) {
+exports.delete = function(req, res, next) {
     // Destroy the user's session to log them out
     if (typeof req.sessionId === 'string' && req.sessionId.length > 0) {
-        Session.findOneAndRemove({sid: req.sessionId}, function(err) {
-            if (err) {
-                return next(err);
-            }
-            res.send({ status: 'OK' });
-        });
+        db.Session
+            .destroy({where: {sid: req.sessionId}})
+            .then(function() {
+                res.send({status: 'OK'});
+            })
+            .catch(next)
+        ;
     }
-    return next(new Error('No session active.'));
+    else {
+        return next(new Error('No session active.'));
+    }
 };

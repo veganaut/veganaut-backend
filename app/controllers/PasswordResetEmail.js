@@ -1,12 +1,9 @@
 'use strict';
 
-var async = require('async');
-var mongoose = require('mongoose');
 var generatePassword = require('password-generator');
 var config = require('../config.js');
+var db = require('../models');
 var mailTransporter = require('../utils/mailTransporter.js');
-
-var Person = mongoose.model('Person');
 
 //see http://sahatyalkabov.com/how-to-implement-password-reset-in-nodejs/
 
@@ -68,7 +65,7 @@ var EMAIL_TEXT = {
  */
 var RESET_BASE_URL = config.frontendUrl + '/reset/';
 
-exports.send = function (req, res, next) {
+exports.send = function(req, res, next) {
     // TODO: implement a way to prevent spamming someone with reset e-mails
     var emailAddress = req.body.email;
     var type = req.body.type;
@@ -78,27 +75,20 @@ exports.send = function (req, res, next) {
         return next(new Error('Invalid reset type: ' + type));
     }
 
-    async.waterfall([
-        function (done) {
-            var token = generatePassword(40, false);
-            Person.findOne({email: emailAddress}, function (err, user) {
-                if (err) {
-                    return done(err);
-                }
-                if (!user) {
-                    res.status(400);
-                    return done(new Error('No account with that email address exists!'));
-                }
+    var token = generatePassword(40, false);
+    db.Person.findOne({where: {email: emailAddress}})
+        .then(function(user) {
+            if (!user) {
+                res.status(400);
+                throw new Error('No account with that email address exists!');
+            }
 
-                user.resetPasswordToken = token;
-                user.resetPasswordExpires = Date.now() + TOKEN_VALIDITY_PERIOD[type];
+            user.resetPasswordToken = token;
+            user.resetPasswordExpires = Date.now() + TOKEN_VALIDITY_PERIOD[type];
 
-                user.save(function (err) {
-                    done(err, token, user);
-                });
-            });
-        },
-        function (token, user, done) {
+            return user.save();
+        })
+        .then(function(user) {
             var text = EMAIL_TEXT[type].text;
             text = text.replace(/\{\{NAME\}\}/g, user.nickname);
             text = text.replace(/\{\{URL\}\}/g, RESET_BASE_URL + token);
@@ -108,14 +98,12 @@ exports.send = function (req, res, next) {
                 subject: EMAIL_TEXT[type].subject,
                 text: text
             };
-            mailTransporter.sendMail(mailOptions, function (err) {
-                done(err, 'done');
-            });
-        }
-    ], function (err) {
-        if (err) {
-            return next(err);
-        }
-        return res.status(200).send();
-    });
+
+            return mailTransporter.sendMail(mailOptions);
+        })
+        .then(function() {
+            res.status(200).send();
+        })
+        .catch(next)
+    ;
 };

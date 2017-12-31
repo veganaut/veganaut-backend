@@ -8,6 +8,9 @@
 
 var _ = require('lodash');
 var nock = require('nock');
+var BPromise = require('bluebird');
+
+var db = require('../app/models');
 
 // Get the app
 var port = 3001;
@@ -28,9 +31,9 @@ mockery.enable({
 // Register the mock mailer with mockery
 // TODO: should use more absolute path?
 mockery.registerMock('../utils/mailTransporter.js', {
-    sendMail: function(mail, cb) {
+    sendMail: function(mail) {
         mockMailer.sentMails.push(mail);
-        cb();
+        return BPromise.resolve(undefined);
     }
 });
 
@@ -46,7 +49,7 @@ var installNominatimMock = function() {
         .query(true)
         .optionally()
         .reply(200, function() {
-            // Re-install the mock to alway be ready for a next request
+            // Re-install the mock to always be ready for a next request
             installNominatimMock();
             return {
                 address: {
@@ -66,12 +69,14 @@ installNominatimMock();
 // SuperAgent
 var request = require('superagent');
 
-/** Wrapper around superagent's request, that adds authorization headers.
+/**
+ * Wrapper around superagent's request, that adds authorization headers.
  *
- *  Params can be:
- *    request('GET', '/users').end(callback)
- *    request('/users').end(callback)
- *    request('/users', callback)*/
+ * Params can be:
+ *   request('GET', '/users').end(callback)
+ *   request('/users').end(callback)
+ *   request('/users', callback)
+ */
 exports.request = function(method, url) {
     // callback
     var callback;
@@ -93,7 +98,8 @@ exports.request = function(method, url) {
 
     if (callback) {
         return r.end(callback);
-    } else {
+    }
+    else {
         return r;
     }
 };
@@ -103,22 +109,21 @@ var fixtures = require('./fixtures/basic');
 exports.setupFixtures = fixtures.setupFixtures;
 
 // Sessions
-var mongoose = require('mongoose');
-var Person = mongoose.model('Person');
 var SessionController = require('../app/controllers/Session');
 
 /**
  * Creates a session for the user with the given email address.
  */
-var createSessionFor = function(email, next) {
+var createSessionFor = function(email) {
     // TODO: instead of creating sessions here, create them in the fixtures and then use them here
-    Person.findOne({email: email}, function(err, p) {
-        if (err) { return next(err); }
-        if (!p) { return next(new Error('Could not find person with email ' + email)); }
-        SessionController.createSessionFor(p, undefined, next);
-    });
+    return db.Person.findOne({where: {email: email}})
+        .then(function(p) {
+            if (!p) {
+                throw new Error('Could not find person with email ' + email);
+            }
+            return SessionController.createSessionFor(p, undefined);
+        });
 };
-exports.createSessionFor = createSessionFor;
 
 // Get the app
 var app = require('../app');
@@ -155,26 +160,24 @@ exports.describe = function(what, options, how) {
         // Start a server and initialize fixtures
         var server;
         beforeAll(function(done) {
-            mongoose.connect('mongodb://localhost/veganaut', function(err) {
+            server = app.listen(port, function(err) {
                 if (err) { console.log(err); }
-                server = app.listen(port, function(err) {
-                    if (err) { console.log(err); }
-                    fixtures.setupFixtures(function(err) {
-                        if (err) { console.log(err); }
-                        // Make sure session is not set
-                        exports.sessionId = undefined;
+                fixtures.setupFixtures()
+                    .then(function() {
                         if (options.user) {
-                            createSessionFor(options.user, function(err, sid) {
-                                if (err) { console.log(err); }
-                                exports.sessionId = sid;
-                                done();
-                            });
+                            return createSessionFor(options.user);
                         }
                         else {
-                            done();
+                            // Return empty sessionId
+                            return undefined;
                         }
-                    });
-                });
+                    })
+                    .then(function(sessionId) {
+                        exports.sessionId = sessionId;
+                        done();
+                    })
+                    .catch(console.log)
+                ;
             });
         });
 
@@ -185,10 +188,7 @@ exports.describe = function(what, options, how) {
         afterAll(function(done) {
             server.close(function(err) {
                 if (err) { console.log(err); }
-                mongoose.disconnect(function(err) {
-                    if (err) { console.log(err); }
-                    done();
-                });
+                done();
             });
         });
     };

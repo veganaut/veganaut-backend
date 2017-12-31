@@ -77,4 +77,17 @@ utils.calculateGeoHash = function(latitude, longitude) {
     return geohash;
 };
 
+/**
+ * Returns a GeoJSON point from the given longitude and latitude
+ * @param {number} lat
+ * @param {number} lng
+ * @returns {{type: string, coordinates: [number,number]}}
+ */
+utils.createPoint = function(lat, lng) {
+    return {
+        type: 'Point',
+        coordinates: [lng, lat]
+    };
+};
+
 module.exports = utils;

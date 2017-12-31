@@ -4,16 +4,29 @@
 
 'use strict';
 
-var _ = require('lodash');
 var constants = {};
 
 /**
+ * List of supported languages
+ * Note: when this is modified, then the db has to be updated
+ * @type {[string,string,string]}
+ */
+constants.LANGUAGES = ['en', 'de', 'fr'];
+
+/**
+ * Default locale
+ * @type {string}
+ */
+constants.DEFAULT_LANGUAGE = 'en';
+
+/**
  * List of possible account types
- * @type {{PLAYER: string, NPC: string}}
+ * Note: when this is modified, then the db has to be updated
+ * @type {{player: string, npc: string}}
  */
 constants.ACCOUNT_TYPES = {
-    PLAYER: 'player',
-    NPC: 'npc'
+    player: 'player',
+    npc: 'npc'
 };
 
 /**
@@ -24,6 +37,47 @@ constants.LOCATION_TYPES = [
     'gastronomy',
     'retail'
 ];
+
+/**
+ * List of all task types
+ * TODO WIP: get rid of this and use taskDefinitions instead
+ * @type {{}}
+ */
+constants.TASK_TYPES = {
+    AddLocation: 'AddLocation',
+    AddProduct: 'AddProduct',
+    SetLocationName: 'SetLocationName',
+    SetLocationType: 'SetLocationType',
+    SetLocationDescription: 'SetLocationDescription',
+    SetLocationCoordinates: 'SetLocationCoordinates',
+    // SetLocationAddress: 'SetLocationAddress',
+    SetLocationWebsite: 'SetLocationWebsite',
+    // SetLocationFacebook: 'SetLocationFacebook',
+    // SetLocationTwitter: 'SetLocationTwitter',
+    // SetLocationOpeningHours: 'SetLocationOpeningHours',
+    SetLocationProductListComplete: 'SetLocationProductListComplete',
+    // SetLocationCarnistLevel: 'SetLocationCarnistLevel',
+    // SetLocationLabellingLevel: 'SetLocationLabellingLevel',
+    // SetLocationPriceLevel: 'SetLocationPriceLevel',
+    SetLocationExistence: 'SetLocationExistence',
+    SetProductName: 'SetProductName',
+    SetProductAvailability: 'SetProductAvailability',
+    HowWellDoYouKnowThisLocation: 'HowWellDoYouKnowThisLocation',
+    // RateLocationStaffVeganKnowledge: 'RateLocationStaffVeganKnowledge',
+    RateLocationQuality: 'RateLocationQuality',
+    TagLocation: 'TagLocation',
+    RateProduct: 'RateProduct',
+    HaveYouBeenHereRecently: 'HaveYouBeenHereRecently',
+    GiveFeedback: 'GiveFeedback',
+    MentionVegan: 'MentionVegan',
+    BuyProduct: 'BuyProduct'
+    // ExplainVegan: 'ExplainVegan',
+    // AskForLabelling: 'AskForLabelling',
+    // SuggestProducts: 'SuggestProducts',
+    // ReserveExplicitVegan: 'ReserveExplicitVegan',
+    // MarkForFutureVisit: 'MarkForFutureVisit',
+    // DeclareVeganizeFocus: 'DeclareVeganizeFocus'
+};
 
 /**
  * List of tags that can be given to locations
@@ -55,35 +109,41 @@ constants.LOCATION_TAGS = [
     'rnPets'
 ];
 
-// TODO: should all this availability stuff be here?
 /**
- * List of product availability string
- * @type {string[]}
- */
-constants.PRODUCT_AVAILABILITY_STRINGS = ['unavailable', 'temporarilyUnavailable', 'available'];
-
-/**
- * List of product availability values
- * @type {number[]}
- */
-constants.PRODUCT_AVAILABILITY_VALUES = [0, 50, 100];
-
-/**
- * Mapping of product availability text to their numerical representation
+ * List of availabilities a product can have
+ * Note: when this is modified, then the db has to be updated
  * @type {{}}
  */
-constants.PRODUCT_AVAILABILITIES_STRING_TO_VALUE = _.zipObject(
-    constants.PRODUCT_AVAILABILITY_STRINGS,
-    constants.PRODUCT_AVAILABILITY_VALUES
-);
+constants.PRODUCT_AVAILABILITIES = {
+    always: 'always',
+    sometimes: 'sometimes',
+    daily: 'daily',
+    weekly: 'weekly',
+    seasonal: 'seasonal',
+    not: 'not'
+};
 
 /**
- * Mapping of product availability values to their textual representation
+ * List of possible states the product list of a location can have
+ * Note: when this is modified, then the db has to be updated
  * @type {{}}
  */
-constants.PRODUCT_AVAILABILITIES_VALUE_TO_STRING = _.zipObject(
-    constants.PRODUCT_AVAILABILITY_VALUES,
-    constants.PRODUCT_AVAILABILITY_STRINGS
-);
+constants.PRODUCT_LIST_STATES = {
+    complete: 'complete',
+    incompleteGoodSummary: 'incompleteGoodSummary',
+    incomplete: 'incomplete'
+};
+
+
+/**
+ * List of existence states a location can have
+ * Note: when this is modified, then the db has to be updated
+ * @type {{}}
+ */
+constants.LOCATION_EXISTENCE_STATES = {
+    existing: 'existing',
+    closedDown: 'closedDown',
+    wronglyEntered: 'wronglyEntered'
+};
 
 module.exports = constants;

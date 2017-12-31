@@ -4,13 +4,8 @@
 'use strict';
 
 var _ = require('lodash');
-var mongoose = require('mongoose');
+var db = require('../../app/models');
 var FixtureLoader = require('./FixtureLoader');
-var Missions = require('../../app/models/Task');
-var Product = require('../../app/models/Product');
-
-var Person = mongoose.model('Person');
-var Location = mongoose.model('Location');
 
 /**
  * FixtureCreator constructor. Helper for creating fixtures.
@@ -18,31 +13,18 @@ var Location = mongoose.model('Location');
  * @constructor
  */
 var FixtureCreator = function(fixtures) {
+    this._lastId = 1000;
     this._fixtures = fixtures || {};
 };
 
 /**
  * Returns the id to be used for the next fixture element
- * @returns {string}
+ * @returns {number}
  * @private
  */
 FixtureCreator.prototype._getNextId = function() {
-    // Create a string based on the fixture size
-    var id = _.size(this._fixtures + 1).toString(16);
-    while (id.length < 24) {
-        id = ' ' + id;
-    }
-    return id;
-};
-
-/**
- * Capitalises the given string
- * @param {string} s
- * @returns {string}
- * @private
- */
-FixtureCreator.prototype._capitalize = function(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
+    this._lastId += 1;
+    return this._lastId;
 };
 
 /**
@@ -52,39 +34,43 @@ FixtureCreator.prototype._capitalize = function(s) {
  * @returns {FixtureCreator}
  */
 FixtureCreator.prototype.user = function(name) {
-    this._fixtures[name] = new Person({
-        _id: this._getNextId(),
+    this._fixtures[name] = db.Person.build({
+        id: this._getNextId(),
         email: name + '@example.com',
         password: name,
-        nickname: this._capitalize(name)
+        nickname: _.capitalize(name)
     });
 
     return this;
 };
 
 FixtureCreator.prototype.location = function(user, name, coordinates, type) {
-    this._fixtures[name] = new Location({
-        _id: this._getNextId(),
+    this._fixtures[name] = db.Location.build({
+        id: this._getNextId(),
         name: name,
-        coordinates: coordinates,
-        type: type,
-        owner: this._fixtures[user].id
+        coordinates: {
+            type: 'Point',
+            coordinates: coordinates
+        },
+        type: type
     });
 
-    this._fixtures[name + 'FirstMission'] = new Missions.AddLocationMission({
-        person: this._fixtures[user].id,
-        location: this._fixtures[name],
-        completed: new Date(),
-        outcome: true
+    this._fixtures[name + 'FirstTask'] = db.Task.build({
+        type: 'AddLocation',
+        personId: this._fixtures[user].id,
+        locationId: this._fixtures[name].id,
+        outcome: {
+            locationAdded: true
+        }
     });
 
     return this;
 };
 
 FixtureCreator.prototype.product = function(location, name) {
-    this._fixtures['product.' + name] = new Product({
-        _id: this._getNextId(),
-        location: this._fixtures[location].id,
+    this._fixtures['product.' + name] = db.Product.build({
+        id: this._getNextId(),
+        locationId: this._fixtures[location].id,
         name: name
     });
 
@@ -95,8 +81,8 @@ FixtureCreator.prototype.getFixtures = function() {
     return this._fixtures;
 };
 
-FixtureCreator.prototype.setupFixtures = function(done) {
-    FixtureLoader.load(this._fixtures, done);
+FixtureCreator.prototype.setupFixtures = function() {
+    return FixtureLoader.load(this._fixtures);
 };
 
 module.exports = FixtureCreator;

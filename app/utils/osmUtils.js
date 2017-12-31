@@ -82,26 +82,29 @@ osmUtils.osmAddressLookup = function(lat, lng, cb) {
 osmUtils.convertFromOsmAddress = function(osmAddress) {
     var osmProps = Object.keys(osmAddress);
 
-    var address = _.pick(osmAddress, ['country', 'postcode']);
+    var address = {
+        addressCountry: osmAddress.country,
+        addressPostcode: osmAddress.postcode
+    };
 
     // Find the best "city"
     var cityPropsFound = _.intersection(CITY_PROPS, osmProps);
     if (cityPropsFound.length > 0) {
-        address.city = osmAddress[cityPropsFound[0]];
+        address.addressCity = osmAddress[cityPropsFound[0]];
 
         // If suburb is used, add also the state (the data seems to make the most sense like this)
         if (cityPropsFound[0] === 'suburb' && typeof osmAddress.state !== 'undefined') {
-            address.city += ', ' + osmAddress.state;
+            address.addressCity += ', ' + osmAddress.state;
         }
     }
 
     // Find the best "street"
     var streetPropsFound = _.intersection(STREET_PROPS, osmProps);
     if (streetPropsFound.length > 0) {
-        address.street = osmAddress[streetPropsFound[0]];
+        address.addressStreet = osmAddress[streetPropsFound[0]];
 
-        // Add also the house number if we found the street
-        address.houseNumber = osmAddress['house_number'];
+        // Add also the house if we found the street
+        address.addressHouse = osmAddress['house_number'];
     }
 
     return address;

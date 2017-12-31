@@ -5,11 +5,8 @@
 'use strict';
 
 var _ = require('lodash');
-var mongoose = require('mongoose');
-var async = require('async');
 var constants = require('../utils/constants');
-var Person = mongoose.model('Person');
-var Mission = require('../models/Task').Mission;
+var db = require('../models');
 var Session = require('./Session');
 var cryptoUtils = require('../utils/cryptoUtils');
 
@@ -21,46 +18,46 @@ var cryptoUtils = require('../utils/cryptoUtils');
  */
 exports.register = function(req, res, next) {
     // Create person from the posted data
-    var person = new Person(_.pick(req.body,
-        'email', 'nickname', 'locale')
-    );
-    person.save(function(err) {
-        if (err) {
-            // Send a 400 status with nice error message if the email address is already used
-            if (err.name === 'MongoError' && err.code === 11000) {
-                res.status(400);
-                err = new Error('There is already an account with this e-mail address.');
-            }
-            return next(err);
-        }
-
-        // Create a session and reply with that
-        // Not very RESTful, but it's what we need here. It would be too
-        // complicated to get a session without a password set yet.
-        Session.createSessionFor(person, req, function(err, sessionId) {
-            if (err) {
-                return next(err);
-            }
-            return res.status(201).send({
+    db.Person.create(_.pick(req.body, 'email', 'nickname', 'locale'))
+        .then(function(person) {
+            // Create a session and reply with that
+            // Not very RESTful, but it's what we need here. It would be too
+            // complicated to get a session without a password set yet.
+            return Session.createSessionFor(person, req);
+        })
+        .then(function(sessionId) {
+            res.status(201).send({
                 sessionId: sessionId
             });
-        });
-    });
+        })
+        .catch(db.Sequelize.UniqueConstraintError, function(validationErr) {
+            // Send a 400 status with nice error message if the email address is already used
+            if (_.find(validationErr.errors, 'path', 'email')) {
+                res.status(400);
+                throw new Error('There is already an account with this e-mail address.');
+            }
+            else {
+                // If this wasn't about the email, simply throw the error again
+                throw validationErr;
+            }
+        })
+        .catch(next)
+    ;
 };
 
 /**
  * Return the logged in user data
  * @param req
  * @param res
+ * @param next
  */
-exports.getMe = function(req, res) {
-    // Count number of missions of this player
-    Mission.count({person: req.user})
-        .exec(function(err, numMissions) {
-            var resObj = req.user.toJSON();
-            resObj.completedMissions = numMissions;
-            return res.status(200).send(resObj);
+exports.getMe = function(req, res, next) {
+    // Calculate the task counts, then return
+    req.user.calculateTaskCounts()
+        .then(function() {
+            return res.send(req.user);
         })
+        .catch(next)
     ;
 };
 
@@ -71,51 +68,32 @@ exports.getMe = function(req, res) {
  * @param next
  */
 exports.getById = function(req, res, next) {
-    // Count number of missions of this player
     var personId = req.params.id;
     var person;
-    var completedMissions;
 
-    var getPerson = function(cb) {
-        Person.findById(personId, function(err, existingPerson) {
-            if (err) {
-                return cb(err);
-            }
-
+    // Try to load the person wit the given
+    db.Person.findById(personId)
+        .then(function(existingPerson) {
             // Check if the given id points to an existing person that is a player
-            if (!existingPerson || existingPerson.accountType !== constants.ACCOUNT_TYPES.PLAYER) {
+            if (!existingPerson || existingPerson.accountType !== constants.ACCOUNT_TYPES.player) {
                 res.status(404);
-                err = new Error('Could not find any user with the given id.');
-                return cb(err);
+                throw new Error('Could not find any user with the given id.');
             }
 
             // All good, use the found person
             person = existingPerson;
-            return cb();
-        });
-    };
 
-    var getMissionCount = function(cb) {
-        Mission.count({person: personId})
-            .exec(function(err, numMissions) {
-                completedMissions = numMissions;
-                return cb();
-            });
-    };
-    async.series([
-        getPerson,
-        getMissionCount
-    ], function(err) {
-        if (err) {
-            return next(err);
-        }
-        var resObj = _.pick(person,
-            'id', 'nickname', 'attributes'
-        );
-        resObj.completedMissions = completedMissions;
-        return res.status(200).send(resObj);
-    });
-
+            // Calculate the tasks this user did
+            return person.calculateTaskCounts();
+        })
+        .then(function() {
+            var resObj = _.pick(person.toJSON(),
+                'id', 'nickname', 'completedTasks', 'addedLocations'
+            );
+            return res.status(200).send(resObj);
+        })
+        .catch(next)
+    ;
 };
 
 /**
@@ -137,14 +115,13 @@ exports.updateMe = function(req, res, next) {
     _.assign(req.user, personData);
 
     // Save the user
-    req.user.save(function(err) {
-        if (err) {
-            return next(err);
-        }
-
-        // Return the user
-        return exports.getMe(req, res, next);
-    });
+    req.user.save()
+        .then(function() {
+            // Return the user
+            return exports.getMe(req, res, next);
+        })
+        .catch(next)
+    ;
 };
 
 /**
@@ -156,16 +133,22 @@ exports.updateMe = function(req, res, next) {
 exports.isValidToken = function(req, res, next) {
     var hash = cryptoUtils.hashResetToken(req.params.token);
 
-    Person.findOne({
-        resetPasswordToken: hash,
-        resetPasswordExpires: {$gt: Date.now()}
-    }, function(err, user) {
-        if (!user) {
-            res.status(400);
-            return next(new Error('Invalid token'));
-        }
-        return res.status(200).send({});
-    });
+    db.Person
+        .findOne({
+            where: {
+                resetPasswordToken: hash,
+                resetPasswordExpires: {$gt: Date.now()}
+            }
+        })
+        .then(function(user) {
+            if (!user) {
+                res.status(400);
+                throw new Error('Invalid token');
+            }
+            return res.status(200).send({});
+        })
+        .catch(next)
+    ;
 };
 
 /**
@@ -178,21 +161,28 @@ exports.resetPassword = function(req, res, next) {
     var personData = _.pick(req.body, 'token', 'password');
     var hash = cryptoUtils.hashResetToken(personData.token);
 
-    Person.findOne({
-        resetPasswordToken: hash,
-        resetPasswordExpires: {$gt: Date.now()}
-    }, function(err, user) {
-        if (!user) {
-            res.status(400);
-            return next(new Error('Invalid token!'));
-        }
+    db.Person
+        .findOne({
+            where: {
+                resetPasswordToken: hash,
+                resetPasswordExpires: {$gt: Date.now()}
+            }
+        })
+        .then(function(user) {
+            if (!user) {
+                res.status(400);
+                throw new Error('Invalid token!');
+            }
 
-        // Update the password and invalidate the reset token
-        user.password = personData.password;
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
-        user.save(function() {
+            // Update the password and invalidate the reset token
+            user.password = personData.password;
+            user.resetPasswordToken = null;
+            user.resetPasswordExpires = null;
+            return user.save();
+        })
+        .then(function() {
             return res.status(200).send({});
-        });
-    });
+        })
+        .catch(next)
+    ;
 };

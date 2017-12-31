@@ -1,100 +1,83 @@
 'use strict';
 
 var _ = require('lodash');
-var mongoose = require('mongoose');
-var async = require('async');
-var Location = mongoose.model('Location');
-var Missions = require('../models/Task');
-var Product = require('../models/Product');
+var db = require('../models');
+var constants = require('../utils/constants');
+var taskDefinitions = require('../utils/taskDefinitions');
 
 exports.submit = function(req, res, next) {
-    var location, mission, oldOwner;
-
-    // Find the mission model to use
-    var MissionModel = Missions.Mission.getModelForIdentifier(req.body.type);
-    if (typeof MissionModel === 'undefined') {
-        return next(new Error('Could not find mission of type: ' + req.body.type));
+    var taskType = req.body.type;
+    if (typeof constants.TASK_TYPES[taskType] === 'undefined') {
+        return next(new Error('Could not find task of type: ' + taskType));
     }
 
-    // Read the outcome of the mission
-    var outcome = req.body.outcome;
+    // Prepare the data for creating the task object
+    var taskData = {
+        type: taskType,
+        personId: req.user.id,
+        outcome: req.body.outcome
+    };
 
-    // Do that series TODO: split this up in separate named functions?
-    async.series([
-        // Find the location where the mission was made
-        function(cb) {
-            Location.findById(req.body.location, function(err, l) {
-                if (!err && !l) {
-                    err = new Error('Could not find location with id: ' + req.body.location);
-                }
-                else {
-                    location = l;
-                    oldOwner = l.owner;
-                }
-                return cb(err);
-            });
-        },
+    // Get the location and (optional) product id
+    // TODO: check if the Task really has a location as mainSubject or otherSubjects. For now all tasks do.
+    var locationId = req.body.location;
+    var productId = req.body.product;
 
+    // Find the location where the task was made
+    db.Location.findById(locationId, {attributes: ['id']})
+        .then(function(location) {
+            if (!location) {
+                throw new Error('Could not find location with id: ' + locationId);
+            }
+
+            // Set the location id on the task
+            taskData.locationId = location.id;
+
+            // No need to pass on anything
+            return undefined;
+        })
         // TODO: before saving, make sure the user is allowed to complete it
 
-        // Create Products if the mission is a WhatOptionsMission
-        function(cb) {
-            if (MissionModel === Missions.WhatOptionsMission && _.isArray(outcome)) {
-                async.each(outcome, function(o, innerCb) {
-                    // Create a new product
-                    o.product = new Product({
-                        name: o.product.name,
-                        location: location.id
-                    });
-                    o.product.save(innerCb);
-                }, cb);
+        .then(function() {
+            // Create product if the task is AddProduct and the user really filled something out
+            if (taskType === constants.TASK_TYPES.AddProduct &&
+                _.isObject(taskData.outcome) &&
+                taskData.outcome.productAdded === true)
+            {
+                // Create a new product
+                return db.Product.create({
+                    name: taskData.outcome.name,
+                    locationId: taskData.locationId
+                });
             }
-            else {
-                // Do nothing
-                return cb();
+            else if (taskDefinitions[taskType].mainSubject === 'product') {
+                // Check if the referenced product exists
+                return db.Product.findById(productId, {attributes: ['id']})
+                    .then(function(product) {
+                        if (!product) {
+                            throw new Error('Could not find product with id: ' + productId);
+                        }
+                        return product;
+                    })
+                ;
             }
-        },
+        })
 
-        // Create the new mission and save it
-        function(cb) {
-            mission = new MissionModel({
-                points: req.body.points,
-                person: req.user.id,
-                location: location.id,
-                outcome: outcome,
-                completed: Date.now()
-            });
+        .then(function(product) {
+            // If this task is about a product (new or existing one), add a reference to it
+            if (product) {
+                taskData.productId = product.id;
+            }
 
-            mission.save(cb);
-        },
+            // Create the new task
+            return db.Task.create(taskData);
+        })
 
-        // Re-load the location (it changed when the mission was saved)
-        function(cb) {
-            Location.findById(location, function(err, l) {
-                if (err) {
-                    return cb(err);
-                }
+        // Sent the created task back
+        .then(function(task) {
+            return res.status(201).send(task);
+        })
 
-                location = l;
-                return cb();
-            });
-        }
-    ], function(err) {
-        if (err) {
-            return next(err);
-        }
-
-        var causedOwnerChange = !location.owner.equals(oldOwner);
-
-        // De-populate the person
-        mission.person = mission.person.id;
-
-        // Depopulate the location, don't want to send that
-        // TODO: there should be a better way of doing that
-        mission.location = location.id;
-        var response = _.assign(mission.toJSON(), {
-            causedOwnerChange: causedOwnerChange
-        });
-        return res.status(201).send(response);
-    });
+        .catch(next)
+    ;
 };

@@ -2,13 +2,9 @@
 
 var h = require('../helpers_');
 
-// TODO: test session expiration!
-
-h.describe('Session API methods', function() {
-
+h.describe('Session API methods when logged out', {user: ''}, function() {
     it('cannot access restricted areas when not logged in', function(done) {
         h.request('GET', h.baseURL + 'person/me')
-            .set('Authorization', null)
             .end(function(err, res) {
                 expect(res.statusCode).toBe(401);
                 expect(typeof res.body.error).toBe('string');
@@ -54,9 +50,19 @@ h.describe('Session API methods', function() {
         // TODO then call status and it should get an ok as well
     });
 
-    it('cannot let aliens login with wrong password', function(done) {
+    it('cannot let aliens login with wrong email', function(done) {
         h.request('POST', h.baseURL + 'session').send({
             email: 'yann',
+            password: 'somepassword'
+        }).end(function(err, res) {
+            expect(res.statusCode).toBe(403);
+            done();
+        });
+    });
+
+    it('cannot let aliens login with wrong password', function(done) {
+        h.request('POST', h.baseURL + 'session').send({
+            email: 'foo@bar.baz',
             password: 'hasthewrongpassword'
         }).end(function(err, res) {
             expect(res.statusCode).toBe(403);
@@ -64,18 +70,24 @@ h.describe('Session API methods', function() {
         });
     });
 
-    // TODO test log out
     // TODO test log out when no session
-    // TODO test login with wrong password
+    // TODO test trying to access stuff with expired session
+});
 
-// FIXME: h.request does not have a delete method? how to do http delete?
-//    it('can close an old session', function(done) {
-//        h.request.delete(h.baseURL + 'session').end(function(err, res) {
-//            //TODO define expected behavior
-//            expect(res.statusCode).toBe(200);
-//            expect(res.body.status).toEqual('OK');
-//            done();
-//        });
-//    });
+h.describe('Session API methods when logged in', function() {
+   it('can close a session', function(done) {
+       h.request('DELETE', h.baseURL + 'session').end(function(err, res) {
+           expect(res.statusCode).toBe(200);
+           expect(res.body.status).toEqual('OK');
 
+           // Should no longer be able to request restricted routes
+           h.request('GET', h.baseURL + 'person/me')
+               .end(function(err, res) {
+                   expect(res.statusCode).toBe(401);
+                   expect(typeof res.body.error).toBe('string');
+                   done();
+               })
+           ;
+       });
+   });
 });

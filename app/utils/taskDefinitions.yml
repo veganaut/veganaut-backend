@@ -1,0 +1,617 @@
+AddLocation:
+  category: special # TODO: is the category property even needed?
+  mainSubject: global
+  otherSubjects: # otherSubjects are optional (as in depend on what the user did if it has this subject)
+    - location
+  outcomes:
+    - name: locationAdded
+      type: boolean # Whether a location was added
+  importance: 100 # This importance is not used yet as the context for this task only has one possible task
+  daysUntilStale: 0
+  requiredFamiliarity: 0
+  triggerExistence: false
+  # Note: this task triggers SetLocationName, SetLocationType and SetLocationCoordinates (done in code)
+  changeProperties: []
+
+AddProduct:
+  category: special
+  mainSubject: location
+  otherSubjects:
+    - product
+  outcomes:
+    - name: productAdded
+      type: boolean
+    - name: name
+      type: string
+  importance: 90
+  daysUntilStale: 0
+  requiredFamiliarity: 0
+  triggerExistence: false
+    # TODO WIP: Automatically trigger SetProductName and SetProductAvailability
+#    - targetTask: SetProductName
+#      outcomeToCheck: productAdded
+#      triggerWhen:
+#        - true
+#    - targetTask: SetProductAvailability
+#      outcomeToCheck: productAdded
+#      triggerWhen:
+#        - true
+  changeProperties:
+    - targetTask: SetLocationProductListComplete
+      targetProperty: daysUntilStale
+      scope: location
+      byOutcome:
+        productAdded:
+          true: 0
+
+SetLocationName:
+  category: info
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: name
+      type: string
+  importance: 100
+  daysUntilStale: 180
+  requiredFamiliarity: 0
+  triggerExistence: false
+  changeProperties: []
+
+SetLocationType:
+  category: info
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: locationType
+      type: selectOne
+      values:
+        - gastronomy
+        - retail
+  importance: 100
+  daysUntilStale: 180
+  requiredFamiliarity: 0
+  triggerExistence: false
+  changeProperties: []
+
+SetLocationDescription:
+  category: info
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: description
+      type: multiline
+  importance: 90
+  daysUntilStale: 90
+  requiredFamiliarity: 0
+  triggerExistence: false
+  changeProperties: []
+
+SetLocationCoordinates:
+  category: info
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: latitude
+      type: number
+    - name: longitude
+      type: number
+  importance: 100
+  daysUntilStale: 165
+  requiredFamiliarity: 0
+  triggerExistence: false
+  changeProperties: []
+
+#SetLocationAddress:
+#  category: info
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: address
+#      type: multiline
+#  importance: 70
+#  daysUntilStale: 165
+#  requiredFamiliarity: 0
+#  triggerExistence: false
+#  changeProperties: []
+
+SetLocationWebsite:
+  category: info
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: website
+      type: url
+    - name: isAvailable # whether or not this info exists
+      type: boolean
+  importance: 70
+  daysUntilStale: 150
+  requiredFamiliarity: 0
+  triggerExistence: false
+  changeProperties: []
+
+#SetLocationFacebook:
+#  category: info
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: facebook
+#      type: url
+#    - name: isAvailable # whether or not this info exists
+#      type: boolean
+#  importance: 1
+#  daysUntilStale: 150
+#  requiredFamiliarity: 0
+#  changeProperties: []
+
+#SetLocationTwitter:
+#  category: info
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: twitter
+#      type: url
+#    - name: isAvailable # whether or not this info exists
+#      type: boolean
+#  importance: 1
+#  daysUntilStale: 150
+#  requiredFamiliarity: 0
+# triggerExistence: false
+#  changeProperties: []
+
+#SetLocationOpeningHours:
+#  category: info
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: openingHours
+#      type: multiline # TODO: have structured data??
+#  importance: 30
+#  daysUntilStale: 90
+#  requiredFamiliarity: 0
+#  triggerExistence: false
+#  changeProperties: []
+
+SetLocationProductListComplete:
+  category: info
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: completionState
+      type: selectOne
+      values:
+        - complete
+        - incompleteGoodSummary
+        - incomplete
+  importance: 40
+  daysUntilStale: 90
+  requiredFamiliarity: 1
+  triggerExistence: false
+  changeProperties:
+    - targetTask: AddProduct
+      targetProperty: daysUntilStale
+      scope: location
+      byOutcome:
+        completionState:
+          complete: 90
+          incompleteGoodSummary: 90
+          incomplete: 0 # resetting it to the default
+    - targetTask: SetLocationProductListComplete
+      targetProperty: daysUntilStale
+      scope: location
+      byOutcome:
+        # Note: This is done because AddProduct changes the daysUntilStale as well
+        completionState:
+          complete: 90
+          incompleteGoodSummary: 90
+          incomplete: 90
+
+#SetLocationCarnistLevel:
+#  category: info
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: carnistLevel
+#      type: selectOne
+#      values:
+#        - vegan
+#        - vegetarian
+#        - omnivorous
+#        - meatHeavy
+#  importance: 90
+#  daysUntilStale: 150
+#  requiredFamiliarity: 0
+#  triggerExistence: false
+#  changeProperties: []
+
+#SetLocationLabellingLevel:
+#  category: info
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: labellingLevel
+#      type: selectOne
+#      values:
+#        - all
+#        - partially
+#        - not
+#  importance: 70
+#  daysUntilStale: 90
+#  requiredFamiliarity: 1
+#  triggerExistence: false
+#  changeProperties: []
+
+#SetLocationPriceLevel:
+#  category: info
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: priceLevel
+#      type: selectOne
+#      values:
+#        - low
+#        - medium
+#        - high
+#  importance: 30
+#  daysUntilStale: 135
+#  requiredFamiliarity: 1
+#  triggerExistence: false
+#  changeProperties: []
+
+SetLocationExistence:
+  category: info
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: existence
+      type: selectOne
+      values:
+        - existing
+        - closedDown
+        - wronglyEntered
+    - name: notes
+      type: multiline
+  importance: 100
+  daysUntilStale: 165
+  requiredFamiliarity: 1
+  triggerExistence: false
+  changeProperties: []
+
+SetProductName:
+  category: info
+  mainSubject: product
+  otherSubjects:
+    - location
+  outcomes:
+    - name: name
+      type: string
+  importance: 10 # Note: this task's current value is calculated per product
+  daysUntilStale: 180
+  requiredFamiliarity: 1
+  triggerExistence: false
+  changeProperties: []
+
+SetProductAvailability:
+  category: info
+  mainSubject: product
+  otherSubjects:
+    - location
+  outcomes:
+    - name: availability
+      type: selectOne
+      values:
+        - always
+        - sometimes
+        - daily
+        - weekly
+        - seasonal
+        - not
+  importance: 30 # Note: this task's current value is calculated per product
+  daysUntilStale: 120
+  requiredFamiliarity: 1
+  triggerExistence: false
+  changeProperties: []
+
+HowWellDoYouKnowThisLocation:
+  category: relation
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: knowLocation
+      type: selectOne
+      values:
+        - regular
+        - often
+        - fewTimes
+        - once
+        - never
+  importance: 100
+  daysUntilStale: 1
+  requiredFamiliarity: 0
+  triggerExistence:
+    outcomeToCheck: knowLocation
+    triggerWhen:
+      - regular
+      - often
+  changeProperties:
+    # TODO: should this not also influence HaveYouBeenHereRecently and vice versa?
+    - targetTask: HowWellDoYouKnowThisLocation
+      targetProperty: daysUntilStale
+      scope: person
+      byOutcome:
+        knowLocation:
+          regular: 90
+          often: 90
+          fewTimes: 90
+          once: 90
+          never: 1
+
+#RateLocationStaffVeganKnowledge:
+#  category: opinion
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: staffVeganKnowledge
+#      type: selectOne
+#      values:
+#        - allGood
+#        - someHaveSomeKnowledge
+#        - theyHaveNoIdea
+#  importance: 50
+#  daysUntilStale: 90
+#  requiredFamiliarity: 1
+#  triggerExistence: false
+#  changeProperties: []
+
+RateLocationQuality:
+  category: opinion
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: quality
+      type: selectOne
+      values: # TODO: how about just a number?
+        - veryHigh
+        - high
+        - medium
+        - low
+        - veryLow
+  importance: 90
+  daysUntilStale: 90
+  requiredFamiliarity: 1
+  triggerExistence: false
+  changeProperties: []
+
+TagLocation:
+  category: opinion
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: tags
+      type: selectMany
+      values:
+        - all the tags...
+  importance: 80
+  daysUntilStale: 90
+  requiredFamiliarity: 1
+  triggerExistence: false
+  changeProperties: []
+
+RateProduct:
+  category: opinion
+  mainSubject: product
+  otherSubjects:
+    - location
+  outcomes:
+    - name: rating
+      type: number
+  importance: 70 # Note: this task's current value is calculated per product
+  daysUntilStale: 90
+  requiredFamiliarity: 1
+  triggerExistence: false
+  changeProperties: []
+
+HaveYouBeenHereRecently:
+  category: relation # TODO: is this really different from others?
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: beenHere
+      type: selectOne
+      values:
+        - yes
+        - yesRightNow
+        - no
+  importance: 100
+  daysUntilStale: 0
+  requiredFamiliarity: 0
+  triggerExistence:
+    outcomeToCheck: beenHere
+    triggerWhen:
+      - yes
+      - yesRightNow
+  changeProperties:
+    # TODO: should this not also influence HowWellDoYouKnowThisLocation and vice versa?
+    - targetTask: HaveYouBeenHereRecently
+      targetProperty: daysUntilStale
+      scope: person
+      byOutcome:
+        beenHere:
+          yes: 60
+          yesRightNow: 75
+          no: 1
+
+GiveFeedback:
+  category: veganize
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: commitment
+      type: selectOne
+      values:
+        - yes
+        - maybe
+        - no
+    - name: notes
+      type: multiline
+  importance: # TODO
+  daysUntilStale: # TODO
+  requiredFamiliarity: 0
+  triggerExistence: false
+  changeProperties: [] # TODO: trigger loc existence?
+
+MentionVegan:
+  category: veganize
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: commitment
+      type: selectOne
+      values:
+        - yes
+        - maybe
+        - no
+    - name: notes
+      type: multiline
+  importance: # TODO
+  daysUntilStale: # TODO
+  requiredFamiliarity: 0
+  triggerExistence: false
+  changeProperties: [] # TODO: trigger loc existence?
+
+BuyProduct:
+  category: veganize
+  mainSubject: location
+  otherSubjects: []
+  outcomes:
+    - name: commitment
+      type: selectOne
+      values:
+        - yes
+        - maybe
+        - no
+    - name: notes
+      type: multiline
+  importance: # TODO
+  daysUntilStale: # TODO
+  requiredFamiliarity: 0
+  triggerExistence: false
+  changeProperties: [] # TODO: trigger loc existence?
+
+#ExplainVegan:
+#  category: veganize
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: commitment
+#      type: selectOne
+#      values:
+#        - yes
+#        - maybe
+#        - no
+#    - name: notes
+#      type: multiline
+#  importance: # TODO
+#  daysUntilStale: # TODO
+#  requiredFamiliarity: 0
+#  triggerExistence: false
+#  changeProperties: [] # TODO: trigger loc existence?
+
+#AskForLabelling:
+#  category: veganize
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: commitment
+#      type: selectOne
+#      values:
+#        - yes
+#        - maybe
+#        - no
+#    - name: notes
+#      type: multiline
+#  importance: # TODO
+#  daysUntilStale: # TODO
+#  requiredFamiliarity: 0
+#  triggerExistence: false
+#  changeProperties: [] # TODO: trigger loc existence?
+
+#SuggestProducts:
+#  category: veganize
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: commitment
+#      type: selectOne
+#      values:
+#        - yes
+#        - maybe
+#        - no
+#    - name: notes
+#      type: multiline
+#  importance: # TODO
+#  daysUntilStale: # TODO
+#  requiredFamiliarity: 0
+#  triggerExistence: false
+#  changeProperties: [] # TODO: trigger loc existence?
+
+#ReserveExplicitVegan:
+#  category: veganize
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: commitment
+#      type: selectOne
+#      values:
+#        - yes
+#        - maybe
+#        - no
+#    - name: notes
+#      type: multiline
+#  importance: # TODO
+#  daysUntilStale: # TODO
+#  requiredFamiliarity: 0
+#  triggerExistence: false
+#  changeProperties: [] # TODO: trigger loc existence?
+
+#MarkForFutureVisit:
+#  category: veganize
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: commitment
+#      type: selectOne
+#      values:
+#        - yes
+#        - maybe
+#        - no
+#    - name: notes
+#      type: multiline
+#  importance: # TODO
+#  daysUntilStale: # TODO
+#  requiredFamiliarity: 0
+#  triggerExistence: false
+#  changeProperties: [] # TODO: trigger loc existence?
+
+#DeclareVeganizeFocus:
+#  category: veganize
+#  mainSubject: location
+#  otherSubjects: []
+#  outcomes:
+#    - name: commitment
+#      type: selectOne
+#      values:
+#        - yes
+#        - maybe
+#        - no
+#    - name: notes
+#      type: multiline
+#  importance: # TODO
+#  daysUntilStale: # TODO
+#  requiredFamiliarity: 0
+#  triggerExistence: false
+#  changeProperties: [] # TODO: trigger loc existence?
+
+
+# TODO:
+# new info task: your veg level?
+# what is your goal?

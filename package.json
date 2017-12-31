@@ -9,18 +9,22 @@
     "test": "NODE_ENV=test ./node_modules/.bin/jasmine JASMINE_CONFIG_PATH=test/jasmine.json"
   },
   "dependencies": {
-    "async": "1.4.2",
-    "bcrypt": "0.8.7",
+    "bcrypt": "1.0.3",
     "cors": "2.7.1",
     "express": "4.13.3",
     "morgan": "1.6.1",
     "body-parser": "1.14.1",
     "geoip-lite": "1.1.8",
     "lodash": "3.10.1",
-    "mongoose": "4.1.11",
+    "jsonschema": "1.2.0",
+    "js-yaml": "3.10.0",
+    "sequelize": "4.8.0",
+    "sequelize-cli": "2.8.0",
+    "pg": "6.4.2",
+    "pg-hstore": "2.3.2",
     "password-generator": "2.0.1",
-    "nodemailer": "1.8.0",
-    "bluebird": "2.10.2"
+    "nodemailer": "1.11.0",
+    "bluebird": "3.5.0"
   },
   "devDependencies": {
     "mockery": "1.4.0",

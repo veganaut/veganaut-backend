@@ -1,19 +1,13 @@
 'use strict';
 var express = require('express');
-var mongoose = require('mongoose');
 var cors = require('cors');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
 
-// Models
-require('./app/models/Person.js');
-require('./app/models/Task.js');
-require('./app/models/Location.js');
-
 // Controllers
 var GeoIP = require('./app/controllers/GeoIP');
 var Location = require('./app/controllers/Location');
-var Missions = require('./app/controllers/Task');
+var Task = require('./app/controllers/Task');
 var Person = require('./app/controllers/Person');
 var Score = require('./app/controllers/Score');
 var Session = require('./app/controllers/Session');
@@ -44,7 +38,7 @@ app.use(Session.addUserToRequest);
 // Home
 app.options('/', cors());
 app.get('/', function(req, res) {
-    res.send({ status: 'OK' });
+    res.send({status: 'OK'});
 });
 
 // TODO: add e2e tests that unauthenticated users can't access methods they shouldn't
@@ -67,9 +61,9 @@ app.get('/person/isValidToken/:token', cors(), Person.isValidToken);
 app.post('/person/reset', cors(), Person.resetPassword);
 app.get('/person/:id', cors(), Session.restrict, Person.getById);
 
-// Mission
-app.options('/mission', cors());
-app.post('/mission', cors(), Session.restrict, Missions.submit);
+// Task
+app.options('/task', cors());
+app.post('/task', cors(), Session.restrict, Task.submit);
 
 // Location
 app.options('/location', cors());
@@ -80,12 +74,8 @@ app.options('/location/search', cors());
 app.get('/location/search', cors(), Location.search);
 app.options('/location/:locationId', cors());
 app.get('/location/:locationId', cors(), Location.get);
-app.put('/location/:locationId', cors(), Session.restrict, Location.update);
-// The /mission/list method is currently unused by the frontend
-app.options('/location/:locationId/mission/list', cors()); // TODO: rename this method to be clearly distinguishable from availableMission/list
-app.get('/location/:locationId/mission/list', cors(), Session.restrict, Location.getCompletedMissions);
-app.options('/location/:locationId/availableMission/list', cors());
-app.get('/location/:locationId/availableMission/list', cors(), Session.restrict, Location.getAvailableMissions);
+app.options('/location/:locationId/suggestedTask', cors());
+app.get('/location/:locationId/suggestedTask', cors(), Session.restrict, Location.getSuggestedTask);
 
 // Score
 app.options('/score', cors());
@@ -116,11 +106,11 @@ app.use(function(err, req, res, next) {
         }
 
         // Send the error details
-        res.send({ error: err.message, details: err.details });
+        res.send({error: err.message, details: err.details});
     }
     else {
         // No error given, still ended up here, must be 404
-        res.status(404).send({ error: 'method not found' });
+        res.status(404).send({error: 'method not found'});
     }
     next();
 });
@@ -128,23 +118,19 @@ app.use(function(err, req, res, next) {
 
 // Start server if run as main module
 if (require.main === module) {
+    // Connect to db
+    require('./app/models');
+
     // Get port
     var port = process.env.PORT || 3000;
-    mongoose.connect('mongodb://localhost/veganaut', function(err) {
+    app.listen(port, function(err) {
         if (err) {
-            console.log('Could not connect to Mongo: ', err);
+            console.log('Could not listen: ', err);
             process.exit();
         }
 
-        app.listen(port, function (err) {
-            if (err) {
-                console.log('Could not listen: ', err);
-                process.exit();
-            }
-
-            console.log('Running in ' + app.settings.env + ' environment');
-            console.log('Express server listening on port ' + port);
-        });
+        console.log('Running in ' + app.settings.env + ' environment');
+        console.log('Express server listening on port ' + port);
     });
 }
 
