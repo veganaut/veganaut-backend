@@ -81,7 +81,7 @@ module.exports = function(sequelize, DataTypes) {
             break;
 
         case constants.TASK_TYPES.SetProductAvailability:
-            // TODO: verify the availability? Or that should have rather been done by the task already
+            // TODO: Implement a way to completely delete products. For now the "not" available products are just shown at the end always.
             this.availability = task.outcome.availability;
             break;
 

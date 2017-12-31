@@ -215,7 +215,7 @@ var getFixtures = function() {
         id: 101,
         locationId: fix.dosha.id,
         name: 'curry',
-        availability: constants.PRODUCT_AVAILABILITIES.not // TODO WIP: this should be some other value "not" should make it not show up in the product list
+        availability: constants.PRODUCT_AVAILABILITIES.not
     });
     fix.doshaSamosa = db.Product.build({
         id: 102,

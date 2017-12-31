@@ -422,8 +422,6 @@ module.exports = function(sequelize, DataTypes) {
             ret.product = doc.productId;
         }
 
-        // TODO WIP: should we return all of those props?
-
         return _.omit(ret, _.isNull);
     };
 

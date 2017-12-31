@@ -107,7 +107,6 @@ exports.list = function(req, res, next) {
             var ids = _.map(locations, _.property('id'));
 
             return findProducts({
-                // TODO WIP: exclude not available products?
                 locationId: {$in: ids}
             }, limit, skip);
         })

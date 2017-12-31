@@ -177,7 +177,7 @@ h.describe('Location API methods as logged in user alice.', function() {
                 expect(Object.keys(location.address).length).toBe(5, 'got correct amount of address details');
                 expect(location.products.length).toBeGreaterThan(0, 'got some products');
 
-                // Expected order: samosa should be before curry because curry is temporarilyUnavailable
+                // Expected order: samosa should be before curry because curry is not available
                 var expectedOrder = ['samosa', 'curry'];
                 var expectedAvailabilities = ['always', 'not'];
                 _.each(location.products, function(product, index) {
