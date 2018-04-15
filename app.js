@@ -5,6 +5,7 @@ var morgan = require('morgan');
 var bodyParser = require('body-parser');
 
 // Controllers
+var AreaOverview = require('./app/controllers/AreaOverview');
 var GeoIP = require('./app/controllers/GeoIP');
 var Location = require('./app/controllers/Location');
 var Task = require('./app/controllers/Task');
@@ -60,6 +61,10 @@ app.put('/person/me', cors(), Session.restrict, Person.updateMe);
 app.get('/person/isValidToken/:token', cors(), Person.isValidToken);
 app.post('/person/reset', cors(), Person.resetPassword);
 app.get('/person/:id', cors(), Session.restrict, Person.getById);
+
+// Area overview
+app.options('/areaOverview', cors());
+app.get('/areaOverview', cors(), AreaOverview.get);
 
 // Task
 app.options('/task', cors());
@@ -120,6 +125,10 @@ app.use(function(err, req, res, next) {
 if (require.main === module) {
     // Connect to db
     require('./app/models');
+    // var db = require('./app/models');
+    // db.sequelize.sync({force: true}).then(function() {
+    //     db.sequelize.close();
+    // });
 
     // Get port
     var port = process.env.PORT || 3000;
