@@ -101,9 +101,10 @@ var getLocationClusters = function(locations, clusterLevel) {
  *
  * @param {Location[]} locations
  * @param {number} clusterLevel
+ * @param {string} rankFieldName Name of the field to use for ranking
  * @returns {Location[]}
  */
-var getSpreadTopLocations = function(locations, clusterLevel) {
+var getSpreadTopLocations = function(locations, clusterLevel, rankFieldName) {
     // Calculate precision (number of characters of the location has to use)
     // Slightly less precise than the clusters to not have many overlapping top locations
     var precisionTopLocation = clusterLevel + 2;
@@ -118,7 +119,7 @@ var getSpreadTopLocations = function(locations, clusterLevel) {
         return _.reduce(cluster, function(topLoc, loc) {
             // TODO: accessing quality is dominating the execution time of this whole method
             // (well actually the db access is doing that of course)
-            if (loc.qualityRank > topLoc.qualityRank) {
+            if (loc.get(rankFieldName) > topLoc.get(rankFieldName)) {
                 return loc;
             }
             else {
@@ -128,7 +129,9 @@ var getSpreadTopLocations = function(locations, clusterLevel) {
     });
 
     // Sort by rank and pick the top ones
-    topLocations = _.sortByOrder(topLocations, 'qualityRank', 'desc');
+    topLocations = _.sortByOrder(topLocations, function(loc) {
+        return loc.get(rankFieldName);
+    }, 'desc');
     topLocations = _.take(topLocations, NUM_TOP_LOCATIONS);
 
     return topLocations;
@@ -262,34 +265,75 @@ exports.list = function(req, res, next) {
     // Check whether there is clustering
     var useClustering = _.isNumber(clusterLevel);
 
+    // Prepare the params for the findAll call
+    var findAllParams = {};
+
     // If there is no clustering, use limit and skip
-    var limit, skip;
     if (!useClustering) {
-        limit = utils.strictParsePositiveInteger(req.query.limit);
-        skip = utils.strictParsePositiveInteger(req.query.skip);
-        if (!_.isNumber(limit)) {
-            limit = undefined;
+        findAllParams.limit = utils.strictParsePositiveInteger(req.query.limit);
+        findAllParams.offset = utils.strictParsePositiveInteger(req.query.skip);
+        if (!_.isNumber(findAllParams.limit)) {
+            findAllParams.limit = undefined;
         }
-        if (!_.isNumber(skip)) {
-            skip = undefined;
+        if (!_.isNumber(findAllParams.offset)) {
+            findAllParams.offset = undefined;
         }
     }
 
     // Define the fields we have to load
-    var fieldsToLoad = ['id', 'name', 'type', 'coordinates', 'qualityTotal', 'qualityCount', 'qualityRank'];
+    findAllParams.attributes = ['id', 'name', 'type', 'coordinates'];
 
     // Check if and which part of the address should be loaded
     if (req.query.addressType === 'city') {
-        fieldsToLoad.push('addressCity');
+        findAllParams.attributes.push('addressCity');
     }
     else if (req.query.addressType === 'street') {
-        fieldsToLoad = fieldsToLoad.concat(['addressStreet', 'addressHouse']);
+        findAllParams.attributes = findAllParams.attributes.concat(['addressStreet', 'addressHouse']);
+    }
+
+    // Check if we are ranking by location quality or by product rating
+    var rankFieldName;
+    if (req.query.group === 'product') {
+        rankFieldName = 'topProductRank';
+
+        // To get the locations by top products, we need to join the products
+        // and order by the highest product rating rank
+        findAllParams.attributes.push(
+            [db.sequelize.fn(
+                'COALESCE',
+                db.sequelize.fn('MAX', db.sequelize.col('products.ratingRank')),
+                -1
+            ), 'topProductRank']
+        );
+
+        findAllParams.order = [
+            [db.sequelize.literal('"topProductRank"'), 'DESC'],
+            ['name', 'ASC']
+        ];
+
+        findAllParams.include = [{
+            model: db.Product,
+            attributes: []
+        }];
+
+        findAllParams.group = ['location.id'];
+    }
+    else { // Default to group 'location'
+        rankFieldName = 'qualityRank';
+        findAllParams.attributes = findAllParams.attributes.concat(['qualityTotal', 'qualityCount', 'qualityRank']);
+
+        findAllParams.order = [
+            ['qualityRank', 'DESC'],
+            ['qualityCount', 'DESC'],
+            ['name', 'ASC']
+        ];
     }
 
     // Create the where query from the list of clauses
     var whereQuery = {
         $and: whereClauses
     };
+    findAllParams.where = whereQuery;
 
     // Count the total locations first
     db.Location.count({where: whereQuery})
@@ -300,17 +344,7 @@ exports.list = function(req, res, next) {
             };
 
             // Load the locations, but only the data we actually want to send
-            db.Location.findAll({
-                where: whereQuery,
-                attributes: fieldsToLoad,
-                limit: limit,
-                offset: skip,
-                order: [
-                    ['qualityRank', 'DESC'],
-                    ['qualityCount', 'DESC'],
-                    ['name', 'ASC']
-                ]
-            })
+            db.Location.findAll(findAllParams)
                 .then(function(locations) {
                     // Check if we got a cluster level for which we do clustering
                     if (useClustering) {
@@ -321,7 +355,7 @@ exports.list = function(req, res, next) {
                         });
 
                         // Get the top locations and the clusters
-                        response.locations = getSpreadTopLocations(locations, clusterLevel);
+                        response.locations = getSpreadTopLocations(locations, clusterLevel, rankFieldName);
                         response.clusters = getLocationClusters(locations, clusterLevel);
                     }
                     else {

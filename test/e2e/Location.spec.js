@@ -348,10 +348,38 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                     expect(['tiny', 'small', 'medium', 'large'].indexOf(cluster.sizeName))
                         .toBeGreaterThan(-1, 'has a valid cluster size name')
                     ;
-                    expect(typeof cluster.numOwned).toBe('undefined', 'numOwned not given if not logged in');
                 });
 
                 expect(totalLocations).toBe(4, 'has all locations in clusters');
+
+                done();
+            })
+        ;
+    });
+
+    it('can list locations and cluster them returning product ratings', function(done) {
+        h.request('GET', h.baseURL + 'location/list?bounds=7.337,46.851,7.557,47.076&clusterLevel=11&group=product')
+            .end(function(err, res) {
+
+                expect(res.statusCode).toBe(200);
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(_.isArray(res.body.clusters)).toBe(true, 'returns an array of clusters');
+                expect(res.body.totalLocations).toBe(4, 'returns correct total locations');
+                expect(Object.keys(res.body).length).toBe(3, 'returns nothing else');
+                expect(res.body.locations.length).toBe(2, 'returns 2 locations');
+                expect(res.body.clusters.length).toBe(3, 'returns 3 clusters');
+
+                _.each(res.body.locations, function(location) {
+                    console.log(location);
+                    expect(Object.keys(location).length).toBe(6, 'number of properties exposed of location');
+                    expect(typeof location.id).toBe('number', 'has an id');
+                    expect(typeof location.lat).toBe('number', 'has lat');
+                    expect(typeof location.lng).toBe('number', 'has lng');
+                    expect(typeof location.name).toBe('string', 'has an name');
+                    expect(typeof location.type).toBe('string', 'has a type');
+                    expect(typeof location.topProductRank).toBe('number', 'has a topProductRank');
+                });
 
                 done();
             })

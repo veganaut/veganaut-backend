@@ -391,6 +391,11 @@ module.exports = function(sequelize, DataTypes) {
             ret.existence = doc.existence;
         }
 
+        // If the topProductRank was added by the GET /location/list call, expose that too
+        if (typeof doc.topProductRank === 'number') {
+            ret.topProductRank = doc.topProductRank;
+        }
+
         return _.omit(ret, _.isNull);
     };
 
