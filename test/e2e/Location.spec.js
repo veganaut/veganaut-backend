@@ -358,7 +358,7 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
     });
 
     it('can list locations and cluster them returning product ratings', function(done) {
-        h.request('GET', h.baseURL + 'location/list?bounds=7.337,46.851,7.557,47.076&clusterLevel=11&group=product')
+        h.request('GET', h.baseURL + 'location/list?bounds=7.337,46.851,7.557,47.076&clusterLevel=11&granularity=product')
             .end(function(err, res) {
 
                 expect(res.statusCode).toBe(200);

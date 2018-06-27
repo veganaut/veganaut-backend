@@ -293,7 +293,7 @@ exports.list = function(req, res, next) {
 
     // Check if we are ranking by location quality or by product rating
     var rankFieldName;
-    if (req.query.group === 'product') {
+    if (req.query.granularity === 'product') {
         rankFieldName = 'topProductRank';
 
         // To get the locations by top products, we need to join the products
@@ -318,7 +318,7 @@ exports.list = function(req, res, next) {
 
         findAllParams.group = ['location.id'];
     }
-    else { // Default to group 'location'
+    else { // Default to granularity 'location'
         rankFieldName = 'qualityRank';
         findAllParams.attributes = findAllParams.attributes.concat(['qualityTotal', 'qualityCount', 'qualityRank']);
 
