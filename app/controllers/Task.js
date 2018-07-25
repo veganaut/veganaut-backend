@@ -23,8 +23,8 @@ exports.submit = function(req, res, next) {
     var locationId = req.body.location;
     var productId = req.body.product;
 
-    // Find the location where the task was made
-    db.Location.findById(locationId, {attributes: ['id']})
+    // Find the location where the task was made (also include soft-deleted locations)
+    db.Location.findById(locationId, {attributes: ['id'], paranoid: false})
         .then(function(location) {
             if (!location) {
                 throw new Error('Could not find location with id: ' + locationId);

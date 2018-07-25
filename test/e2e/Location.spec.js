@@ -371,7 +371,6 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                 expect(res.body.clusters.length).toBe(3, 'returns 3 clusters');
 
                 _.each(res.body.locations, function(location) {
-                    console.log(location);
                     expect(Object.keys(location).length).toBe(6, 'number of properties exposed of location');
                     expect(typeof location.id).toBe('number', 'has an id');
                     expect(typeof location.lat).toBe('number', 'has lat');
@@ -454,11 +453,11 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
         ;
     });
 
-    it('does not return deleted locations', function(done) {
+    it('returns locations that no longer exist with the right flags', function(done) {
         h.request('GET', h.baseURL + 'location/11')
             .end(function(err, res) {
-                expect(res.statusCode).toBe(404);
-                expect(typeof res.body.error).toBe('string', 'got an error message');
+                expect(res.statusCode).toBe(200);
+                expect(res.body.existence).toBe('closedDown', 'correct existence label');
                 done();
             })
         ;

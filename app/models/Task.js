@@ -330,7 +330,8 @@ module.exports = function(sequelize, DataTypes) {
             // TODO: should only populate if not already done?
             var followUps = [];
             if (task.locationId) {
-                followUps.push(task.getLocation().then(function(location) {
+                // Inform the location (also when it's soft-deleted)
+                followUps.push(task.getLocation({paranoid: false}).then(function(location) {
                     return location.onTaskCompleted(task, previousTask);
                 }));
             }

@@ -167,8 +167,16 @@ h.describe('Basic functionality of task API methods.', {fixtures: fix, user: 'al
 
                 h.request('GET', h.baseURL + 'location/' + locationId)
                     .end(function(err, res) {
-                        expect(res.body.existence).toBe('closedDown', 'updated location');
-                        done();
+                        var location = res.body;
+                        expect(location.existence).toBe('closedDown', 'updated location');
+
+                        // Check that the location no longer shows up in the list query
+                        h.request('GET', h.baseURL + 'location/list?lat=' + location.lat + '&lng=' + location.lng + '&radius=200')
+                            .end(function(err, res) {
+                                expect(res.body.totalLocations).toBe(0, 'no location shown any longer');
+                                done();
+                            })
+                        ;
                     })
                 ;
             })

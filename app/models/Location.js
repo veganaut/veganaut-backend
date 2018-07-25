@@ -172,6 +172,21 @@ module.exports = function(sequelize, DataTypes) {
         }
     });
 
+    Location.hook('beforeSave', function(loc) {
+        // Make sure the existence state is correctly reflected in the deletion state (soft delete)
+        // TODO: We should prevent the locations to be deleted with the "destroy" method and instead always use the existence
+        if (loc.existence === constants.LOCATION_EXISTENCE_STATES.existing) {
+            if (loc.deletedAt) {
+                loc.setDataValue('deletedAt', null);
+            }
+        }
+        else {
+            if (!loc.deletedAt) {
+                loc.setDataValue('deletedAt', Date.now());
+            }
+        }
+    });
+
     /**
      * Returns the where clause to be used for full text location search
      * @param {string} searchString
@@ -332,7 +347,6 @@ module.exports = function(sequelize, DataTypes) {
             break;
 
         case constants.TASK_TYPES.SetLocationExistence:
-            // TODO WIP: what else to do for this task? Delete the place if confirmed enough?
             this.existence = task.outcome.existence;
             break;
 

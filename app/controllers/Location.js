@@ -425,8 +425,8 @@ exports.get = function(req, res, next) {
     var locationId = req.params.locationId;
     var location;
 
-    // Load the location by id
-    db.Location.findById(locationId)
+    // Load the location by id (including soft-deleted records)
+    db.Location.findById(locationId, {paranoid: false})
         .then(function(foundLocation) {
             location = foundLocation;
             if (!location) {

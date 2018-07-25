@@ -188,8 +188,9 @@ var getFixtures = function() {
             type: 'Point',
             coordinates: [7.456015, 46.949960]
         },
-        name: 'CLOSED: This place should never show up!',
+        name: 'This place is closed down!',
         type: 'gastronomy',
+        existence: 'closedDown',
         owner: fix.alice.id,
         addressStreet: 'Langmauerweg',
         addressHouse: '15c',
