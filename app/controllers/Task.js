@@ -5,6 +5,73 @@ var db = require('../models');
 var constants = require('../utils/constants');
 var taskDefinitions = require('../utils/taskDefinitions');
 
+/**
+ * Gets a veganize task that is related (same task type, completed at same location type
+ * and often at the same location) and which's outcome can be used as inspiration for
+ * users that are about to complete the task.
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns {*}
+ */
+exports.getRelatedVeganizeTask = function(req, res, next) {
+    var taskType = req.query.type;
+    var locationType = req.query.locationType;
+    var locationId = req.query.locationId;
+
+    var taskDefinition = taskDefinitions[taskType];
+    if (typeof taskDefinition === 'undefined' || taskDefinition.category !== 'veganize') {
+        return next(new Error('"' + taskType + '" is not a valid veganize task.'));
+    }
+
+    // Select only tasks of the same type that have non-empty "notes"
+    var where = {
+        type: taskType,
+        'outcome.notes': {
+            $ne: null
+        }
+    };
+
+    // If there is a logged in user, exclude tasks by that user
+    if (req.user) {
+        where.personId = {
+            $ne: req.user.id
+        };
+    }
+
+    db.Task
+        .find({
+            where: where,
+            // Order in a way to mostly select tasks at the given location, but not always
+            order: [
+                [db.sequelize.literal('CASE WHEN "location"."id" = ' + db.sequelize.escape(locationId) + ' ' +
+                    'THEN random() + 0.5 ELSE random() END'), 'DESC'
+                ]
+            ],
+            include: [
+                {
+                    model: db.Location,
+                    attributes: ['id', 'name', 'addressCity'],
+                    where: {
+                        // Select tasks at locations of the given type
+                        type: locationType
+                    }
+                },
+                {
+                    model: db.Person,
+                    attributes: ['nickname']
+                }
+            ]
+        })
+        .then(function(task) {
+            // Return as json (to be sure to have the correct content-type even when the result is empty)
+            return res.json(task);
+        })
+        .catch(next)
+    ;
+};
+
 exports.submit = function(req, res, next) {
     var taskType = req.body.type;
     if (typeof constants.TASK_TYPES[taskType] === 'undefined') {
@@ -59,7 +126,7 @@ exports.submit = function(req, res, next) {
                         }
                         return product;
                     })
-                ;
+                    ;
             }
         })
 

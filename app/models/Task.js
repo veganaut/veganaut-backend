@@ -409,17 +409,20 @@ module.exports = function(sequelize, DataTypes) {
             'id',
             'type',
             'outcome',
+            'person',
+            'location',
+            'product',
             'createdAt'
         ]);
 
-        // Expose the ids, but with a different name
-        if (doc.personId) {
+        // If the related models where not loaded, expose the ids instead
+        if (!ret.person && doc.personId) {
             ret.person = doc.personId;
         }
-        if (doc.locationId) {
+        if (!ret.location && doc.locationId) {
             ret.location = doc.locationId;
         }
-        if (doc.productId) {
+        if (!ret.product && doc.productId) {
             ret.product = doc.productId;
         }
 

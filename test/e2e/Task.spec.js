@@ -810,3 +810,50 @@ h.describe('Task API methods and their influence on locations.', function() {
         ;
     });
 });
+
+h.describe('Veganize tasks as Alice.', function() {
+    it('task/relatedVeganize does not return tasks the requesting user made', function(done) {
+        h.request('GET', h.baseURL + 'task/relatedVeganize?type=GiveFeedback&locationType=gastronomy&locationId=8')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                expect(res.body).toBe(null, 'Alice gets no related GiveFeedback task as she is the only one that did one');
+
+                done();
+            })
+        ;
+    });
+});
+
+h.describe('Veganize tasks as Bob.', {user: 'im@stoop.id'}, function() {
+    it('can get related veganize task', function(done) {
+        // TODO: Test that the selection of the returned task works well
+        h.request('GET', h.baseURL + 'task/relatedVeganize?type=GiveFeedback&locationType=gastronomy&locationId=8')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+
+                var task = res.body;
+
+                expect(Object.keys(task).length).toBe(6, 'number of properties exposed of task');
+                expect(typeof task.id).toBe('number', 'task id');
+                expect(task.type).toBe('GiveFeedback', 'task type');
+                expect(typeof task.outcome).toBe('object', 'task outcome');
+                expect(Object.keys(task.outcome).length).toBe(2, 'number of outcome properties');
+                expect(typeof task.outcome.commitment).toBe('string', 'task outcome.commitment');
+                expect(typeof task.outcome.notes).toBe('string', 'task outcome.notes');
+                expect(typeof task.person).toBe('object', 'task person');
+                expect(Object.keys(task.person).length).toBe(1, 'number of person properties');
+                expect(typeof task.person.nickname).toBe('string', 'task person.nickname');
+                expect(typeof task.location).toBe('object', 'task location');
+                expect(Object.keys(task.location).length).toBe(3, 'number of location properties');
+                expect(typeof task.location.id).toBe('number', 'task location.id');
+                expect(typeof task.location.name).toBe('string', 'task location.name');
+                expect(typeof task.location.address).toBe('object', 'task location.address');
+                expect(Object.keys(task.location.address).length).toBe(1, 'number of location.address properties');
+                expect(typeof task.location.address.city).toBe('string', 'task location.address.city');
+                expect(typeof task.createdAt).toBe('string', 'task createdAt');
+
+                done();
+            })
+        ;
+    });
+});

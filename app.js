@@ -69,6 +69,8 @@ app.get('/areaOverview', cors(), AreaOverview.get);
 // Task
 app.options('/task', cors());
 app.post('/task', cors(), Session.restrict, Task.submit);
+app.options('/task/relatedVeganize', cors());
+app.get('/task/relatedVeganize', cors(), Task.getRelatedVeganizeTask);
 
 // Location
 app.options('/location', cors());
