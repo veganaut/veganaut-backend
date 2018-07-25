@@ -778,4 +778,35 @@ h.describe('Task API methods and their influence on locations.', function() {
             })
         ;
     });
+
+    it('Can set a location to existing again when it was soft-deleted', function(done) {
+        h.request('POST', h.baseURL + 'task')
+            .send({
+                location: 11, // Updating the deletedPlace to be existing again
+                type: 'SetLocationExistence',
+                outcome: {
+                    existence: 'existing'
+                }
+            })
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(201);
+
+                h.request('GET', h.baseURL + 'location/11')
+                    .end(function(err, res) {
+                        var loc = res.body;
+                        expect(res.statusCode).toBe(200);
+                        expect(typeof loc.existence).toBe('undefined', 'existence is correctly set to "undefined" (so existing)');
+
+                        h.request('GET', h.baseURL + 'location/list?lat=' + loc.lat + '&lng=' + loc.lng + '&radius=200')
+                            .end(function(err, res) {
+                                expect(res.body.totalLocations).toBe(1, 'shows the location in the list again');
+                                expect(res.body.locations[0].id).toBe(11, 'returns the location');
+                                done();
+                            })
+                        ;
+                    })
+                ;
+            })
+        ;
+    });
 });
