@@ -117,7 +117,7 @@ var OUTCOME_SCHEMAS = {
         properties: {
             availability: {
                 type: 'string',
-                enum: ['always', 'sometimes', 'daily', 'weekly', 'seasonal', 'not']
+                enum: ['always', 'sometimes', 'not']
             },
             notes: {type: 'string'}
         },
@@ -129,7 +129,7 @@ var OUTCOME_SCHEMAS = {
         properties: {
             knowLocation: {
                 type: 'string',
-                enum: ['regular', 'often', 'fewTimes', 'once', 'never']
+                enum: ['regular', 'fewTimes', 'once', 'never']
             },
             notes: {type: 'string'}
         },
@@ -388,7 +388,7 @@ module.exports = function(sequelize, DataTypes) {
                         {
                             type: 'HowWellDoYouKnowThisLocation',
                             'outcome.knowLocation': {
-                                $or: ['regular', 'often', 'fewTimes', 'once']
+                                $or: ['regular', 'fewTimes', 'once']
                             }
                         }
                     ]

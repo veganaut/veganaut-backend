@@ -117,9 +117,6 @@ constants.LOCATION_TAGS = [
 constants.PRODUCT_AVAILABILITIES = {
     always: 'always',
     sometimes: 'sometimes',
-    daily: 'daily',
-    weekly: 'weekly',
-    seasonal: 'seasonal',
     not: 'not'
 };
 

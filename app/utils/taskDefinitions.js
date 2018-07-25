@@ -279,8 +279,7 @@ module.exports = {
     //             values: [
     //                 'vegan',
     //                 'vegetarian',
-    //                 'omnivorous',
-    //                 'meatHeavy'
+    //                 'omnivorous'
     //             ]
     //         }
     //     ],
@@ -388,9 +387,6 @@ module.exports = {
                 values: [
                     'always',
                     'sometimes',
-                    'daily',
-                    'weekly',
-                    'seasonal',
                     'not'
                 ]
             }
@@ -411,7 +407,6 @@ module.exports = {
                 type: 'selectOne',
                 values: [
                     'regular',
-                    'often',
                     'fewTimes',
                     'once',
                     'never'
@@ -424,8 +419,7 @@ module.exports = {
         triggerExistence: {
             outcomeToCheck: 'knowLocation',
             triggerWhen: [
-                'regular',
-                'often'
+                'regular'
             ]
         },
         changeProperties: [
@@ -437,7 +431,6 @@ module.exports = {
                 byOutcome: {
                     knowLocation: {
                         regular: 90,
-                        often: 90,
                         fewTimes: 90,
                         once: 90,
                         never: 1

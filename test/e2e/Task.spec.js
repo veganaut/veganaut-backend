@@ -512,7 +512,7 @@ h.describe('Product tasks referring to existing products.', function() {
                 product: 101,
                 type: 'SetProductAvailability',
                 outcome: {
-                    availability: 'seasonal'
+                    availability: 'sometimes'
                 }
             })
             .end(function(err, res) {
@@ -520,7 +520,7 @@ h.describe('Product tasks referring to existing products.', function() {
                 expect(res.body.type).toBe('SetProductAvailability', 'type of task');
                 expect(res.body.product).toBe(101, 'product id');
                 expect(typeof res.body.outcome).toBe('object', 'outcome');
-                expect(res.body.outcome.availability).toBe('seasonal', 'outcome availability');
+                expect(res.body.outcome.availability).toBe('sometimes', 'outcome availability');
                 done();
             })
         ;
@@ -620,7 +620,7 @@ h.describe('Update of products.', function() {
                 product: 101,
                 type: 'SetProductAvailability',
                 outcome: {
-                    availability: 'weekly'
+                    availability: 'always'
                 }
             })
             .end(function(err, res) {
@@ -633,7 +633,7 @@ h.describe('Update of products.', function() {
                         var curry = _.findWhere(products, {id: 101});
 
                         expect(curry).toBeDefined('curry product is defined');
-                        expect(curry.availability).toBe('weekly', 'correctly updated availability');
+                        expect(curry.availability).toBe('always', 'correctly updated availability');
                         done();
                     })
                 ;
