@@ -8,10 +8,11 @@ var taskDefinitions = require('../utils/taskDefinitions');
 
 /**
  * JSON Schemas for the outcomes of all the missions
- * TODO: move this to the taskDefinitions
+ * TODO WIP: move this to the taskDefinitions
  * @type {{}}
  */
 var OUTCOME_SCHEMAS = {
+    // TODO WIP: what about a Task to set whether it's all vegan / vegi / marked vegan or what
     AddLocation: {
         type: 'object',
         properties: {
