@@ -822,6 +822,34 @@ h.describe('Veganize tasks as Alice.', function() {
             })
         ;
     });
+
+    it('task/statistics for BuyProduct', function(done) {
+        h.request('GET', h.baseURL + 'task/statistics?type=BuyProduct&locationId=8')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+
+                var stats = res.body;
+                expect(Object.keys(stats).length).toBe(1, 'returns correct number of stats');
+                expect(stats.count).toBe(1, 'returns correct count');
+
+                done();
+            })
+        ;
+    });
+
+    it('task/statistics for RateProduct', function(done) {
+        h.request('GET', h.baseURL + 'task/statistics?type=RateProduct&locationId=6')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+
+                var stats = res.body;
+                expect(Object.keys(stats).length).toBe(1, 'returns correct number of stats');
+                expect(stats.count).toBe(2, 'returns correct count');
+
+                done();
+            })
+        ;
+    });
 });
 
 h.describe('Veganize tasks as Bob.', {user: 'im@stoop.id'}, function() {

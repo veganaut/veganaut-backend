@@ -13,7 +13,6 @@ var taskDefinitions = require('../utils/taskDefinitions');
  * @param req
  * @param res
  * @param next
- * @returns {*}
  */
 exports.getRelatedVeganizeTask = function(req, res, next) {
     var taskType = req.query.type;
@@ -71,6 +70,35 @@ exports.getRelatedVeganizeTask = function(req, res, next) {
         .catch(next)
     ;
 };
+
+
+/**
+ * Gets statistics for a given task type at a given location.
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
+exports.getStatistics = function(req, res, next) {
+    var taskType = req.query.type;
+    var locationId = req.query.locationId;
+
+    db.Task
+        .count({
+            where: {
+                type: taskType,
+                locationId: locationId
+            }
+        })
+        .then(function(count) {
+            return res.send({
+                count: count
+            });
+        })
+        .catch(next)
+    ;
+};
+
 
 exports.submit = function(req, res, next) {
     var taskType = req.body.type;

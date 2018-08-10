@@ -71,6 +71,8 @@ app.options('/task', cors());
 app.post('/task', cors(), Session.restrict, Task.submit);
 app.options('/task/relatedVeganize', cors());
 app.get('/task/relatedVeganize', cors(), Task.getRelatedVeganizeTask);
+app.options('/task/statistics', cors());
+app.get('/task/statistics', cors(), Task.getStatistics);
 
 // Location
 app.options('/location', cors());
