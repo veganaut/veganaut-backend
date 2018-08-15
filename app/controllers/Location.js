@@ -423,7 +423,7 @@ exports.search = function(req, res, next) {
  */
 exports.get = function(req, res, next) {
     var locationId = req.params.locationId;
-    var location;
+    var location, creator, contributors;
 
     // Load the location by id (including soft-deleted records)
     db.Location.findById(locationId, {paranoid: false})
@@ -433,6 +433,57 @@ exports.get = function(req, res, next) {
                 // Gracefully handle location not found
                 res.status(404);
                 throw new Error('Could not find location with id: ' + locationId);
+            }
+
+            // Find the person that added the location
+            return db.Task.findOne({
+                where: {
+                    locationId: location.id,
+                    type: constants.TASK_TYPES.AddLocation
+                },
+                attributes: [],
+                include: [{
+                    model: db.Person,
+                    attributes: ['id', 'nickname'],
+                    where: {} // Add a where clause to get Sequelize to do an inner join (we only want the task if the person is set - which should always be the case)
+                }],
+                raw: true // No need to instantiate models
+            });
+        })
+        .then(function(rawCreator) {
+            // If we found the creator, format it
+            if (rawCreator) {
+                creator = {
+                    id: rawCreator['person.id'],
+                    nickname: rawCreator['person.nickname']
+                };
+            }
+
+            // Load all other contributors (that completed at least one task at this location)
+            return db.Task.findAll({
+                where: {
+                    locationId: location.id
+                },
+                attributes: [],
+                include: [{
+                    model: db.Person,
+                    attributes: ['id', 'nickname'],
+                    where: {} // Add a where clause to get Sequelize to do an inner join (we only want the task if the person is set - which should always be the case)
+                }],
+                group: ['person.id'],
+                order: [[db.sequelize.fn('MAX', db.sequelize.col('task.createdAt')), 'DESC']],
+                raw: true // To get Sequelize to not select task.id
+            });
+        })
+        .then(function(rawContributors) {
+            // If we found contributors, format them
+            if (rawContributors) {
+                contributors = _.map(rawContributors, function(contributor) {
+                    return {
+                        id: contributor['person.id'],
+                        nickname: contributor['person.nickname']
+                    };
+                });
             }
 
             // Load the products of this location
@@ -446,7 +497,9 @@ exports.get = function(req, res, next) {
         .then(function(products) {
             var returnObj = location.toJSON();
 
-            // Add the products
+            // Add the additional properties
+            returnObj.creator = creator;
+            returnObj.contributors = contributors;
             returnObj.products = products;
 
             return res.send(returnObj);

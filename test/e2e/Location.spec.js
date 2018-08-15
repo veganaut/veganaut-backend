@@ -64,6 +64,8 @@ h.describe('Location API methods as logged in user alice.', function() {
                     expect(typeof location.effort).toBe('undefined', 'effort not exposed');
                     expect(typeof location.tags).toBe('undefined', 'tags are not set');
                     expect(typeof location.address).toBe('undefined', 'address is not set');
+                    expect(typeof location.creator).toBe('undefined', 'creator is not set');
+                    expect(typeof location.contributors).toBe('undefined', 'contributors is not set');
                 });
                 done();
             })
@@ -189,6 +191,18 @@ h.describe('Location API methods as logged in user alice.', function() {
                     expect(product.availability).toBe(expectedAvailabilities[index], 'correct availability');
                 });
 
+                expect(typeof location.creator).toBe('object', 'got creator object');
+                expect(typeof location.creator.id).toBe('number', 'got creator id');
+                expect(typeof location.creator.nickname).toBe('string', 'got creator nickname');
+                expect(Object.keys(location.creator).length).toBe(2, 'got right amount of creator properties');
+
+                expect(_.isArray(location.contributors)).toBe(true, 'got contributors array');
+                _.each(location.contributors, function(contributor) {
+                    expect(typeof contributor.id).toBe('number', 'got contributor id');
+                    expect(typeof contributor.nickname).toBe('string', 'got contributor nickname');
+                    expect(Object.keys(contributor).length).toBe(2, 'got right amount of contributor properties');
+                });
+
                 done();
             })
         ;
@@ -211,6 +225,36 @@ h.describe('Location API methods as logged in user alice.', function() {
                     expect(typeof count).toBe('number', 'got a count');
                     expect(count).toBeGreaterThan(0, 'correct count');
                 });
+
+                done();
+            })
+        ;
+    });
+
+    it('can get an location with correct creator and contributors', function(done) {
+        h.request('GET', h.baseURL + 'location/8')
+            .end(function(err, res) {
+                var location = res.body;
+
+                // Alice created the place
+                expect(location.creator.id).toBe(1, 'got creator id');
+                expect(location.creator.nickname).toBe('Alice', 'got creator nickname');
+                expect(Object.keys(location.creator).length).toBe(2, 'got right amount of creator properties');
+
+                expect(_.isArray(location.contributors)).toBe(true, 'got contributors array');
+                expect(location.contributors.length).toBe(2, 'got right amount ofcontributors');
+
+                // Bob contributed last, so he should be first in the list
+                var bob = location.contributors[0];
+                var alice = location.contributors[1];
+
+                expect(bob.id).toBe(2, 'got bob id');
+                expect(bob.nickname).toBe('Bob', 'got bob nickname');
+                expect(Object.keys(bob).length).toBe(2, 'got right amount of bob properties');
+
+                expect(alice.id).toBe(1, 'got alice id');
+                expect(alice.nickname).toBe('Alice', 'got alice nickname');
+                expect(Object.keys(alice).length).toBe(2, 'got right amount of alice properties');
 
                 done();
             })
@@ -300,6 +344,8 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                     expect(typeof location.quality.numRatings).toBe('number', 'has a quality rating amount');
                     expect(typeof location.tags).toBe('undefined', 'tags are not set');
                     expect(typeof location.address).toBe('undefined', 'address is not set');
+                    expect(typeof location.creator).toBe('undefined', 'creator is not set');
+                    expect(typeof location.contributors).toBe('undefined', 'contributors is not set');
                 });
                 done();
             })
@@ -446,6 +492,18 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                     expect(typeof product.rating.numRatings).toBe('number', 'has a rating amount');
                     expect(typeof product.location).toBe('undefined', 'location is not sent again');
                     expect(typeof product.availability).toBe('string', 'has an availability');
+                });
+
+                expect(typeof location.creator).toBe('object', 'got creator object');
+                expect(typeof location.creator.id).toBe('number', 'got creator id');
+                expect(typeof location.creator.nickname).toBe('string', 'got creator nickname');
+                expect(Object.keys(location.creator).length).toBe(2, 'got right amount of creator properties');
+
+                expect(_.isArray(location.contributors)).toBe(true, 'got contributors array');
+                _.each(location.contributors, function(contributor) {
+                    expect(typeof contributor.id).toBe('number', 'got contributor id');
+                    expect(typeof contributor.nickname).toBe('string', 'got contributor nickname');
+                    expect(Object.keys(contributor).length).toBe(2, 'got right amount of contributor properties');
                 });
 
                 done();
