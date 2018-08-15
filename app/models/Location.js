@@ -355,6 +355,9 @@ module.exports = function(sequelize, DataTypes) {
             break;
         }
 
+        // Always update the date
+        this.setDataValue('updatedAt', Date.now());
+
         // TODO: only save when something changed?
         // Save the new state
         return this.save();

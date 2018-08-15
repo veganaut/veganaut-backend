@@ -223,30 +223,40 @@ h.describe('Basic functionality of task API methods.', {fixtures: fix, user: 'al
     });
 
     it('can submit AddProduct task', function(done) {
-        h.request('POST', h.baseURL + 'task')
-            .send({
-                location: locationId,
-                type: 'AddProduct',
-                outcome: {
-                    productAdded: true,
-                    name: 'Smoothie'
-                }
-            })
+        // Get the location first to record the updatedAt timestamp before the task
+        h.request('GET', h.baseURL + 'location/' + locationId)
             .end(function(err, res) {
-                expect(res.statusCode).toBe(201);
-                expect(res.body.type).toBe('AddProduct', 'type of mission');
-                expect(res.body.outcome.productAdded).toEqual(true, 'productAdded outcome');
-                expect(res.body.outcome.name).toEqual('Smoothie', 'name outcome');
+                var updatedAtBefore = new Date(res.body.updatedAt);
 
-                h.request('GET', h.baseURL + 'location/' + locationId)
+                h.request('POST', h.baseURL + 'task')
+                    .send({
+                        location: locationId,
+                        type: 'AddProduct',
+                        outcome: {
+                            productAdded: true,
+                            name: 'Smoothie'
+                        }
+                    })
                     .end(function(err, res) {
-                        expect(res.body.products.length).toBe(1, 'should now have one product');
-                        var smoothie = res.body.products[0];
-                        expect(smoothie.name).toBe('Smoothie', 'product name');
-                        expect(smoothie.availability).toBe('always', 'default availability');
-                        expect(smoothie.rating.average).toBe(0, 'avg rating');
-                        expect(smoothie.rating.numRatings).toBe(0, 'numRatings');
-                        done();
+                        expect(res.statusCode).toBe(201);
+                        expect(res.body.type).toBe('AddProduct', 'type of mission');
+                        expect(res.body.outcome.productAdded).toEqual(true, 'productAdded outcome');
+                        expect(res.body.outcome.name).toEqual('Smoothie', 'name outcome');
+
+                        h.request('GET', h.baseURL + 'location/' + locationId)
+                            .end(function(err, res) {
+                                expect(res.body.products.length).toBe(1, 'should now have one product');
+                                var smoothie = res.body.products[0];
+                                expect(smoothie.name).toBe('Smoothie', 'product name');
+                                expect(smoothie.availability).toBe('always', 'default availability');
+                                expect(smoothie.rating.average).toBe(0, 'avg rating');
+                                expect(smoothie.rating.numRatings).toBe(0, 'numRatings');
+
+                                var updatedAtAfter = new Date(res.body.updatedAt);
+                                expect(updatedAtAfter - updatedAtBefore).toBeGreaterThan(0, 'updatedAt timestamp changed');
+                                done();
+                            })
+                        ;
                     })
                 ;
             })
@@ -643,6 +653,35 @@ h.describe('Update of products.', function() {
 });
 
 h.describe('Task API methods and their influence on locations.', function() {
+    it('sets updatedAt when submitting a SetLocationName task', function(done) {
+        // Get the location first to record the updatedAt timestamp before the task
+        h.request('GET', h.baseURL + 'location/8')
+            .end(function(err, res) {
+                var updatedAtBefore = new Date(res.body.updatedAt);
+                h.request('POST', h.baseURL + 'task')
+                    .send({
+                        location: 8,
+                        type: 'SetLocationName',
+                        outcome: {
+                            name: 'New name'
+                        }
+                    })
+                    .end(function() {
+                        h.request('GET', h.baseURL + 'location/8')
+                            .end(function(err, res) {
+                                var updatedAtAfter = new Date(res.body.updatedAt);
+                                expect(updatedAtAfter - updatedAtBefore).toBeGreaterThan(0, 'updatedAt timestamp changed');
+                                expect(Date.now() - updatedAtAfter).toBeLessThan(1000, 'updatedAt timestamp close to now');
+                                done();
+                            })
+                        ;
+                    })
+                ;
+            })
+        ;
+    });
+
+
     // TODO WIP: replace this with that the person is added to the list of contributors
     xit('location can change owner when new task is submitted', function(done) {
         h.request('POST', h.baseURL + 'task')
