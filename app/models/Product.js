@@ -14,7 +14,7 @@ module.exports = function(sequelize, DataTypes) {
         availability: {
             type: DataTypes.ENUM,
             values: Object.keys(constants.PRODUCT_AVAILABILITIES),
-            defaultValue: constants.PRODUCT_AVAILABILITIES.always,
+            defaultValue: constants.PRODUCT_AVAILABILITIES.unknown,
             allowNull: false
         },
         isAvailable: {

@@ -129,7 +129,7 @@ var prepareLocations = function() {
     var locationCreatedDates = require('./data/generated-location-dates.json');
 
     /*
-     * TODO WHEN MIGRATING:
+     * TODO WIP WHEN MIGRATING:
      * - check that the converted ids are still all unique
      * - check hooks again (they are deactivated)
      */
@@ -139,6 +139,7 @@ var prepareLocations = function() {
             createdAt = locationCreatedDates[loc._id.$oid];
         }
         else {
+            // TODO WIP: all locations must have an AddLocation task
             // There are 52 places that were created before there were AddLocation missions, for
             // those we set a created at time that is shortly before this feature was released
             createdAt = new Date('2014-08-01T00:00:00.000Z');
@@ -187,7 +188,7 @@ var prepareProducts = function() {
     var productDates = require('./data/generated-product-dates.json');
 
     /*
-     * TODO WHEN MIGRATING:
+     * TODO WIP WHEN MIGRATING:
      * - check hooks again (they are NOT deactivated)
      */
     return _.map(products, function(prod) {
@@ -195,7 +196,7 @@ var prepareProducts = function() {
             console.error('ERROR: Name of product too long (max 256)', prod._id.$oid, prod.name);
         }
 
-        var availability = constants.PRODUCT_AVAILABILITIES.always;
+        var availability = constants.PRODUCT_AVAILABILITIES.unknown;
         if (prod.availability === 0) {
             availability = constants.PRODUCT_AVAILABILITIES.not;
         }
@@ -234,7 +235,7 @@ var preparePeople = function() {
     var people = require('./data/live-export-people-2018-04-11.json').data;
 
     /*
-     * TODO WHEN MIGRATING:
+     * TODO WIP WHEN MIGRATING:
      * - before importing: check that the converted ids are still all unique
      * - check hooks again (they are deactivated)
      */

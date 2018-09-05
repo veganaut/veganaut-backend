@@ -221,7 +221,8 @@ var getFixtures = function() {
     fix.doshaSamosa = db.Product.build({
         id: 102,
         locationId: fix.dosha.id,
-        name: 'samosa'
+        name: 'samosa',
+        availability: constants.PRODUCT_AVAILABILITIES.always
     });
 
     fix.bobTask1Dosha = db.Task.build({

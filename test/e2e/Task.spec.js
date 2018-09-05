@@ -248,7 +248,7 @@ h.describe('Basic functionality of task API methods.', {fixtures: fix, user: 'al
                                 expect(res.body.products.length).toBe(1, 'should now have one product');
                                 var smoothie = res.body.products[0];
                                 expect(smoothie.name).toBe('Smoothie', 'product name');
-                                expect(smoothie.availability).toBe('always', 'default availability');
+                                expect(smoothie.availability).toBe('unknown', 'default availability');
                                 expect(smoothie.rating.average).toBe(0, 'avg rating');
                                 expect(smoothie.rating.numRatings).toBe(0, 'numRatings');
 

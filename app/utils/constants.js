@@ -115,6 +115,7 @@ constants.LOCATION_TAGS = [
  * @type {{}}
  */
 constants.PRODUCT_AVAILABILITIES = {
+    unknown: 'unknown',
     always: 'always',
     sometimes: 'sometimes',
     not: 'not'
