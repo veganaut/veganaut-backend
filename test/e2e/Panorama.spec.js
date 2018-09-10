@@ -4,9 +4,9 @@ var _ = require('lodash');
 var h = require('../helpers_');
 
 
-h.describe('AreaOverview API methods when not logged in.', {user: ''}, function() {
+h.describe('Panorama API methods when not logged in.', {user: ''}, function() {
     it('can get overview of whole world', function(done) {
-        h.request('GET', h.baseURL + 'areaOverview')
+        h.request('GET', h.baseURL + 'panorama')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
 
@@ -18,7 +18,7 @@ h.describe('AreaOverview API methods when not logged in.', {user: ''}, function(
     });
 
     it('can get overview with coordinates and radius', function(done) {
-        h.request(h.baseURL + 'areaOverview?lat=46.956&lng=7.452&radius=150')
+        h.request(h.baseURL + 'panorama?lat=46.956&lng=7.452&radius=150')
             .end(function(err, res) {
                 expect(res.statusCode).toBe(200);
 

@@ -1,4 +1,8 @@
 'use strict';
+/**
+ * Controller for the Panorama page showing the overview
+ * of the locations and activities in a certain area.
+ */
 
 var _ = require('lodash');
 var BPromise = require('bluebird');

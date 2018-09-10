@@ -5,7 +5,7 @@ var morgan = require('morgan');
 var bodyParser = require('body-parser');
 
 // Controllers
-var AreaOverview = require('./app/controllers/AreaOverview');
+var Panorama = require('./app/controllers/Panorama');
 var GeoIP = require('./app/controllers/GeoIP');
 var Location = require('./app/controllers/Location');
 var Task = require('./app/controllers/Task');
@@ -63,8 +63,8 @@ app.post('/person/reset', cors(), Person.resetPassword);
 app.get('/person/:id', cors(), Session.restrict, Person.getById);
 
 // Area overview
-app.options('/areaOverview', cors());
-app.get('/areaOverview', cors(), AreaOverview.get);
+app.options('/panorama', cors());
+app.get('/panorama', cors(), Panorama.get);
 
 // Task
 app.options('/task', cors());
