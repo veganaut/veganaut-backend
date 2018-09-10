@@ -19,15 +19,27 @@ module.exports = function(sequelize, DataTypes) {
 
     /*
     DB changes necessary for the search index
-    TODO WIP: make this part of the migration (and improve the search index)
+    TODO WIP: make this part of the migration
     ALTER TABLE "locations" ADD COLUMN "searchVector" TSVECTOR;
 
-    UPDATE "locations" SET "searchVector" = to_tsvector('english', 'name' || 'description');
+    UPDATE "locations" SET "searchVector" = (
+        setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
+        setweight(to_tsvector('english', coalesce(description, '')), 'B')
+    );
 
     CREATE INDEX location_search_idx ON "locations" USING gin("searchVector");
 
+    CREATE FUNCTION location_weighted_search_trigger() RETURNS trigger AS $$
+    begin
+      new."searchVector" :=
+         setweight(to_tsvector('english', coalesce(new.name, '')), 'A') ||
+         setweight(to_tsvector('english', coalesce(new.description, '')), 'B');
+      return new;
+    end
+    $$ LANGUAGE plpgsql;
+
     CREATE TRIGGER location_search_vector_update BEFORE INSERT OR UPDATE ON "locations" FOR EACH ROW
-        EXECUTE PROCEDURE tsvector_update_trigger("searchVector", 'pg_catalog.english', name, description);
+        EXECUTE PROCEDURE location_weighted_search_trigger();
      */
 
     var locationSchema = {
@@ -188,6 +200,17 @@ module.exports = function(sequelize, DataTypes) {
     });
 
     /**
+     * Helper to prepare the tsquery from a search string.
+     * Returns a plain string to make it usable in a sequelize.literal()
+     * @param searchString
+     * @returns {string}
+     * @private
+     */
+    Location._getSearchTSQuery = function(searchString) {
+        return 'plainto_tsquery(\'english\', ' + sequelize.escape(searchString) + ')';
+    };
+
+    /**
      * Returns the where clause to be used for full text location search
      * @param {string} searchString
      * @returns {{}}
@@ -196,10 +219,22 @@ module.exports = function(sequelize, DataTypes) {
         return {
             // It works like this, couldn't find a better way in sequelize to do it...
             searchVector: sequelize.literal(
-                '"searchVector" @@ plainto_tsquery(\'english\', ' +
-                sequelize.escape(searchString) + ')'
+                '"searchVector" @@ ' + Location._getSearchTSQuery(searchString)
             )
         };
+    };
+
+    /**
+     * Returns the rank to be used in an order clause for full text location search
+     * @param {string} searchString
+     * @returns {{}}
+     */
+    Location.getSearchRank = function(searchString) {
+        return sequelize.fn(
+            'ts_rank',
+            sequelize.col('searchVector'),
+            sequelize.literal(Location._getSearchTSQuery(searchString))
+        );
     };
 
     /**

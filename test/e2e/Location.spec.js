@@ -529,7 +529,6 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                 expect(_.isArray(locations)).toBe(true, 'got an array');
                 expect(locations.length).toBeGreaterThan(1, 'got more than one result');
 
-                // TODO WIP: check that the result with "Shop" in the name is first
                 _.each(locations, function(location) {
                     expect(Object.keys(location).length).toBe(5, 'number of properties exposed of location');
                     expect(typeof location.id).toBe('number', 'has an id');
@@ -542,6 +541,8 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                     expect(Object.keys(location.address).length).toBe(1, 'number of properties exposed of address');
                     expect(typeof location.address.city).toBe('string', 'has a city in the address');
                 });
+
+                expect(locations[0].name).toBe('Shop', 'location with match in the name is first');
                 done();
             })
         ;

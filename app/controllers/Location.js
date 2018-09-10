@@ -403,8 +403,11 @@ exports.search = function(req, res, next) {
         .findAll({
             attributes: ['id', 'name', 'type', 'qualityTotal', 'qualityCount', 'qualityRank', 'addressCity'],
             where: db.Location.getSearchQuery(searchString),
+            order: [
+                [db.Location.getSearchRank(searchString), 'DESC'],
+                ['name', 'ASC']
+            ],
             limit: limit
-            // TODO WIP: order!
         })
         .then(function(data) {
             // console.log(data);
