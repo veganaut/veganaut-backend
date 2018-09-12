@@ -12,5 +12,6 @@ addons:
 services:
   - postgresql
 before_script:
-  - psql -U postgres -c 'create extension postgis'
-  - psql -c 'create database "veganaut-test";' -U postgres
+  - psql -U postgres -c 'create database "veganaut-test";'
+  - psql -U postgres -d veganaut-test -c 'create extension postgis'
+  - psql -U postgres -d veganaut-test -f ./migrations/2018-09-setup-postgres-tables.sql
