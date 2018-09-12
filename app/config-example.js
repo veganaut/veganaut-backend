@@ -5,7 +5,8 @@
 module.exports = {
     frontendUrl: 'https://veganaut.net',
     database: {
-        connectionUri: 'postgres://user:pass@localhost:5432/dbname'
+        // connectionUri: 'postgres://user:pass@localhost:5432/dbname'
+        connectionUri: 'postgres://postgres:@localhost:5432/veganaut-test'
     },
     email: {
         from: 'veganautnet@yahoo.com',

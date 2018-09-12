@@ -5,10 +5,12 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - mongodb-3.0-precise
     packages:
       - g++-4.8
-      - mongodb-org-server
+      - postgresql-9.5-postgis-2.2
+  postgresql: "9.5"
 services:
-  - mongodb
-# TODO WIP: fix travis
+  - postgresql
+before_script:
+  - psql -U postgres -c "create extension postgis"
+  - psql -c 'create database veganaut-test;' -U postgres
