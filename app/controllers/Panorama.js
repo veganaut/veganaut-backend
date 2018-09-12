@@ -12,10 +12,15 @@ var db = require('../models');
 
 
 /**
- * TODO WIP: document (and move to a model?)
- * TODO WIP: write tests
- * @param where
- * @return {Promise}
+ * Gets the statistics on the number and type of locations in the given area.
+ *
+ * @param {{}} where Where clause for the locations query
+ * @return {Promise} Promise that resolves to an object with the properties:
+ *      - total: {number}
+ *      - gastronomy: {number}
+ *      - retail: {number}
+ *      - quality: {number[]} Number of location by quality, starting with
+ *              quality 0, so unrated, to quality 5
  */
 var getLocationCounts = function(where) {
     var roundedQuality = db.sequelize.literal(
@@ -59,9 +64,13 @@ var getLocationCounts = function(where) {
 };
 
 /**
- * TODO WIP: document (and move to a model?)
- * @param where
- * @return {Promise}
+ * Gets the statistics on the number and type of products in the given area.
+ *
+ * @param {{}} where Where clause for the locations query
+ * @return {Promise} Promise that resolves to an object with the properties:
+ *      - total: {number}
+ *      - gastronomy: {number}
+ *      - retail: {number}
  */
 var getProductCounts = function(where) {
     var initialCounts = {
@@ -112,7 +121,7 @@ exports.get = function(req, res, next) {
     // If no query is provided, overview of the whole world is provided
     var coordWhere;
     try {
-        // Tre center (lat/lng) and radius query
+        // Try to get the center (lat/lng) and radius query
         coordWhere = db.Location.getCenterQuery(req.query.lat, req.query.lng, req.query.radius);
     }
     catch (e) {
