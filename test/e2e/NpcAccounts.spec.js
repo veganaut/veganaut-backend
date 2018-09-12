@@ -36,7 +36,7 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
 
                 var task = res.body;
                 expect(task.type).toBe('HaveYouBeenHereRecently', 'sanity check on task type');
-                // TODO WIP: check that no points / whatever is given
+                // TODO NEXT: check that no points / whatever is given
                 done();
             })
         ;

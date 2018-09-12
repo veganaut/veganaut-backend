@@ -13,7 +13,7 @@ var Sequelize = require('sequelize');
 var BOUNDING_BOX_MAX_LNG = 180;
 
 module.exports = function(sequelize, DataTypes) {
-    // TODO WIP: add validations everywhere
+    // TODO NEXT: add validations everywhere
     // TODO WIP: location should get a "slug" (and id should not be exposed at all?)
     var Location = sequelize.define('location');
 

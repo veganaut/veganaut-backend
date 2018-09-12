@@ -8,7 +8,7 @@
  */
 'use strict';
 
-// TODO WHEN MIGRATING: set sensible start values for the auto increasing indices on all tables
+// TODO WIP WHEN MIGRATING: set sensible start values for the auto increasing indices on all tables
 // TODO WIP: no longer count ratings by the same person multiple times in the historical data, so recompute the ratings?
 
 var IMPORT_STEPS = [
@@ -265,7 +265,7 @@ var prepareTasks = function() {
     /* TODO WIP
      * - tasks that trigger SetLocationExistence: what do do with those?
      *
-     * TODO WHEN MIGRATING:
+     * TODO WIP WHEN MIGRATING:
      * - delete mission acting on location id 54be8dac623a95b0342c05c2 (this location somehow doesn't exist)
      * - check hooks again (they are deactivated)
      */

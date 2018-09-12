@@ -40,7 +40,7 @@ constants.LOCATION_TYPES = [
 
 /**
  * List of all task types
- * TODO WIP: get rid of this and use taskDefinitions instead
+ * TODO NEXT: get rid of this and use taskDefinitions instead
  * @type {{}}
  */
 constants.TASK_TYPES = {

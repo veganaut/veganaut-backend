@@ -40,7 +40,7 @@ module.exports = {
         daysUntilStale: 0,
         requiredFamiliarity: 0,
         triggerExistence: false,
-        // TODO WIP: Automatically trigger SetProductName and SetProductAvailability
+        // TODO NEXT: Automatically trigger SetProductName and SetProductAvailability
         changeProperties: [
             {
                 targetTask: 'SetLocationProductListComplete',

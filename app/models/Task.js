@@ -8,11 +8,11 @@ var taskDefinitions = require('../utils/taskDefinitions');
 
 /**
  * JSON Schemas for the outcomes of all the missions
- * TODO WIP: move this to the taskDefinitions
+ * TODO NEXT: move this to the taskDefinitions
  * @type {{}}
  */
 var OUTCOME_SCHEMAS = {
-    // TODO WIP: what about a Task to set whether it's all vegan / vegi / marked vegan or what
+    // TODO NEXT: what about a Task to set whether it's all vegan / vegi / marked vegan or what
     AddLocation: {
         type: 'object',
         properties: {
@@ -240,7 +240,7 @@ module.exports = function(sequelize, DataTypes) {
                 values: Object.keys(constants.TASK_TYPES),
                 allowNull: false
             },
-            skipped: { // TODO WIP: implement
+            skipped: { // TODO NEXT: implement
                 type: DataTypes.BOOLEAN,
                 defaultValue: false,
                 allowNull: false
@@ -250,10 +250,10 @@ module.exports = function(sequelize, DataTypes) {
                 defaultValue: false,
                 allowNull: false
             },
-            flow: { // TODO WIP: implement
+            flow: { // TODO NEXT: implement
                 type: DataTypes.UUID
             },
-            flowPosition: { // TODO WIP: implement
+            flowPosition: { // TODO NEXT: implement
                 type: DataTypes.INTEGER
             },
             personId: {
@@ -287,7 +287,7 @@ module.exports = function(sequelize, DataTypes) {
     );
 
     Task.associate = function(models) {
-        // TODO WIP: validate that either locationId or productId is set
+        // TODO NEXT: validate that either locationId or productId is set
         Task.belongsTo(models.Location);
         Task.belongsTo(models.Product);
         Task.belongsTo(models.Person);
@@ -295,7 +295,7 @@ module.exports = function(sequelize, DataTypes) {
             as: 'triggeredBy'
         });
         Task.hasOne(Task, {
-            as: 'confirming' // TODO WIP: implement
+            as: 'confirming' // TODO NEXT: implement
         });
     };
 
@@ -319,7 +319,7 @@ module.exports = function(sequelize, DataTypes) {
             previousTaskQuery.productId = task.productId;
         }
 
-        // TODO WIP: All saves should be done as transactions!
+        // TODO NEXT: All saves should be done as transactions!
         return Task.findOne({
             where: previousTaskQuery,
             order: [['createdAt', 'DESC']]
@@ -347,7 +347,7 @@ module.exports = function(sequelize, DataTypes) {
             if (triggerExistence) {
                 // Check if the condition for triggering holds
                 if (triggerExistence.triggerWhen.indexOf(task.outcome[triggerExistence.outcomeToCheck]) > -1) {
-                    // TODO WIP: fill in flow and other info?
+                    // TODO NEXT: fill in flow and other info?
                     followUps.push(Task.create({
                         type: constants.TASK_TYPES.SetLocationExistence,
                         personId: task.personId,
@@ -378,7 +378,7 @@ module.exports = function(sequelize, DataTypes) {
                 where: {
                     personId: personId,
                     locationId: locationId,
-                    // TODO WIP: check if this is really the good condition for considering someone knows a place (e.g. should time/createdAt be included)
+                    // TODO NEXT: check if this is really the good condition for considering someone knows a place (e.g. should time/createdAt be included)
                     $or: [
                         {
                             type: 'HaveYouBeenHereRecently',

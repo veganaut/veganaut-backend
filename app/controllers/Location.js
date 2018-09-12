@@ -513,7 +513,7 @@ exports.get = function(req, res, next) {
 
 /**
  * Returns the next suggested tasks for the user at the given location
- * TODO WIP: document all this, refactor it and unit test it
+ * TODO NEXT: document all this, refactor it and unit test it
  * @param req
  * @param res
  * @param next
@@ -592,8 +592,8 @@ exports.getSuggestedTask = function(req, res, next) {
                 var MISSING_CONFIRMATION_FACTOR = 100;
                 var volatility = Math.max(1, Math.min(100, 100 * (1 - definition.daysUntilStale / MAX_DAYS_UNTIL_STALE))); // Number between 1 and 100
 
-                // TODO WIP: should only take into account the confirmations of the current value
-                // TODO WIP: do this differently for non-info tasks
+                // TODO NEXT: should only take into account the confirmations of the current value
+                // TODO NEXT: do this differently for non-info tasks
                 var numConfirmationsMissing = Math.max(3 - numDone, 0);
                 var confirmationsMissingAddend = 0;
                 if (numConfirmationsMissing > 0) {
@@ -611,7 +611,7 @@ exports.getSuggestedTask = function(req, res, next) {
 
                 var randomAddend = Math.round(RANDOM_FACTOR * Math.random());
 
-                // TODO WIP: don't even bother calculating if this will set it to 0
+                // TODO NEXT: don't even bother calculating if this will set it to 0
                 var isConfirmedAndNotStaleFactor = 1;
                 if (numConfirmationsMissing === 0 && daysStale === 0) {
                     isConfirmedAndNotStaleFactor = 0;

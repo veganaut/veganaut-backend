@@ -212,7 +212,6 @@ h.describe('Basic functionality of task API methods.', {fixtures: fix, user: 'al
                 }
             })
             .end(function(err, res) {
-                // TODO WIP: this task doesn't do anything yet
                 expect(res.statusCode).toBe(201);
                 expect(res.body.type).toBe('MentionVegan', 'type of task');
                 expect(res.body.outcome.commitment).toEqual('maybe', 'outcome commitment');
@@ -299,7 +298,6 @@ h.describe('Basic functionality of task API methods.', {fixtures: fix, user: 'al
                 }
             })
             .end(function(err, res) {
-                // TODO WIP: this task doesn't do anything yet
                 expect(res.statusCode).toBe(201);
                 expect(res.body.type).toBe('GiveFeedback', 'type of task');
                 expect(res.body.outcome.commitment).toEqual('yes', 'outcome commitment');
@@ -682,7 +680,7 @@ h.describe('Task API methods and their influence on locations.', function() {
     });
 
 
-    // TODO WIP: replace this with that the person is added to the list of contributors
+    // TODO NEXT: replace this with that the person is added to the list of contributors
     xit('location can change owner when new task is submitted', function(done) {
         h.request('POST', h.baseURL + 'task')
             .send({
