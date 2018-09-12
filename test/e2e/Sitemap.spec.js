@@ -14,13 +14,14 @@ h.describe('Sitemap.', function() {
                     'defines a sitemap urlset'
                 );
                 expect(sitemap).toContain('<loc>https://veganaut.net</loc>', 'url 1');
-                expect(sitemap).toContain('<loc>https://veganaut.net/map/</loc>', 'url 2');
-                expect(sitemap).toContain('<loc>https://veganaut.net/location/6</loc>', 'location 1');
-                expect(sitemap).toContain('<loc>https://veganaut.net/location/7</loc>', 'location 2');
-                expect(sitemap).toContain('<loc>https://veganaut.net/location/8</loc>', 'location 3');
-                expect(sitemap).toContain('<loc>https://veganaut.net/location/9</loc>', 'location 4');
+                expect(sitemap).toContain('<loc>https://veganaut.net/panorama/</loc>', 'url 2');
+                expect(sitemap).toContain('<loc>https://veganaut.net/map/</loc>', 'url 3');
+                expect(sitemap).toContain('<loc>https://veganaut.net/location/3dosha-6</loc>', 'location 1');
+                expect(sitemap).toContain('<loc>https://veganaut.net/location/reformhaus-ruprecht-7</loc>', 'location 2');
+                expect(sitemap).toContain('<loc>https://veganaut.net/location/kremoby-hollow-8</loc>', 'location 3');
+                expect(sitemap).toContain('<loc>https://veganaut.net/location/shop-9</loc>', 'location 4');
 
-                expect(sitemap).not.toContain('<loc>https://veganaut.net/location/11</loc>', 'no deleted location');
+                expect(sitemap).not.toContain('<loc>https://veganaut.net/location/this-place-is-closed-down-11</loc>', 'no deleted location');
 
                 done();
             })

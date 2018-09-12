@@ -11,8 +11,9 @@ var db = require('../models');
  */
 var STATIC_PATHS = [
     '',
+    '/panorama/',
     '/map/',
-    '/locations/',
+    '/list/',
     '/register',
     '/login'
 ];
@@ -29,12 +30,12 @@ exports.getSitemap = function(req, res, next) {
     // Find all locations
     db.Location
         .findAll({
-            attributes: ['id']
+            attributes: ['id', 'name']
         })
         .then(function(locations) {
             // Add the location paths
             _.each(locations, function(location) {
-                paths.push('/location/' + location.id);
+                paths.push('/location/' + location.getURLSlug() + '-' + location.id);
             });
 
             // Render the sitemap.xml manually

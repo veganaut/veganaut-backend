@@ -17,6 +17,7 @@ h.describe('Location API methods as logged in user alice.', function() {
                 expect(res.statusCode).toBe(200);
                 var location = res.body;
                 expect(location.name).toBe('Tingelkringel', 'set correct name');
+                expect(location.slug).toBe('tingelkringel', 'set correct slug');
                 expect(location.lat).toBe(46, 'set correct lat');
                 expect(location.lng).toBe(7, 'set correct lng');
                 expect(location.type).toBe('gastronomy', 'set correct type');
@@ -50,8 +51,9 @@ h.describe('Location API methods as logged in user alice.', function() {
                 expect(res.body.locations.length).toBe(5, '5 locations (4 from fixtures, one from previous test)');
 
                 _.each(res.body.locations, function(location) {
-                    expect(Object.keys(location).length).toBe(6, 'number of properties exposed of location');
+                    expect(Object.keys(location).length).toBe(7, 'number of properties exposed of location');
                     expect(typeof location.id).toBe('number', 'has an id');
+                    expect(typeof location.slug).toBe('string', 'has a slug');
                     expect(typeof location.name).toBe('string', 'has a name');
                     expect(typeof location.lat).toBe('number', 'has lat');
                     expect(typeof location.lng).toBe('number', 'has lng');
@@ -158,6 +160,7 @@ h.describe('Location API methods as logged in user alice.', function() {
                 expect(typeof location).toBe('object', 'response is an object');
                 expect(location.id).toBe(6, 'correct location id');
                 expect(location.name).toBe('3dosha', 'correct name');
+                expect(location.slug).toBe('3dosha', 'correct slug');
                 expect(typeof location.type).toBe('string', 'got a type');
                 expect(typeof location.updatedAt).toMatch('string', 'updatedAt is a string');
                 var updatedAt = new Date(location.updatedAt);
@@ -216,6 +219,7 @@ h.describe('Location API methods as logged in user alice.', function() {
                 expect(typeof location).toBe('object', 'response is an object');
                 expect(location.id).toBe(8, 'correct location id');
                 expect(location.name).toBe('Kremoby Hollow', 'correct name');
+                expect(location.slug).toBe('kremoby-hollow', 'correct slug');
 
                 expect(typeof location.tags).toBe('object', 'got tags object');
                 expect(Object.keys(location.tags).length).toBe(5, 'got correct amount of tags');
@@ -271,7 +275,7 @@ h.describe('Location API methods as logged in user alice.', function() {
                 expect(suggested.length).toBe(3, 'got right number of tasks');
                 _.each(suggested, function(task) {
                     expect(typeof task).toBe('string', 'task comes as string');
-                    // TODO: test more!
+                    // TODO NEXT: test more!
                 });
 
                 done();
@@ -289,7 +293,7 @@ h.describe('Location API methods as logged in user alice.', function() {
                 expect(suggested.length).toBe(3, 'got right number of tasks');
                 _.each(suggested, function(task) {
                     expect(typeof task).toBe('string', 'task comes as string');
-                    // TODO: test more!
+                    // TODO NEXT: test more!
                 });
 
                 done();
@@ -331,8 +335,9 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                 expect(res.body.locations.length).toBe(4, 'has 4 locations');
 
                 _.each(res.body.locations, function(location) {
-                    expect(Object.keys(location).length).toBe(6, 'number of properties exposed of location');
+                    expect(Object.keys(location).length).toBe(7, 'number of properties exposed of location');
                     expect(typeof location.id).toBe('number', 'has an id');
+                    expect(typeof location.slug).toBe('string', 'has a slug');
                     expect(typeof location.name).toBe('string', 'has a name');
                     expect(typeof location.lat).toBe('number', 'has lat');
                     expect(typeof location.lng).toBe('number', 'has lng');
@@ -417,8 +422,9 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                 expect(res.body.clusters.length).toBe(3, 'returns 3 clusters');
 
                 _.each(res.body.locations, function(location) {
-                    expect(Object.keys(location).length).toBe(6, 'number of properties exposed of location');
+                    expect(Object.keys(location).length).toBe(7, 'number of properties exposed of location');
                     expect(typeof location.id).toBe('number', 'has an id');
+                    expect(typeof location.slug).toBe('string', 'has a slug');
                     expect(typeof location.lat).toBe('number', 'has lat');
                     expect(typeof location.lng).toBe('number', 'has lng');
                     expect(typeof location.name).toBe('string', 'has an name');
@@ -474,6 +480,7 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                 expect(typeof location).toBe('object', 'response is an object');
                 expect(location.id).toBe(6, 'correct location id');
                 expect(location.name).toBe('3dosha', 'correct name');
+                expect(location.slug).toBe('3dosha', 'correct slug');
                 expect(typeof location.type).toBe('string', 'got a type');
                 expect(typeof location.quality).toBe('object', 'has a quality');
                 expect(typeof location.quality.average).toBe('number', 'has a quality average');
@@ -530,8 +537,9 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
                 expect(locations.length).toBeGreaterThan(1, 'got more than one result');
 
                 _.each(locations, function(location) {
-                    expect(Object.keys(location).length).toBe(5, 'number of properties exposed of location');
+                    expect(Object.keys(location).length).toBe(6, 'number of properties exposed of location');
                     expect(typeof location.id).toBe('number', 'has an id');
+                    expect(typeof location.slug).toBe('string', 'has a slug');
                     expect(typeof location.name).toBe('string', 'has a name');
                     expect(typeof location.type).toBe('string', 'has type');
                     expect(typeof location.quality).toBe('object', 'has quality');

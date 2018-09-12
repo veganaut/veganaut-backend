@@ -1,6 +1,7 @@
 'use strict';
 var _ = require('lodash');
 var BPromise = require('bluebird');
+var transliteration = require('transliteration');
 var utils = require('../utils/utils');
 var constants = require('../utils/constants');
 var ratingModelAddOn = require('../utils/ratingModelAddOn');
@@ -14,7 +15,6 @@ var BOUNDING_BOX_MAX_LNG = 180;
 
 module.exports = function(sequelize, DataTypes) {
     // TODO NEXT: add validations everywhere
-    // TODO WIP: location should get a "slug" (and id should not be exposed at all?)
     var Location = sequelize.define('location');
 
     var locationSchema = {
@@ -374,6 +374,22 @@ module.exports = function(sequelize, DataTypes) {
     };
 
     /**
+     * Gets the slug to be used in the URL of this location. The full path of the
+     * location in the frontend is /location/{{slug}}-{{id}}
+     *
+     * Note that the 'name' has to be loaded, otherwise an error is thrown.
+     * @returns {string}
+     */
+    Location.prototype.getURLSlug = function() {
+        // Check if the name is loaded
+        if (typeof this.name !== 'string') {
+            throw new Error('Cannot get slug of Location when name is not loaded');
+        }
+
+        return transliteration.slugify(this.name);
+    };
+
+    /**
      * Convert the location for transferring over the API
      * @returns {{}}
      */
@@ -391,6 +407,11 @@ module.exports = function(sequelize, DataTypes) {
             'tags',
             'productListComplete'
         ]);
+
+        // Add slug (if we have the name)
+        if (typeof ret.name === 'string') {
+            ret.slug = this.getURLSlug();
+        }
 
         // Add address if anything is loaded
         // TODO: find a cleaner way for this

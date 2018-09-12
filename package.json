@@ -17,6 +17,7 @@
     "geoip-lite": "1.1.8",
     "lodash": "3.10.1",
     "jsonschema": "1.2.0",
+    "transliteration": "1.6.6",
     "sequelize": "4.8.0",
     "sequelize-cli": "2.8.0",
     "pg": "6.4.2",

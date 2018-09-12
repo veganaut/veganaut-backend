@@ -909,7 +909,7 @@ h.describe('Veganize tasks as Bob.', {user: 'im@stoop.id'}, function() {
                 expect(Object.keys(task.person).length).toBe(1, 'number of person properties');
                 expect(typeof task.person.nickname).toBe('string', 'task person.nickname');
                 expect(typeof task.location).toBe('object', 'task location');
-                expect(Object.keys(task.location).length).toBe(3, 'number of location properties');
+                expect(Object.keys(task.location).length).toBe(4, 'number of location properties');
                 expect(typeof task.location.id).toBe('number', 'task location.id');
                 expect(typeof task.location.name).toBe('string', 'task location.name');
                 expect(typeof task.location.address).toBe('object', 'task location.address');
