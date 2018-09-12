@@ -14,6 +14,14 @@ CREATE TABLE "sessions" ("sid" VARCHAR(40) , "userAgent" VARCHAR(255), "activeAt
 CREATE TABLE "tasks" ("id"   SERIAL , "type" "public"."enum_tasks_type" NOT NULL, "skipped" BOOLEAN NOT NULL DEFAULT false, "byNpc" BOOLEAN NOT NULL DEFAULT false, "flow" UUID, "flowPosition" INTEGER, "personId" INTEGER NOT NULL REFERENCES "people" ("id") ON DELETE CASCADE ON UPDATE CASCADE, "outcome" JSONB NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL, "locationId" INTEGER REFERENCES "locations" ("id") ON DELETE SET NULL ON UPDATE CASCADE, "productId" INTEGER REFERENCES "products" ("id") ON DELETE SET NULL ON UPDATE CASCADE, "triggeredById" INTEGER REFERENCES "tasks" ("id") ON DELETE SET NULL ON UPDATE CASCADE, "confirmingId" INTEGER REFERENCES "tasks" ("id") ON DELETE SET NULL ON UPDATE CASCADE, PRIMARY KEY ("id"));
 
 
+-- Set the id sequences to something high to not start at 1
+
+SELECT setval('locations_id_seq', 100000);
+SELECT setval('people_id_seq', 100000);
+SELECT setval('products_id_seq', 100000);
+SELECT setval('tasks_id_seq', 100000);
+
+
 -- Add locations searchVector
 
 ALTER TABLE "locations" ADD COLUMN "searchVector" TSVECTOR;
