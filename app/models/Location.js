@@ -17,31 +17,6 @@ module.exports = function(sequelize, DataTypes) {
     // TODO WIP: location should get a "slug" (and id should not be exposed at all?)
     var Location = sequelize.define('location');
 
-    /*
-    DB changes necessary for the search index
-    TODO WIP: make this part of the migration
-    ALTER TABLE "locations" ADD COLUMN "searchVector" TSVECTOR;
-
-    UPDATE "locations" SET "searchVector" = (
-        setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
-        setweight(to_tsvector('english', coalesce(description, '')), 'B')
-    );
-
-    CREATE INDEX location_search_idx ON "locations" USING gin("searchVector");
-
-    CREATE FUNCTION location_weighted_search_trigger() RETURNS trigger AS $$
-    begin
-      new."searchVector" :=
-         setweight(to_tsvector('english', coalesce(new.name, '')), 'A') ||
-         setweight(to_tsvector('english', coalesce(new.description, '')), 'B');
-      return new;
-    end
-    $$ LANGUAGE plpgsql;
-
-    CREATE TRIGGER location_search_vector_update BEFORE INSERT OR UPDATE ON "locations" FOR EACH ROW
-        EXECUTE PROCEDURE location_weighted_search_trigger();
-     */
-
     var locationSchema = {
         name: {
             type: DataTypes.STRING,
