@@ -158,7 +158,8 @@ var OUTCOME_SCHEMAS = {
                 items: {
                     type: 'string',
                     enum: constants.LOCATION_TAGS
-                }
+                },
+                minItems: 1
             }
         },
         required: ['tags'],
