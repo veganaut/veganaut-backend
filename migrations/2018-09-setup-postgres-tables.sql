@@ -16,7 +16,7 @@ CREATE TABLE "tasks" ("id"   SERIAL , "type" "public"."enum_tasks_type" NOT NULL
 
 -- Set the id sequences to something high to not start at 1
 
-SELECT setval('locations_id_seq', 100000);
+SELECT setval('locations_id_seq', 10000000); -- Needs to be that high because of the converted ids from MongoDB that come up to 9mio
 SELECT setval('people_id_seq', 100000);
 SELECT setval('products_id_seq', 100000);
 SELECT setval('tasks_id_seq', 100000);
