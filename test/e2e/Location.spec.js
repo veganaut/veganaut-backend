@@ -574,4 +574,15 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
             })
         ;
     });
+
+    it('can get a location with a legacy MongoDB id', function(done) {
+        h.request('GET', h.baseURL + 'location/52c397083d801294b6dc94ad') // This hex number should convert to id 6
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                expect(res.body.id).toBe(6, 'correct location id');
+
+                done();
+            })
+        ;
+    });
 });

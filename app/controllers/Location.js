@@ -428,6 +428,13 @@ exports.get = function(req, res, next) {
     var locationId = req.params.locationId;
     var location, creator, contributors;
 
+    // Test the location id, if we get a hexadecimal number, it's probably a legacy
+    // id from MongoDB. Convert it to a the new id.
+    // TODO: Remove this at some point when we stop supporting the old URLs
+    if (!utils.DECIMAL_NUMBER_REGEX.test(locationId) && utils.HEXADECIMAL_NUMBER_REGEX.test(locationId)) {
+        locationId = utils.convertLocationMongoDbIdToPostgresId(locationId);
+    }
+
     // Load the location by id (including soft-deleted records)
     db.Location.findById(locationId, {paranoid: false})
         .then(function(foundLocation) {

@@ -6,6 +6,19 @@
 var utils = {};
 
 /**
+ * Regex to match a decimal number (string that contains only 0-9)
+ * @type {RegExp}
+ */
+utils.DECIMAL_NUMBER_REGEX = /^[0-9]+$/;
+
+/**
+ * Regex to match a hexadecimal number (string that contains only 0-9, a-f, A-F)
+ * Note that a decimal number also tests successfully with that regex.
+ * @type {RegExp}
+ */
+utils.HEXADECIMAL_NUMBER_REGEX = /^[0-9a-fA-F]+$/;
+
+/**
  * Checks if the given value is a positive integer (only digits).
  * Returns the value as a number if it's the case and false otherwise
  * @param {string} value
@@ -88,6 +101,18 @@ utils.createPoint = function(lat, lng) {
         type: 'Point',
         coordinates: [lng, lat]
     };
+};
+
+/**
+ * Converts a hexadecimal location id from MongoDB times to the new id
+ * used with Postgres.
+ * @param {string} mongoDbId
+ * @returns {number}
+ */
+utils.convertLocationMongoDbIdToPostgresId = function(mongoDbId) {
+    // Simple hashing function to convert the ids, has no collisions on the set of ids
+    // that existed at time of migration. Don't ask...
+    return Math.round(parseInt(mongoDbId.substr(0, 12), 16) / 1000000) - 91000000;
 };
 
 module.exports = utils;
