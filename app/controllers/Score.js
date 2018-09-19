@@ -71,6 +71,10 @@ var getTasksCountByPlayer = function(playerByIdPromise) {
             'personId',
             [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'count']
         ],
+        where: {
+            // Don't count automatically triggered tasks
+            triggeredById: null
+        },
         group: ['personId'],
         order: [
             ['count', 'DESC']

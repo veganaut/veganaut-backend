@@ -15,13 +15,21 @@ h.describe('Score controller', function() {
             var peopleTasks = stats.people.tasks;
             expect(typeof peopleTasks).toBe('object', 'got people.tasks stats');
             expect(peopleTasks.length).toBeGreaterThan(0, 'got some people task entries');
+            var aliceStats;
             _.each(peopleTasks, function(stat) {
                 expect(typeof stat.person).toBe('object', 'people tasks contains person');
                 expect(typeof stat.person.id).toBe('number', 'people tasks contains person with id');
                 expect(typeof stat.person.nickname).toBe('string', 'people tasks contains person with nickname');
                 expect(typeof stat.tasks).toBe('number', 'people tasks contains a number');
                 expect(stat.tasks).toBeGreaterThan(0, 'people tasks contains a valid value');
+
+                // Store alice to compare stats to other sources
+                if (stat.person.id === 1) {
+                    aliceStats = stat;
+                }
             });
+
+            expect(typeof aliceStats).not.toBe('undefined', 'found alice in the stats');
 
             expect(typeof stats.locationTypes).toBe('object', 'got locationTypes stats');
             var locationTypes = stats.locationTypes.locations;
@@ -33,7 +41,27 @@ h.describe('Score controller', function() {
                 expect(stat.locations).toBe(2, 'has 2 locations of each type');
             });
 
-            done();
+            // Check that the stats match up from different sources
+            expect(typeof aliceStats.tasks).toBe('number', 'got number for alice stats');
+            h.request('GET', h.baseURL + 'person/1').end(function(err, res) {
+                var externalProfile = res.body;
+                expect(typeof externalProfile).toBe('object', 'got the external profile of alice');
+                expect(typeof externalProfile.addedLocations).toBe('number', 'got number for addedLocations from external profile');
+                expect(typeof externalProfile.completedTasks).toBe('number', 'got number for completedTasks from external profile');
+                expect(externalProfile.completedTasks).toBe(aliceStats.tasks, 'same number of tasks from external profile as on score page');
+
+                h.request('GET', h.baseURL + 'person/me').end(function(err, res) {
+                    var ownProfile = res.body;
+                    expect(typeof ownProfile).toBe('object', 'got own profile');
+                    expect(typeof ownProfile.addedLocations).toBe('number', 'got number for addedLocations from own profile');
+                    expect(typeof ownProfile.completedTasks).toBe('number', 'got number for completedTasks from own profile');
+                    expect(ownProfile.completedTasks).toBe(aliceStats.tasks, 'same number of tasks from own profile as on score page');
+
+                    expect(ownProfile.addedLocations).toBe(externalProfile.addedLocations, 'same addedLocations on external and own profile');
+
+                    done();
+                });
+            });
         });
     });
 });
