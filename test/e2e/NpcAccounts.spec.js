@@ -16,7 +16,6 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
 
                 var loc = res.body;
                 expect(loc.name, 'TingelKringel', 'correct name');
-                // TODO WIP: check that the NPC is not exposed somehow (at the moment it isn't...)
                 done();
             })
         ;
@@ -44,12 +43,12 @@ h.describe('Logged in as an NPC', {user: 'npc@example.com'}, function() {
 });
 
 h.describe('NPCs viewed from player accounts', function() {
-    it('cannot get the details of an npc', function(done) {
+    it('can get the details of an npc', function(done) {
         // Try to get npc@example.com
         h.request('GET', h.baseURL + 'person/10')
             .end(function(err, res) {
-                expect(res.statusCode).toBe(404, 'npc not found');
-                expect(typeof res.body.error).toBe('string', 'got an error message');
+                expect(res.statusCode).toBe(200, 'npc found');
+                expect(res.body.accountType).toBe('npc', 'got the correct accountType');
                 done();
             })
         ;

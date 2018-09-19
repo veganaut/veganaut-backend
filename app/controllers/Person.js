@@ -5,7 +5,6 @@
 'use strict';
 
 var _ = require('lodash');
-var constants = require('../utils/constants');
 var db = require('../models');
 var Session = require('./Session');
 var cryptoUtils = require('../utils/cryptoUtils');
@@ -72,10 +71,13 @@ exports.getById = function(req, res, next) {
     var person;
 
     // Try to load the person wit the given
-    db.Person.findById(personId)
+    db.Person
+        .findById(personId, {
+            attributes: ['id', 'nickname', 'accountType']
+        })
         .then(function(existingPerson) {
-            // Check if the given id points to an existing person that is a player
-            if (!existingPerson || existingPerson.accountType !== constants.ACCOUNT_TYPES.player) {
+            // Check if the given id points to an existing person
+            if (!existingPerson) {
                 res.status(404);
                 throw new Error('Could not find any user with the given id.');
             }
@@ -87,10 +89,7 @@ exports.getById = function(req, res, next) {
             return person.calculateTaskCounts();
         })
         .then(function() {
-            var resObj = _.pick(person.toJSON(),
-                'id', 'nickname', 'completedTasks', 'addedLocations'
-            );
-            return res.status(200).send(resObj);
+            return res.send(person);
         })
         .catch(next)
     ;

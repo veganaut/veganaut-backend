@@ -95,9 +95,11 @@ h.describe('Person API methods for logged in user', function() {
             expect(me.nickname).toEqual('Alice');
             expect(me.fullName).toEqual('Alice Alison');
             expect(me.locale).toEqual('en');
+            expect(me.accountType).toEqual('player');
             expect(me.completedTasks).toBeGreaterThan(1, 'did a few tasks');
             expect(me.addedLocations).toBeGreaterThan(0, 'added a location');
             expect(typeof me.password).toEqual('undefined', 'password should not be returned');
+            expect(Object.keys(me).length).toBe(8, 'correct amount of properties');
 
             done();
         });
@@ -174,13 +176,16 @@ h.describe('Person API methods for logged in user', function() {
             expect(res.statusCode).toBe(200);
 
             var person = res.body;
+            expect(typeof person.id).toBe('number', 'id');
             expect(person.email).toBeUndefined();
             expect(person.nickname).toBeDefined();
             expect(person.fullName).toBeUndefined();
             expect(person.locale).toBeUndefined();
             expect(person.password).toBeUndefined();
-            expect(person.completedTasks).toBeDefined();
-            expect(person.addedLocations).toBeDefined();
+            expect(person.accountType).toBe('player', 'accounType');
+            expect(typeof person.completedTasks).toBe('number', 'completedTasks');
+            expect(typeof person.addedLocations).toBe('number', 'addedLocations');
+            expect(Object.keys(person).length).toBe(5, 'correct amount of properties');
 
             done();
         });
