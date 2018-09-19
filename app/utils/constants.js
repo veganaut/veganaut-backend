@@ -70,14 +70,30 @@ constants.TASK_TYPES = {
     HaveYouBeenHereRecently: 'HaveYouBeenHereRecently',
     GiveFeedback: 'GiveFeedback',
     MentionVegan: 'MentionVegan',
-    BuyProduct: 'BuyProduct'
+    BuyProduct: 'BuyProduct',
     // ExplainVegan: 'ExplainVegan',
     // AskForLabelling: 'AskForLabelling',
     // SuggestProducts: 'SuggestProducts',
     // ReserveExplicitVegan: 'ReserveExplicitVegan',
     // MarkForFutureVisit: 'MarkForFutureVisit',
     // DeclareVeganizeFocus: 'DeclareVeganizeFocus'
+
+    // Tasks imported from pre-1.0.0 release, that are currently not used at all (and maybe never will be)
+    LegacyEffortValueTask: 'LegacyEffortValueTask',
+    LegacyHasOptionsTask: 'LegacyHasOptionsTask',
+    LegacyWantVeganTask: 'LegacyWantVeganTask'
 };
+
+/**
+ * List of task types that are no longer active and cannot be created.
+ * Only used to keep data from old times around.
+ * @type {string[]}
+ */
+constants.LEGACY_TASK_TYPES = [
+    constants.TASK_TYPES.LegacyEffortValueTask,
+    constants.TASK_TYPES.LegacyHasOptionsTask,
+    constants.TASK_TYPES.LegacyWantVeganTask
+];
 
 /**
  * List of tags that can be given to locations

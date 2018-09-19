@@ -223,13 +223,62 @@ var OUTCOME_SCHEMAS = {
         },
         required: ['commitment'],
         additionalProperties: false
-    }
+    },
     // ExplainVegan: {},
     // AskForLabelling: {},
     // SuggestProducts: {},
     // ReserveExplicitVegan: {},
     // MarkForFutureVisit: {},
     // DeclareVeganizeFocus: {}
+
+    // Tasks imported from pre-1.0.0 release, that are currently not used at all (and maybe never will be)
+    LegacyEffortValueTask: {
+        type: 'object',
+        properties: {
+            effortValue: {
+                type: 'string',
+                enum: ['yes', 'ratherYes', 'ratherNo', 'no']
+            }
+        },
+        required: ['effortValue'],
+        additionalProperties: false
+    },
+    LegacyHasOptionsTask: {
+        type: 'object',
+        properties: {
+            hasOptions: {
+                type: 'string',
+                enum: ['yes', 'ratherYes', 'ratherNo', 'no', 'noClue']
+            }
+        },
+        required: ['hasOptions'],
+        additionalProperties: false
+    },
+    LegacyWantVeganTask: {
+        type: 'object',
+        properties: {
+            wantVegan: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        expression: {
+                            type: 'string'
+                        },
+                        expressionType: {
+                            type: 'string',
+                            enum: ['builtin', 'custom']
+                        }
+                    },
+                    required: ['expression', 'expressionType'],
+                    additionalProperties: false
+                },
+                minItems: 1
+            }
+        },
+        required: ['wantVegan'],
+        additionalProperties: false
+    }
 };
 
 

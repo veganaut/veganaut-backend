@@ -102,7 +102,11 @@ exports.getStatistics = function(req, res, next) {
 
 exports.submit = function(req, res, next) {
     var taskType = req.body.type;
-    if (typeof constants.TASK_TYPES[taskType] === 'undefined') {
+
+    // Make sure this task type is known and not one of the legacy tasks
+    if (typeof constants.TASK_TYPES[taskType] === 'undefined' ||
+        constants.LEGACY_TASK_TYPES.indexOf(taskType) > -1)
+    {
         return next(new Error('Could not find task of type: ' + taskType));
     }
 

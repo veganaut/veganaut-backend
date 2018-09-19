@@ -787,6 +787,73 @@ module.exports = {
     //     triggerExistence: false, // TODO: trigger loc existence?
     //     changeProperties: []
     // }
+
+
+    // Tasks imported from pre-1.0.0 release, that are currently not used at all (and maybe never will be)
+    LegacyEffortValueTask: {
+        category: 'veganize',
+        mainSubject: 'location',
+        otherSubjects: [],
+        outcomes: [
+            {
+                name: 'effortValue',
+                type: 'selectOne',
+                values: [
+                    'yes',
+                    'ratherYes',
+                    'ratherNo',
+                    'no'
+                ]
+            }
+        ],
+        importance: null, // TODO
+        daysUntilStale: null, // TODO
+        requiredFamiliarity: 0,
+        triggerExistence: false, // TODO: trigger loc existence?
+        changeProperties: []
+    },
+    LegacyHasOptionsTask: {
+        category: 'veganize',
+        mainSubject: 'location',
+        otherSubjects: [],
+        outcomes: [
+            {
+                name: 'hasOptions',
+                type: 'selectOne',
+                values: [
+                    'yes',
+                    'ratherYes',
+                    'ratherNo',
+                    'no',
+                    'noClue'
+                ]
+            }
+        ],
+        importance: null, // TODO
+        daysUntilStale: null, // TODO
+        requiredFamiliarity: 0,
+        triggerExistence: false, // TODO: trigger loc existence?
+        changeProperties: []
+    },
+    LegacyWantVeganTask: {
+        category: 'veganize',
+        mainSubject: 'location',
+        otherSubjects: [],
+        outcomes: [
+            {
+                name: 'wantVegan',
+                type: 'selectMany',
+                values: [
+                    // object with 'expression' and 'expressionType' (builtin/custom)
+                ]
+            }
+        ],
+        importance: null, // TODO
+        daysUntilStale: null, // TODO
+        requiredFamiliarity: 0,
+        triggerExistence: false, // TODO: trigger loc existence?
+        changeProperties: []
+    }
 };
 
 /*

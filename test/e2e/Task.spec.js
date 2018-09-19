@@ -448,6 +448,62 @@ h.describe('Basic functionality of task API methods.', {fixtures: fix, user: 'al
             })
         ;
     });
+
+    it('cannot submit a LegacyEffortValueTask task', function(done) {
+        h.request('POST', h.baseURL + 'task')
+            .send({
+                location: locationId,
+                type: 'LegacyEffortValueTask',
+                outcome: {
+                    effortValue: 'ratherYes'
+                }
+            })
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(500);
+                expect(res.body.error).toBe('Could not find task of type: LegacyEffortValueTask');
+                done();
+            })
+        ;
+    });
+
+    it('cannot submit a LegacyHasOptionsTask task', function(done) {
+        h.request('POST', h.baseURL + 'task')
+            .send({
+                location: locationId,
+                type: 'LegacyHasOptionsTask',
+                outcome: {
+                    hasOptions: 'noClue'
+                }
+            })
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(500);
+                expect(res.body.error).toBe('Could not find task of type: LegacyHasOptionsTask');
+                done();
+            })
+        ;
+    });
+
+    it('cannot submit a LegacyWantVeganTask task', function(done) {
+        h.request('POST', h.baseURL + 'task')
+            .send({
+                location: locationId,
+                type: 'LegacyWantVeganTask',
+                outcome: {
+                    wantVegan: [
+                        {
+                            expression: 'test',
+                            expressionType: 'custom'
+                        }
+                    ]
+                }
+            })
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(500);
+                expect(res.body.error).toBe('Could not find task of type: LegacyWantVeganTask');
+                done();
+            })
+        ;
+    });
 });
 
 
