@@ -8,9 +8,6 @@
  */
 'use strict';
 
-// TODO WIP WHEN MIGRATING: set sensible start values for the auto increasing indices on all tables
-// TODO WIP: no longer count ratings by the same person multiple times in the historical data, so recompute the ratings?
-
 var IMPORT_STEPS = [
     'parseLocationDates',   // Takes a second
     'parseProductDates',    // Takes a second
@@ -21,10 +18,11 @@ var IMPORT_STEPS = [
 ];
 
 var fs = require('fs');
-var db = require('../app/models');
+var db = require('../../app/models');
 var _ = require('lodash');
 var BPromise = require('bluebird');
-var constants = require('../app/utils/constants');
+var constants = require('../../app/utils/constants');
+var utils = require('../../app/utils/utils');
 
 var exitWrongParams = function() {
     console.error('ERROR: Provide valid import step:', IMPORT_STEPS.join(', '));
@@ -40,30 +38,13 @@ if (IMPORT_STEPS.indexOf(importStep) === -1) {
     exitWrongParams();
 }
 
-var convertLocationMongoId = function(mongoId) {
-    // return Math.round(parseInt(mongoId.substr(1, 11), 16) / 1000000);
-    // return Math.round(parseInt(mongoId.substr(0, 12), 16) / 1000000);
-    // return Math.round(parseInt(mongoId.substr(0, 8), 16) / 10) - 130000000;
-    // return Math.round(parseInt(mongoId.substr(0, 8), 16) / 1) - 1300000000;
-
-    return Math.round(parseInt(mongoId.substr(0, 12), 16) / 1000000) - 91000000;
-};
-
-// var convertProductMongoId = function(mongoId) {
-//     // return Math.round(parseInt(mongoId.substr(0, 8) + mongoId.substr(21, 3), 16) / 1) % 1000000000;
-//
-//     return Math.round(parseInt(mongoId.substr(2, 6) + mongoId.substr(21, 3), 16) / 1) % 100000000;
-// };
-
 var convertPersonMongoId = function(mongoId) {
-    // return Math.round(parseInt(mongoId.substr(19, 5), 16)) - 20000;
     return Math.round(parseInt(mongoId.substr(19, 5), 16)) % 100000;
 };
 
 
 var getLocationDates = function() {
-    // var missions = require('./data/export-sample-missions.json').data;
-    var missions = require('./data/live-export-missions-2018-04-11.json').data;
+    var missions = require('./data/live-export-missions-2018-09-19.json').data;
 
     var locationCreatedDates = {};
 
@@ -80,8 +61,7 @@ var getLocationDates = function() {
 };
 
 var getProductDates = function() {
-    // var missions = require('./data/export-sample-missions.json').data;
-    var missions = require('./data/live-export-missions-2018-04-11.json').data;
+    var missions = require('./data/live-export-missions-2018-09-19.json').data;
 
     var productDates = {};
 
@@ -123,15 +103,28 @@ var getProductDates = function() {
 };
 
 var prepareLocations = function() {
-    // var locations = require('./data/export-sample-locations.json').data;
-    var locations = require('./data/live-export-locations-2018-04-11.json').data;
+    var locations = require('./data/live-export-locations-2018-09-19.json').data;
 
     var locationCreatedDates = require('./data/generated-location-dates.json');
 
+    // var existing = {};
+    // _.each(locations, function(loc) {
+    //     var id = utils.convertLocationMongoDbIdToPostgresId(loc._id.$oid);
+    //     if (existing[id]) {
+    //         console.log('clash', loc);
+    //     }
+    //     else {
+    //         existing[id] = true;
+    //     }
+    // });
+    //
+    // console.log(Object.keys(existing).length);
+    // console.log(locations.length);
+
     /*
      * TODO WIP WHEN MIGRATING:
-     * - check that the converted ids are still all unique
-     * - check hooks again (they are deactivated)
+     * - check that the converted ids are still all unique CHECKED ON 2018-09-19: OK
+     * - check hooks again (they are deactivated) CHECKED ON 2018-09-19: OK to keep hooks deactivated
      */
     return _.map(locations, function(loc) {
         var createdAt;
@@ -139,7 +132,6 @@ var prepareLocations = function() {
             createdAt = locationCreatedDates[loc._id.$oid];
         }
         else {
-            // TODO WIP: all locations must have an AddLocation task
             // There are 52 places that were created before there were AddLocation missions, for
             // those we set a created at time that is shortly before this feature was released
             createdAt = new Date('2014-08-01T00:00:00.000Z');
@@ -154,7 +146,7 @@ var prepareLocations = function() {
         var deletedAt = loc.deleted ? new Date('2017-12-31T00:00:00.000Z') : undefined;
 
         return db.Location.build({
-            id: convertLocationMongoId(loc._id.$oid),
+            id: utils.convertLocationMongoDbIdToPostgresId(loc._id.$oid),
             coordinates: {
                 type: 'Point',
                 coordinates: loc.coordinates
@@ -182,14 +174,13 @@ var prepareLocations = function() {
 };
 
 var prepareProducts = function() {
-    // var products = require('./data/export-sample-products.json').data;
-    var products = require('./data/live-export-products-2018-04-11.json').data;
+    var products = require('./data/live-export-products-2018-09-19.json').data;
 
     var productDates = require('./data/generated-product-dates.json');
 
     /*
      * TODO WIP WHEN MIGRATING:
-     * - check hooks again (they are NOT deactivated)
+     * - check hooks again (they are NOT deactivated) CHECKED ON 2018-09-19: OK to keep hooks activated
      */
     return _.map(products, function(prod) {
         if (prod.name.length > 256) {
@@ -214,7 +205,7 @@ var prepareProducts = function() {
 
         var p = db.Product.build({
             name: prod.name,
-            locationId: convertLocationMongoId(prod.location.$oid),
+            locationId: utils.convertLocationMongoDbIdToPostgresId(prod.location.$oid),
             ratingTotal: prod.rating.total,
             ratingCount: prod.rating.count,
             ratingRank: prod.rating.rank,
@@ -231,13 +222,26 @@ var prepareProducts = function() {
 };
 
 var preparePeople = function() {
-    // var people = require('./data/export-sample-people.json').data;
-    var people = require('./data/live-export-people-2018-04-11.json').data;
+    var people = require('./data/live-export-people-2018-09-19.json').data;
+
+    // var existing = {};
+    // _.each(people, function(per) {
+    //     var id = convertPersonMongoId(per._id.$oid);
+    //     if (existing[id]) {
+    //         console.log('clash', per);
+    //     }
+    //     else {
+    //         existing[id] = true;
+    //     }
+    // });
+    //
+    // console.log(Object.keys(existing).length);
+    // console.log(people.length);
 
     /*
      * TODO WIP WHEN MIGRATING:
-     * - before importing: check that the converted ids are still all unique
-     * - check hooks again (they are deactivated)
+     * - before importing: check that the converted ids are still all unique CHECKED ON 2018-09-19: OK
+     * - check hooks again (they are deactivated) CHECKED ON 2018-09-19: OK to keep hooks deactivated
      */
     return _.map(people, function(per) {
         return db.Person.build({
@@ -257,17 +261,14 @@ var preparePeople = function() {
 };
 
 var prepareTasks = function() {
-    // var missions = require('./data/export-sample-missions.json').data;
-    var missions = require('./data/live-export-missions-2018-04-11.json').data;
+    var missions = require('./data/live-export-missions-2018-09-19.json').data;
 
     var productMongoIdToNewId = require('./data/generated-product-mongo-to-postgre-id.json');
 
-    /* TODO WIP
-     * - tasks that trigger SetLocationExistence: what do do with those?
-     *
+    /*
      * TODO WIP WHEN MIGRATING:
      * - delete mission acting on location id 54be8dac623a95b0342c05c2 (this location somehow doesn't exist)
-     * - check hooks again (they are deactivated)
+     * - check hooks again (they are deactivated) CHECKED ON 2018-09-19: OK to keep hooks deactivated
      */
 
     var taskDefinitions = [];
@@ -275,7 +276,7 @@ var prepareTasks = function() {
     _.each(missions, function(mis) {
         var taskData = {
             personId: convertPersonMongoId(mis.person.$oid),
-            locationId: convertLocationMongoId(mis.location.$oid),
+            locationId: utils.convertLocationMongoDbIdToPostgresId(mis.location.$oid),
             byNpc: mis.isNpcMission,
             createdAt: mis.completed.$date
         };
@@ -299,7 +300,11 @@ var prepareTasks = function() {
             taskDefinitions.push(taskData);
             break;
         case 'EffortValueMission':
-            // TODO WIP --> gone! still store somehow?
+            taskData.type = 'LegacyEffortValueTask';
+            taskData.outcome = {
+                effortValue: mis.outcome
+            };
+            taskDefinitions.push(taskData);
             break;
         case 'GiveFeedbackMission':
             taskData.type = 'GiveFeedback';
@@ -308,12 +313,13 @@ var prepareTasks = function() {
                 notes: mis.outcome
             };
             taskDefinitions.push(taskData);
-
-            // TODO WIP: this should trigger existence?
-
             break;
         case 'HasOptionsMission':
-            // TODO WIP --> RateLocationStaffVeganKnowledge
+            taskData.type = 'LegacyHasOptionsTask';
+            taskData.outcome = {
+                hasOptions: mis.outcome
+            };
+            taskDefinitions.push(taskData);
             break;
         case 'LocationTagsMission':
             taskData.type = 'TagLocation';
@@ -365,13 +371,18 @@ var prepareTasks = function() {
                 beenHere: 'yes'
             };
             taskDefinitions.push(taskData);
-
-            // TODO WIP: this should trigger existence!
-
             break;
         case 'WantVeganMission':
-            // TODO WIP --> ExplainVegan ?
-            // TODO WIP: this should trigger existence?
+            taskData.type = 'LegacyWantVeganTask';
+            taskData.outcome = {
+                wantVegan: _.map(mis.outcome, function(out) {
+                    return {
+                        expression: out.expression,
+                        expressionType: out.expressionType
+                    };
+                })
+            };
+            taskDefinitions.push(taskData);
             break;
         case 'WhatOptionsMission':
             taskData.type = 'AddProduct';
@@ -468,6 +479,7 @@ if (require.main === module) {
                         return console.error('ERROR: writing generated-product-mongo-to-postgre-id.json', err);
                     }
                     console.log('generated-product-mongo-to-postgre-id.json saved');
+                    // TODO WIP WHEN MIGRATING: Remove weird zero-width chars & nbsp from file
                 });
             })
         ;
@@ -509,3 +521,47 @@ if (require.main === module) {
         ;
     }
 }
+
+
+/*
+
+// Queries to update the quality of locations and ratings of products to only include the latest Task of every person
+// TODO WIP WHEN MIGRATING: Run this after the import
+
+WITH "newValues" AS (
+	SELECT tasks."locationId", SUM(CAST(outcome ->> 'quality' AS INTEGER)) as "qualityTotal", count(id) as "qualityCount",
+	((SUM(CAST(outcome ->> 'quality' AS INTEGER)) + 6.0) / (count(id) + 2.0)) as "qualityRank"
+	FROM tasks
+	INNER JOIN
+		(SELECT "locationId", "personId", MAX("createdAt") as time
+		FROM tasks
+		WHERE type = 'RateLocationQuality'
+		GROUP BY "locationId", "personId"
+		) last
+	ON last."locationId" = tasks."locationId" AND last."personId" = tasks."personId" AND last.time = tasks."createdAt"
+	GROUP BY tasks."locationId"
+)
+UPDATE "locations"
+SET "qualityTotal" = "newValues"."qualityTotal", "qualityCount" = "newValues"."qualityCount", "qualityRank" = "newValues"."qualityRank"
+FROM "newValues"
+WHERE "newValues"."locationId" = "locations"."id";
+
+WITH "newValues" AS (
+	SELECT tasks."productId", SUM(CAST(outcome ->> 'rating' AS INTEGER)) as "ratingTotal", count(id) as "ratingCount",
+	((SUM(CAST(outcome ->> 'rating' AS INTEGER)) + 6.0) / (count(id) + 2.0)) as "ratingRank"
+	FROM tasks
+	INNER JOIN
+		(SELECT "productId", "personId", MAX("createdAt") as time
+		FROM tasks
+		WHERE type = 'RateProduct'
+		GROUP BY "productId", "personId"
+		) last
+	ON last."productId" = tasks."productId" AND last."personId" = tasks."personId" AND last.time = tasks."createdAt"
+	GROUP BY tasks."productId"
+)
+UPDATE "products"
+SET "ratingTotal" = "newValues"."ratingTotal", "ratingCount" = "newValues"."ratingCount", "ratingRank" = "newValues"."ratingRank"
+FROM "newValues"
+WHERE "newValues"."productId" = "products"."id";
+
+ */
