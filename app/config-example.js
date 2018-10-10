@@ -1,4 +1,4 @@
-/**angular
+/**
  * Example config file for veganaut-backend.
  * Copy this to app/config.js to get a running backend.
  */
