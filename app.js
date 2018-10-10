@@ -41,6 +41,11 @@ app.use(bodyParser.json());
 // Try to add the logged in user
 app.use(Session.addUserToRequest);
 
+var refuseEdits = function(req, res) {
+    res.status(503);
+    throw new Error('Due to a major update, Veganaut is currently in read-only mode.');
+};
+
 // Home
 app.options('/', cors());
 app.get('/', function(req, res) {
@@ -60,27 +65,27 @@ app.options('/person/me', cors());
 app.options('/person/isValidToken/:token', cors());
 app.options('/person/reset', cors());
 app.options('/person/:id', cors());
-app.post('/person', cors(), Person.register);
+app.post('/person', cors(), refuseEdits);
 app.get('/person/me', cors(), Session.restrict, Person.getMe);
-app.put('/person/me', cors(), Session.restrict, Person.updateMe);
+app.put('/person/me', cors(), Session.restrict, refuseEdits);
 app.get('/person/isValidToken/:token', cors(), Person.isValidToken);
-app.post('/person/reset', cors(), Person.resetPassword);
+app.post('/person/reset', cors(), refuseEdits);
 app.get('/person/:id', cors(), Session.restrict, Person.getById);
 
 // Mission
 app.options('/mission', cors());
-app.post('/mission', cors(), Session.restrict, Missions.submit);
+app.post('/mission', cors(), Session.restrict, refuseEdits);
 
 // Location
 app.options('/location', cors());
-app.post('/location', cors(), Session.restrict, Location.create);
+app.post('/location', cors(), Session.restrict, refuseEdits);
 app.options('/location/list', cors());
 app.get('/location/list', cors(), Location.list);
 app.options('/location/search', cors());
 app.get('/location/search', cors(), Location.search);
 app.options('/location/:locationId', cors());
 app.get('/location/:locationId', cors(), Location.get);
-app.put('/location/:locationId', cors(), Session.restrict, Location.update);
+app.put('/location/:locationId', cors(), Session.restrict, refuseEdits);
 // The /mission/list method is currently unused by the frontend
 app.options('/location/:locationId/mission/list', cors()); // TODO: rename this method to be clearly distinguishable from availableMission/list
 app.get('/location/:locationId/mission/list', cors(), Session.restrict, Location.getCompletedMissions);
@@ -100,7 +105,7 @@ app.options('/geoip', cors());
 app.get('/geoip', cors(), GeoIP.get);
 
 app.options('/passwordResetEmail', cors());
-app.post('/passwordResetEmail', cors(), PasswordResetEmail.send);
+app.post('/passwordResetEmail', cors(), refuseEdits);
 
 // Sitemap of frontend
 app.get('/sitemap.xml', Sitemap.getSitemap);
