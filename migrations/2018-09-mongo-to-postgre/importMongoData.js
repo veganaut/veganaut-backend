@@ -44,7 +44,7 @@ var convertPersonMongoId = function(mongoId) {
 
 
 var getLocationDates = function() {
-    var missions = require('./data/live-export-missions-2018-09-19.json').data;
+    var missions = require('./data/live-export-missions-2018-10-10.json').data;
 
     var locationCreatedDates = {};
 
@@ -61,7 +61,7 @@ var getLocationDates = function() {
 };
 
 var getProductDates = function() {
-    var missions = require('./data/live-export-missions-2018-09-19.json').data;
+    var missions = require('./data/live-export-missions-2018-10-10.json').data;
 
     var productDates = {};
 
@@ -103,7 +103,7 @@ var getProductDates = function() {
 };
 
 var prepareLocations = function() {
-    var locations = require('./data/live-export-locations-2018-09-19.json').data;
+    var locations = require('./data/live-export-locations-2018-10-10.json').data;
 
     var locationCreatedDates = require('./data/generated-location-dates.json');
 
@@ -132,7 +132,7 @@ var prepareLocations = function() {
             createdAt = locationCreatedDates[loc._id.$oid];
         }
         else {
-            // There are 52 places that were created before there were AddLocation missions, for
+            // There are 52 places that were created before there were AddLocation missions, for TODO NEXT: add fake AddLocation tasks for these places
             // those we set a created at time that is shortly before this feature was released
             createdAt = new Date('2014-08-01T00:00:00.000Z');
             console.warn('WARNING: Using default createdAt location (OK for 52 locations from Tibits (Bahnhof) to Pintli)',
@@ -174,7 +174,7 @@ var prepareLocations = function() {
 };
 
 var prepareProducts = function() {
-    var products = require('./data/live-export-products-2018-09-19.json').data;
+    var products = require('./data/live-export-products-2018-10-10.json').data;
 
     var productDates = require('./data/generated-product-dates.json');
 
@@ -222,7 +222,7 @@ var prepareProducts = function() {
 };
 
 var preparePeople = function() {
-    var people = require('./data/live-export-people-2018-09-19.json').data;
+    var people = require('./data/live-export-people-2018-10-10.json').data;
 
     // var existing = {};
     // _.each(people, function(per) {
@@ -261,7 +261,7 @@ var preparePeople = function() {
 };
 
 var prepareTasks = function() {
-    var missions = require('./data/live-export-missions-2018-09-19.json').data;
+    var missions = require('./data/live-export-missions-2018-10-10.json').data;
 
     var productMongoIdToNewId = require('./data/generated-product-mongo-to-postgre-id.json');
 
