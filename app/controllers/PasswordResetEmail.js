@@ -102,7 +102,7 @@ exports.send = function(req, res, next) {
             return mailTransporter.sendMail(mailOptions);
         })
         .then(function() {
-            res.status(200).send();
+            res.status(200).send({status: 'OK'});
         })
         .catch(next)
     ;
