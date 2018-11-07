@@ -455,6 +455,40 @@ h.describe('Location API methods when not logged in.', {user: ''}, function() {
         ;
     });
 
+    it('can filter locations by quality, test 1', function(done) {
+        h.request('GET', h.baseURL + 'location/list?minQuality=4&maxQuality=5')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                expect(_.isPlainObject(res.body)).toBe(true, 'returns a plain object');
+                expect(_.isArray(res.body.locations)).toBe(true, 'returns an array of locations');
+                expect(res.body.totalLocations).toBe(1, 'returns correct total locations');
+                expect(Object.keys(res.body).length).toBe(2, 'returns nothing else');
+                expect(res.body.locations.length).toBe(1, 'found 1 location with quality 4 or 5');
+
+                expect(Math.round(res.body.locations[0].quality.average)).toBeGreaterThan(3, 'correct quality');
+                expect(Math.round(res.body.locations[0].quality.average)).toBeLessThan(6, 'correct quality');
+
+                done();
+            })
+        ;
+    });
+
+    it('can filter locations by quality, test 2', function(done) {
+        h.request('GET', h.baseURL + 'location/list?minQuality=0&maxQuality=0')
+            .end(function(err, res) {
+                expect(res.statusCode).toBe(200);
+                expect(res.body.totalLocations).toBe(2, 'returns correct total locations');
+                expect(res.body.locations.length).toBe(2, 'found correct number of location');
+
+                _.each(res.body.locations, function(location) {
+                    expect(Math.round(location.quality.average)).toBe(0, 'correct quality');
+                });
+
+                done();
+            })
+        ;
+    });
+
     it('can filter locations by update time', function(done) {
         // TODO: find a better way to test this
         setTimeout(function() {

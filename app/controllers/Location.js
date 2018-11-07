@@ -252,6 +252,17 @@ exports.list = function(req, res, next) {
         });
     }
 
+    // Add min/max quality restriction to the query if valid value given
+    var minQuality = parseInt(req.query.minQuality, 10);
+    var maxQuality = parseInt(req.query.maxQuality, 10);
+    if (!isNaN(minQuality) && !isNaN(maxQuality)) { // We could check if the values are in the correct range, but it doesn't really matter
+        var qualityCalc = db.sequelize.fn('round',
+            db.sequelize.literal('cast("qualityTotal" as numeric) / greatest("qualityCount", 1)')
+        );
+        whereClauses.push(db.sequelize.where(qualityCalc, '>=', minQuality));
+        whereClauses.push(db.sequelize.where(qualityCalc, '<=', maxQuality));
+    }
+
     // Get the cluster level and make sure it's either undefined or in the valid levels
     // If a value outside the bounds is given, we won't do clustering
     var clusterLevel = parseInt(req.query.clusterLevel, 10);
