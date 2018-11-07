@@ -103,7 +103,6 @@ var getTasksCountByPlayer = function(playerByIdPromise) {
 exports.stats = function(req, res, next) {
     var playerByIdPromise = getPlayersById();
 
-    // TODO NEXT: Simply show the world area overview page instead of the community page (with maybe some additional info)
     BPromise.join(
         getLocationCountByType(),
         getPlayerCount(playerByIdPromise),
